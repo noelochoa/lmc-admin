@@ -1,6 +1,19 @@
 // app global css in SCSS form
+
+@font-face {
+    font-family: SpartanMed;
+    src: url("../statics/fonts/Spartan-Medium.ttf");
+}
+
 * {
     margin: 0;
     padding: 0;
     text-decoration: none;
+    font-family: SpartanMed, "Roboto", "-apple-system", "Helvetica Neue",
+        Helvetica, Arial, sans-serif;
+}
+
+// global fix
+.q-btn .q-btn__content {
+    margin-top: 2px;
 }
