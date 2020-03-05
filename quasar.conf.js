@@ -76,7 +76,17 @@ module.exports = function(ctx) {
                         )
                     }
                 });
-            }
+            },
+
+            env: ctx.dev
+                ? {
+                      // so on dev we'll have
+                      API: JSON.stringify("http://localhost:3000")
+                  }
+                : {
+                      // and on build (production):
+                      API: JSON.stringify("https://localhost:3000")
+                  }
         },
 
         // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
@@ -100,8 +110,8 @@ module.exports = function(ctx) {
             workboxPluginMode: "GenerateSW", // 'GenerateSW' or 'InjectManifest'
             workboxOptions: {}, // only for GenerateSW
             manifest: {
-                name: "LMC CMS App",
-                short_name: "LMC CMS App",
+                name: "Administrator Portal | LMC CMS",
+                short_name: "Administrator Portal | LMC CMS",
                 description: "Content Management System for LMC",
                 display: "standalone",
                 orientation: "portrait",

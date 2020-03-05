@@ -6,11 +6,6 @@
 
 <script>
 export default {
-  preFetch({ store, redirect }) {
-    if (!store.state.auth.authenticated) {
-      redirect("/login");
-    }
-  },
   name: "PageIndex"
 };
 </script>

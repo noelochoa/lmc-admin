@@ -48,6 +48,12 @@
 import EssentialLink from "components/EssentialLink";
 
 export default {
+  preFetch({ store, redirect }) {
+    if (!store.state.auth.authenticated) {
+      redirect("/login");
+    }
+  },
+
   name: "MainLayout",
 
   components: {
