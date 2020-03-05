@@ -31,6 +31,7 @@
     </q-page-container>
   </q-layout>
 </template>
+
 <style lang="scss" scoped>
 .q-toolbar {
   background: $primary;
@@ -38,10 +39,11 @@
     90deg,
     $primary 0%,
     $secondary 35%,
-    $ternary 100%
+    $tertiary 100%
   );
 }
 </style>
+
 <script>
 import EssentialLink from "components/EssentialLink";
 
@@ -97,9 +99,7 @@ export default {
   },
 
   methods: {
-    goHome: function() {
-      this.$router.push("/");
-    }
+    goHome: function() {}
   }
 };
 </script>
