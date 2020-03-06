@@ -1,7 +1,7 @@
 export default function() {
     return {
-        authenticated: false,
+        authenticated: true,
         jwt: "",
-        name: ""
+        name: "Admin"
     };
 }

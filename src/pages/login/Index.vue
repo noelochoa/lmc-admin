@@ -87,8 +87,7 @@
 }
 
 .round-fg {
-  height: 50vh;
-  max-width: 800px;
+  max-width: 768px;
   display: grid;
   grid-template-columns: 1fr 1.5fr;
   grid-template-rows: auto;
@@ -112,7 +111,7 @@
   font-size: 15rem;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   .message {
     display: none;
   }
@@ -125,8 +124,13 @@
 
 <script>
 export default {
+   preFetch({ store, redirect }) {
+    if (store.state.auth.authenticated) {
+      redirect("/");
+    }
+  },
+
   name: "LoginIndex",
-  preFetch({ store }) {},
   created() {},
   data() {
     return {
