@@ -65,17 +65,9 @@
 
 <style lang="scss" scoped>
 .blur-bg {
-  position: absolute;
+  position: fixed;
   height: 100%;
   width: 100%;
-  //   background: $primary;
-  //   background: linear-gradient(
-  //     60deg,
-  //     $primary 0%,
-  //     $secondary 45%,
-  //     $tertiary 100%
-  //   );
-
   /* Center and scale the image nicely */
   background-image: url("../../statics/bg-cms.jpg");
   background-position: center;
@@ -84,10 +76,13 @@
   /* Add the blur effect */
   filter: blur(10px);
   -webkit-filter: blur(10px);
+  transform: scale(1.1);
+  overflow: hidden;
 }
 
 .round-fg {
-  max-width: 768px;
+  height: 50vh;
+  max-width: 800px;
   display: grid;
   grid-template-columns: 1fr 1.5fr;
   grid-template-rows: auto;
@@ -111,7 +106,7 @@
   font-size: 15rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .message {
     display: none;
   }
@@ -124,13 +119,8 @@
 
 <script>
 export default {
-   preFetch({ store, redirect }) {
-    if (store.state.auth.authenticated) {
-      redirect("/");
-    }
-  },
-
   name: "LoginIndex",
+  preFetch({ store }) {},
   created() {},
   data() {
     return {

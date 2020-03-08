@@ -1,9 +1,9 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <q-header elevated class="text-white navheader">
+    <div class="blur-bg"></div>
+    <q-header class="text-white navheader">
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="drawer = !drawer" />
-
+        <!-- <q-btn dense flat round icon="menu" @click="drawer = !drawer" /> -->
         <q-toolbar-title>
           Welcome,
           <b class="alias">{{name}}</b>
@@ -11,10 +11,10 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="drawer" side="left">
+    <q-drawer v-model="drawer" :width="250" class="bg-gray-alpha" side="left">
       <q-list>
-        <q-item-label header class="text-grey-8">Essential Links</q-item-label>
-        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+        <q-item-label header class="text-grey-8">Navigation</q-item-label>
+        <Navigation v-for="link in navigationlinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
 
@@ -24,12 +24,28 @@
   </q-layout>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.blur-bg {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  /* Center and scale the image nicely */
+  background-image: url("../statics/bg-cms.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* Add the blur effect */
+  filter: blur(10px);
+  -webkit-filter: blur(10px);
+  transform: scale(1.1);
+}
+.q-drawer-container,
+.q-drawer,
+.bg-gray-alpha,
 .navheader,
 .q-toolbar {
-  background: rgb(255, 206, 206);
-  background: #ffe0e040;
-  color: $tertiary;
+  background: rgba(128, 128, 128, 0.35) !important;
+  color: rgb(221, 221, 221);
 }
 .q-toolbar-title > .alias {
   text-transform: capitalize;
@@ -37,10 +53,13 @@
 .menu-list.q-item {
   border-radius: 0 32px 32px 0;
 }
+.q-router-link--exact-active {
+  border-right: 3px solid $primary;
+}
 </style>
 
 <script>
-import EssentialLink from "../components/EssentialLink";
+import Navigation from "../components/Navigation";
 
 export default {
   preFetch({ store, redirect }) {
@@ -50,7 +69,7 @@ export default {
   },
 
   name: "MainLayout",
-  components: { EssentialLink },
+  components: { Navigation },
   computed: {
     name() {
       return this.$store.state.auth.name;
@@ -58,43 +77,47 @@ export default {
   },
   data() {
     return {
-      drawer: false,
-      essentialLinks: [
+      drawer: true,
+      navigationlinks: [
         {
-          title: "Docs",
-          caption: "quasar.dev",
-          icon: "school",
-          link: "https://quasar.dev"
+          title: "Dashboard",
+          icon: "dashboard",
+          link: "dashboard"
         },
         {
-          title: "Github",
-          caption: "github.com/quasarframework",
-          icon: "code",
-          link: "https://github.com/quasarframework"
+          title: "Reseller Accounts",
+          icon: "account_circle",
+          link: "accounts"
         },
         {
-          title: "Discord Chat Channel",
-          caption: "chat.quasar.dev",
-          icon: "chat",
-          link: "https://chat.quasar.dev"
+          title: "Announcements",
+          icon: "announcement",
+          link: "announcements"
         },
         {
-          title: "Forum",
-          caption: "forum.quasar.dev",
-          icon: "record_voice_over",
-          link: "https://forum.quasar.dev"
+          title: "Product Categories",
+          icon: "category",
+          link: "categories"
         },
         {
-          title: "Twitter",
-          caption: "@quasarframework",
-          icon: "rss_feed",
-          link: "https://twitter.quasar.dev"
+          title: "Products",
+          icon: "cake",
+          link: "products"
         },
         {
-          title: "Facebook",
-          caption: "@QuasarFramework",
-          icon: "public",
-          link: "https://facebook.quasar.dev"
+          title: "Comments",
+          icon: "comment",
+          link: "comments"
+        },
+        {
+          title: "Orders",
+          icon: "fireplace",
+          link: "orders"
+        },
+        {
+          title: "Business Holidays",
+          icon: "date_range",
+          link: "holidays"
         }
       ]
     };
