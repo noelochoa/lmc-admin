@@ -3,17 +3,25 @@
     <div class="blur-bg"></div>
     <q-header class="text-white navheader">
       <q-toolbar>
-        <!-- <q-btn dense flat round icon="menu" @click="drawer = !drawer" /> -->
         <q-toolbar-title>
           Welcome,
           <b class="alias">{{name}}</b>
         </q-toolbar-title>
+        <q-btn
+          dense
+          flat
+          round
+          icon="menu"
+          side="right"
+          class="nav-toggle-btn"
+          @click="drawer = !drawer"
+        />
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="drawer" :width="250" class="bg-gray-alpha" side="left">
-      <q-list>
-        <q-item-label header class="text-grey-8">Navigation</q-item-label>
+    <q-drawer v-model="drawer" :width="250" :breakpoint="767" class="bg-gray-alpha" side="left">
+      <q-list class="nav-list">
+        <q-item-label header class="text-grey-5">Navigation</q-item-label>
         <Navigation v-for="link in navigationlinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
@@ -50,11 +58,20 @@
 .q-toolbar-title > .alias {
   text-transform: capitalize;
 }
-.menu-list.q-item {
-  border-radius: 0 32px 32px 0;
-}
 .q-router-link--exact-active {
   border-right: 3px solid $primary;
+}
+.nav-toggle-btn {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .nav-list {
+    padding-top: 50px;
+  }
+  .nav-toggle-btn {
+    display: inline-flex;
+  }
 }
 </style>
 
