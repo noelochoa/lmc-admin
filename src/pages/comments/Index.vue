@@ -7,6 +7,11 @@
 </style>
 <script>
 export default {
-  name: "Comments"
+  name: "Comments",
+  meta() {
+    return {
+      title: "Comments"
+    };
+  }
 };
 </script>

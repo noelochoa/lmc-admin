@@ -16,6 +16,33 @@
           class="nav-toggle-btn"
           @click="drawer = !drawer"
         />
+        <q-btn dense flat round icon="settings" side="right" class="settings-toggle-btn">
+          <q-menu square :offset="[10,11]" class="bg-gray-alpha">
+            <div class="row no-wrap q-pa-sm">
+              <div class="column">
+                <q-item
+                  clickable
+                  v-ripple
+                  tag="a"
+                  class="flex-center adjust-content-left"
+                  to="/users/edit"
+                >Edit Name</q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  tag="a"
+                  class="flex-center"
+                  to="/users/changepw"
+                >Change Password</q-item>
+              </div>
+              <q-separator vertical inset class="q-mx-lg" />
+              <div class="column items-center">
+                <div class="text-subtitle1 q-mt-sm q-mb-sm alias">{{name}}</div>
+                <q-btn color="primary" label="Logout" size="md" v-close-popup />
+              </div>
+            </div>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -37,25 +64,28 @@
   position: fixed;
   height: 100%;
   width: 100%;
-  /* Center and scale the image nicely */
   background-image: url("../statics/bg-cms.jpg");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  /* Add the blur effect */
   filter: blur(10px);
   -webkit-filter: blur(10px);
   transform: scale(1.1);
 }
+
 .q-drawer-container,
 .q-drawer,
+.q-menu,
+.q-toolbar,
 .bg-gray-alpha,
-.navheader,
-.q-toolbar {
+.navheader {
   background: rgba(128, 128, 128, 0.35) !important;
   color: rgb(221, 221, 221);
 }
-.q-toolbar-title > .alias {
+.adjust-content-left {
+  justify-content: left;
+}
+.alias {
   text-transform: capitalize;
 }
 .q-router-link--exact-active {
@@ -92,9 +122,26 @@ export default {
       return this.$store.state.auth.name;
     }
   },
+  meta: {
+    title: "Home",
+    titleTemplate: title => `${title} | LMC Admin Portal`,
+    // meta tags
+    meta: {
+      description: {
+        name: "description",
+        content: "Content Management System for LMC"
+      },
+      keywords: { name: "keywords", content: "cms lmc admin portal" },
+      equiv: {
+        "http-equiv": "Content-Type",
+        content: "text/html; charset=UTF-8"
+      }
+    }
+  },
+
   data() {
     return {
-      drawer: true,
+      drawer: false,
       navigationlinks: [
         {
           title: "Dashboard",

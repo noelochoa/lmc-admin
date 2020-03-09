@@ -32,6 +32,10 @@ const routes = [
             {
                 path: "holidays",
                 component: () => import("pages/holidays/Index.vue")
+            },
+            {
+                path: "users",
+                component: () => import("pages/users/Index.vue")
             }
         ]
     },

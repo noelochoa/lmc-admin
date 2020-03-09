@@ -1,16 +1,16 @@
 <template>
   <q-page class="flex flex-center">
-    <h3>Reseller Accounts</h3>
+    <h3>Admin Accounts</h3>
   </q-page>
 </template>
 <style lang="scss" scoped>
 </style>
 <script>
 export default {
-  name: "AccountsIndex",
+  name: "UserIndex",
   meta() {
     return {
-      title: "Reseller Accounts"
+      title: "Admin Accounts"
     };
   }
 };

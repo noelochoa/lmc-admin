@@ -7,6 +7,11 @@
 </style>
 <script>
 export default {
-  name: "AnnouncemensIndex"
+  name: "AnnouncemensIndex",
+  meta() {
+    return {
+      title: "Store Announcements"
+    };
+  }
 };
 </script>

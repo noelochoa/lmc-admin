@@ -7,6 +7,11 @@
 </style>
 <script>
 export default {
-  name: "HolidaysIndex"
+  name: "HolidaysIndex",
+  meta() {
+    return {
+      title: "Business Holidays"
+    };
+  }
 };
 </script>

@@ -7,6 +7,12 @@
 </style>
 <script>
 export default {
-  name: "OrdersIndex"
+  name: "OrdersIndex",
+
+  meta() {
+    return {
+      title: "Orders"
+    };
+  }
 };
 </script>

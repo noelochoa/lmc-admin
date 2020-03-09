@@ -7,6 +7,11 @@
 </style>
 <script>
 export default {
-  name: "CategoriesIndex"
+  name: "CategoriesIndex",
+  meta() {
+    return {
+      title: "Product Categories"
+    };
+  }
 };
 </script>
