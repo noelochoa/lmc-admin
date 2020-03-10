@@ -10,6 +10,8 @@
  * Note: Changes to this file (but not any file it imports!) are picked up by the
  * development server, but such updates are costly since the dev-server needs a reboot.
  */
+var request = require("request");
+const API_URL = process.env.API_URL || "http://localhost:3000";
 
 module.exports.extendApp = function({ app, ssr }) {
     /*
@@ -18,4 +20,10 @@ module.exports.extendApp = function({ app, ssr }) {
 
      Example: app.use(), app.get() etc
   */
+    app.use("/api", function(req, res) {
+        console.log(req.originalUrl, req.path, req.query);
+        // console.log(req.cookie);
+        const url = API_URL + req.path;
+        req.pipe(request({ qs: req.query, uri: url })).pipe(res);
+    });
 };

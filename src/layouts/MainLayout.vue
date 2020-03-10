@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <div class="blur-bg"></div>
-    <q-header class="text-white navheader">
+    <q-header class="text-white navheader" :class="{ scrolled: scrolled }">
       <q-toolbar>
         <q-toolbar-title>
           Welcome,
@@ -17,7 +17,7 @@
           @click="drawer = !drawer"
         />
         <q-btn dense flat round icon="settings" side="right" class="settings-toggle-btn">
-          <q-menu square :offset="[10,11]" class="bg-gray-alpha">
+          <q-menu square :offset="[10,11]">
             <div class="row no-wrap q-pa-sm">
               <div class="column">
                 <q-item
@@ -46,7 +46,14 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="drawer" :width="250" :breakpoint="767" class="bg-gray-alpha" side="left">
+    <q-drawer
+      v-model="drawer"
+      show-if-above
+      :width="240"
+      :breakpoint="767"
+      class="bg-gray-alpha"
+      side="left"
+    >
       <q-list class="nav-list">
         <q-item-label header class="text-grey-5">Navigation</q-item-label>
         <Navigation v-for="link in navigationlinks" :key="link.title" v-bind="link" />
@@ -72,15 +79,23 @@
   -webkit-filter: blur(10px);
   transform: scale(1.1);
 }
-
 .q-drawer-container,
 .q-drawer,
-.q-menu,
 .q-toolbar,
 .bg-gray-alpha,
 .navheader {
-  background: rgba(128, 128, 128, 0.35) !important;
+  background: rgba(128, 128, 128, 0.35);
   color: rgb(221, 221, 221);
+}
+.q-drawer {
+  position: fixed;
+}
+.scrolled {
+  background: rgba(128, 128, 128, 1);
+}
+.q-menu {
+  color: white;
+  background: #736656;
 }
 .adjust-content-left {
   justify-content: left;
@@ -91,17 +106,20 @@
 .q-router-link--exact-active {
   border-right: 3px solid $primary;
 }
-.nav-toggle-btn {
-  display: none;
-}
+// .nav-toggle-btn {
+//   display: none;
+// }
 
 @media (max-width: 767px) {
+  .q-drawer {
+    background: rgb(128, 128, 128) !important;
+  }
   .nav-list {
     padding-top: 50px;
   }
-  .nav-toggle-btn {
-    display: inline-flex;
-  }
+  // .nav-toggle-btn {
+  //   display: inline-flex;
+  // }
 }
 </style>
 
@@ -122,6 +140,10 @@ export default {
       return this.$store.state.auth.name;
     }
   },
+  mounted() {
+    this.handleScroll();
+    window.addEventListener("scroll", this.handleScroll);
+  },
   meta: {
     title: "Home",
     titleTemplate: title => `${title} | LMC Admin Portal`,
@@ -141,6 +163,7 @@ export default {
 
   data() {
     return {
+      scrolled: false,
       drawer: false,
       navigationlinks: [
         {
@@ -188,7 +211,9 @@ export default {
   },
 
   methods: {
-    goHome: function() {}
+    handleScroll(e) {
+      this.scrolled = window.scrollY >= 30 ? true : false;
+    }
   }
 };
 </script>
