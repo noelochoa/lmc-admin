@@ -85,13 +85,13 @@
 .bg-gray-alpha,
 .navheader {
   background: rgba(128, 128, 128, 0.35);
-  color: rgb(221, 221, 221);
+  color: #fff;
 }
 .q-drawer {
   position: fixed;
 }
 .scrolled {
-  background: rgba(128, 128, 128, 1);
+  background: rgb(202, 109, 118);
 }
 .q-menu {
   color: white;
@@ -103,7 +103,7 @@
 .alias {
   text-transform: capitalize;
 }
-.q-router-link--exact-active {
+.q-drawer .q-router-link--exact-active {
   border-right: 3px solid $primary;
 }
 // .nav-toggle-btn {
@@ -114,9 +114,9 @@
   .q-drawer {
     background: rgb(128, 128, 128) !important;
   }
-  .nav-list {
-    padding-top: 50px;
-  }
+  // .nav-list {
+  //   padding-top: 50px;
+  // }
   // .nav-toggle-btn {
   //   display: inline-flex;
   // }
@@ -169,42 +169,42 @@ export default {
         {
           title: "Dashboard",
           icon: "dashboard",
-          link: "dashboard"
+          link: "/dashboard"
         },
         {
           title: "Reseller Accounts",
           icon: "account_circle",
-          link: "accounts"
+          link: "/accounts"
         },
         {
           title: "Announcements",
           icon: "announcement",
-          link: "announcements"
+          link: "/announcements"
         },
         {
           title: "Product Categories",
           icon: "category",
-          link: "categories"
+          link: "/categories"
         },
         {
           title: "Products",
           icon: "cake",
-          link: "products"
+          link: "/products"
         },
         {
           title: "Comments",
           icon: "comment",
-          link: "comments"
+          link: "/comments"
         },
         {
           title: "Orders",
           icon: "fireplace",
-          link: "orders"
+          link: "/orders"
         },
         {
           title: "Business Holidays",
           icon: "date_range",
-          link: "holidays"
+          link: "/holidays"
         }
       ]
     };

@@ -32,45 +32,73 @@
         <div class="text-subtitle2 flex flex-center">
           <q-icon name="account_circle" class="caption-icon q-mx-md" />Resellers for Approval
         </div>
-        <div></div>
-        <div class="flex flex-center">
-          <a class="text-white" href="#">see all</a>
+        <div>
+          <q-list separator>
+            <Accounts v-for="account in accountsList" :key="account.id" v-bind="account" />
+          </q-list>
+          <p v-if="accountsList.length < 1" class="text-center q-mt-md">No pending accounts</p>
+        </div>
+        <div v-if="accountsList.length > 0">
+          <q-item to="/accounts" dense class="text-center flex flex-center">see all</q-item>
         </div>
       </div>
       <div class="content-2">
         <div class="text-subtitle2 flex flex-center">
           <q-icon name="cake" class="caption-icon q-mx-md" />Products Statistics
         </div>
-        <div></div>
-        <div class="flex flex-center">
-          <a class="text-white" href="#">see all</a>
+        <div>
+          <q-list separator>
+            <Statistic v-for="stat in productStats" :key="stat.label" v-bind="stat" />
+          </q-list>
+        </div>
+        <div>
+          <q-item to="/products" dense class="text-center flex flex-center">see all</q-item>
         </div>
       </div>
       <div class="content-3">
         <div class="text-subtitle2 flex flex-center">
           <q-icon name="fireplace" class="caption-icon q-mx-md" />Orders Statistics
         </div>
-        <div></div>
-        <div class="flex flex-center">
-          <a class="text-white" href="#">see all</a>
+        <div>
+          <q-list separator>
+            <Statistic v-for="stat in orderStats" :key="stat.label" v-bind="stat" />
+          </q-list>
+        </div>
+        <div>
+          <q-item to="/orders" dense class="text-center flex flex-center">see all</q-item>
         </div>
       </div>
       <div class="content-4">
         <div class="text-subtitle2 flex flex-center">
           <q-icon name="comment" class="caption-icon q-mx-md" />Recent Comments
         </div>
-        <div></div>
-        <div class="flex flex-center">
-          <a class="text-white" href="#">see all</a>
+        <div>
+          <q-list separator>
+            <Comments v-for="comment in recentComments" :key="comment.id" v-bind="comment" />
+          </q-list>
+          <p v-if="recentComments.length < 1" class="text-center q-mt-md">No recent comments</p>
+        </div>
+        <div v-if="recentComments.length > 0">
+          <q-item to="/comments" dense class="text-center flex flex-center">see all</q-item>
         </div>
       </div>
       <div class="content-5">
         <div class="text-subtitle2 flex flex-center">
           <q-icon name="calendar_today" class="caption-icon q-mx-md" />Business Holidays
         </div>
-        <div></div>
-        <div class="flex flex-center">
-          <a class="text-white" href="#">see all</a>
+        <div class="bg-dark">
+          <q-date
+            class="date"
+            v-model="today"
+            :events="holidays"
+            event-color="orange"
+            flat
+            dark
+            minimal
+          />
+        </div>
+        <div>
+          <q-item to="/holidays" dense class="text-center flex flex-center">see all</q-item>
         </div>
       </div>
     </div>
@@ -88,7 +116,7 @@
   grid-column-gap: 1rem;
 }
 .page-contents {
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
   grid-template-rows: auto;
   grid-template-areas:
     "content-1 content-2 content-3"
@@ -109,24 +137,19 @@
   grid-area: heading-stat-3;
 }
 div[class*="content-"] {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   display: flex;
   flex-direction: column;
 }
-div[class*="content-"] div {
+div[class*="content-"] > div {
   min-height: 4em;
   justify-content: left;
   margin: 1px 0;
-  background: rgba(128, 128, 128, 0.85);
+  background: rgba(128, 128, 128, 0.65);
   width: 100%;
 }
 
 div[class*="content-"] div:nth-child(3) {
-  min-height: 2em;
-}
-div[class*="content-"] div:nth-child(3) a {
-  width: 100%;
-  text-align: center;
+  min-height: 1rem;
 }
 
 .content-1 {
@@ -148,12 +171,16 @@ div[class*="content-"] div:nth-child(3) a {
   font-size: 2.5rem;
   display: inline-flex;
 }
+.date {
+  width: 100%;
+}
+
 @media (max-width: 1140px) {
   .page-contents {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
     grid-template-areas:
-      "content-1 content-2"
-      "content-3 content-3"
+      "content-1 content-1"
+      "content-2 content-3"
       "content-4 content-4"
       "content-5 content-5";
   }
@@ -163,7 +190,7 @@ div[class*="content-"] div:nth-child(3) a {
 }
 @media (max-width: 850px) {
   .page-contents {
-    grid-template-columns: 1fr;
+    grid-template-columns: 100%;
     grid-template-areas:
       "content-1"
       "content-2"
@@ -185,7 +212,96 @@ div[class*="content-"] div:nth-child(3) a {
 }
 </style>
 <script>
+import Accounts from "../components/Accounts";
+import Statistic from "../components/Statistic";
+import Comments from "../components/Comments";
+
 export default {
-  name: "DashboardIndex"
+  name: "DashboardIndex",
+
+  components: { Accounts, Statistic, Comments },
+  computed: {
+    today() {
+      var d = new Date();
+      var today =
+        d.getFullYear() +
+        "/" +
+        (d.getMonth() + 1).toString().padStart(2, 0) +
+        "/" +
+        d.getDate();
+      return today;
+    }
+  },
+  data() {
+    return {
+      accountsList: [
+        {
+          id: "1234",
+          name: "John Dont XXXXAAAAXXXXAAAA",
+          joined: "2020/03/01 19:00:00+09:00"
+        },
+        {
+          id: "1235",
+          name: "Noel Ma Oc.",
+          joined: "2020/02/22 16:40:00+00:00"
+        }
+      ],
+      productStats: [
+        {
+          label: "Featured Products",
+          value: 6,
+          link: "/products/featured"
+        },
+        {
+          label: "Active Products",
+          value: 92,
+          link: "/products/active"
+        },
+        {
+          label: "Total Products",
+          value: 1222,
+          link: "/products/#"
+        }
+      ],
+      orderStats: [
+        {
+          label: "Orders Placed",
+          value: 6,
+          link: "/orders/placed"
+        },
+        {
+          label: "Orders Accepted",
+          value: 5,
+          link: "/orders/accepted"
+        },
+        {
+          label: "Orders Processed",
+          value: 5,
+          link: "/orders/processed"
+        },
+        {
+          label: "Orders Fulfilled",
+          value: 6,
+          link: "/orders/fulfilled"
+        }
+      ],
+      recentComments: [
+        {
+          id: "12344",
+          author: "Noel O.",
+          text: "This is a short comment",
+          posted: "2020/02/24 15:00"
+        },
+        {
+          id: "12346",
+          author: "Noel O.",
+          text:
+            "This is a long comment lorem ipsum ipsumipsumipsum lorem ipsumlorem ipsumlorem ipsumlorem ipsum lorem ipsum",
+          posted: "2020/03/22 9:00"
+        }
+      ],
+      holidays: ["2020/03/12", "2020/03/29"]
+    };
+  }
 };
 </script>
