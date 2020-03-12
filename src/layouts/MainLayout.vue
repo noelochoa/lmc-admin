@@ -3,6 +3,15 @@
     <div class="blur-bg"></div>
     <q-header class="text-white navheader" :class="{ scrolled: scrolled }">
       <q-toolbar>
+        <q-btn dense flat round icon="person_add" class="q-mr-sm">
+          <q-tooltip anchor="bottom right" self="top middle" :offset="[10,10]">Add account</q-tooltip>
+        </q-btn>
+        <q-input v-model="text" placeholder="Quick search" dense class="quick-search">
+          <template v-slot:append>
+            <q-icon color="white" name="close" @click="text = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+
         <q-toolbar-title>
           Welcome,
           <b class="alias">{{name}}</b>
@@ -16,7 +25,7 @@
           class="nav-toggle-btn"
           @click="drawer = !drawer"
         />
-        <q-btn dense flat round icon="settings" side="right" class="settings-toggle-btn">
+        <q-btn dense flat round icon="settings" side="right" class="settings-toggle-btn q-ml-xs">
           <q-menu square :offset="[10,11]">
             <div class="row no-wrap q-pa-sm">
               <div class="column">
@@ -67,6 +76,9 @@
 </template>
 
 <style lang="scss">
+.no-select {
+  user-select: none;
+}
 .blur-bg {
   position: fixed;
   height: 100%;
@@ -87,6 +99,11 @@
   background: rgba(128, 128, 128, 0.35);
   color: #fff;
 }
+
+.q-toolbar__title {
+  font-size: 16px;
+}
+
 .q-drawer {
   position: fixed;
 }
@@ -96,6 +113,9 @@
 .q-menu {
   color: white;
   background: #736656;
+}
+.quick-search {
+  font-size: 12px;
 }
 .adjust-content-left {
   justify-content: left;
@@ -120,6 +140,11 @@
   // .nav-toggle-btn {
   //   display: inline-flex;
   // }
+}
+@media (max-width: 480px) {
+  .quick-search {
+    display: none;
+  }
 }
 </style>
 
@@ -163,6 +188,7 @@ export default {
 
   data() {
     return {
+      text: "",
       scrolled: false,
       drawer: false,
       navigationlinks: [
@@ -172,7 +198,7 @@ export default {
           link: "/dashboard"
         },
         {
-          title: "Reseller Accounts",
+          title: "Customers",
           icon: "account_circle",
           link: "/accounts"
         },

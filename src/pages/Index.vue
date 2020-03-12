@@ -86,15 +86,23 @@
         <div class="text-subtitle2 flex flex-center">
           <q-icon name="calendar_today" class="caption-icon q-mx-md" />Business Holidays
         </div>
-        <div class="bg-dark">
+        <div class="bg-gray-alpha">
+          <q-item dense class="q-px-lg q-pt-lg no-select">
+            <q-item-section>
+              <q-item-label>{{today.month}}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-item-label class="text-primary">{{today.year}}</q-item-label>
+            </q-item-section>
+          </q-item>
           <q-date
             class="date"
-            v-model="today"
+            :value="today.yyyymmdd"
             :events="holidays"
             event-color="orange"
             flat
-            dark
             minimal
+            readonly
           />
         </div>
         <div>
@@ -148,7 +156,7 @@ div[class*="content-"] > div {
   width: 100%;
 }
 
-div[class*="content-"] div:nth-child(3) {
+div[class*="content-"] > div:nth-child(3) {
   min-height: 1rem;
 }
 
@@ -173,6 +181,8 @@ div[class*="content-"] div:nth-child(3) {
 }
 .date {
   width: 100%;
+  max-height: 250px;
+  background: none;
 }
 
 @media (max-width: 1140px) {
@@ -210,6 +220,11 @@ div[class*="content-"] div:nth-child(3) {
       "heading-stat-1 heading-stat-2 heading-stat-3";
   }
 }
+@media (max-width: 320px) {
+  .caption-icon {
+    display: none;
+  }
+}
 </style>
 <script>
 import Accounts from "../components/Accounts";
@@ -222,13 +237,19 @@ export default {
   components: { Accounts, Statistic, Comments },
   computed: {
     today() {
-      var d = new Date();
-      var today =
-        d.getFullYear() +
-        "/" +
-        (d.getMonth() + 1).toString().padStart(2, 0) +
-        "/" +
-        d.getDate();
+      const d = new Date();
+      const today = {
+        month: d.toLocaleString("en-US", { month: "long" }),
+        year: d.getFullYear(),
+        dayOfMonth: d.getDate(),
+        dayOfWeek: d.getDay(),
+        yyyymmdd:
+          d.getFullYear() +
+          "/" +
+          (d.getMonth() + 1).toString().padStart(2, 0) +
+          "/" +
+          d.getDate()
+      };
       return today;
     }
   },
