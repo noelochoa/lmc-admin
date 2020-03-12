@@ -6,9 +6,9 @@
         <q-btn dense flat round icon="person_add" class="q-mr-sm">
           <q-tooltip anchor="bottom right" self="top middle" :offset="[10,10]">Add account</q-tooltip>
         </q-btn>
-        <q-input v-model="text" placeholder="Quick search" dense class="quick-search">
+        <q-input v-model="searchText" placeholder="Search products" dense class="quick-search">
           <template v-slot:append>
-            <q-icon color="white" name="close" @click="text = ''" class="cursor-pointer" />
+            <q-icon color="white" name="close" @click="searchText = ''" class="cursor-pointer" />
           </template>
         </q-input>
 
@@ -108,7 +108,7 @@
   position: fixed;
 }
 .scrolled {
-  background: rgb(202, 109, 118);
+  background: #ffa2ae;
 }
 .q-menu {
   color: white;
@@ -169,6 +169,9 @@ export default {
     this.handleScroll();
     window.addEventListener("scroll", this.handleScroll);
   },
+  destroyed() {
+    window.removeEventListener("scroll", this.handleScroll);
+  },
   meta: {
     title: "Home",
     titleTemplate: title => `${title} | LMC Admin Portal`,
@@ -188,7 +191,8 @@ export default {
 
   data() {
     return {
-      text: "",
+      searchText: "",
+      scrolltimer: null,
       scrolled: false,
       drawer: false,
       navigationlinks: [
@@ -238,7 +242,12 @@ export default {
 
   methods: {
     handleScroll(e) {
-      this.scrolled = window.scrollY >= 30 ? true : false;
+      if (this.scrolltimer) {
+        window.clearTimeout(this.scrolltimer);
+      }
+      this.scrolltimer = window.setTimeout(() => {
+        this.scrolled = window.scrollY >= 50 ? true : false;
+      }, 50);
     }
   }
 };
