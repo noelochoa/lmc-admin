@@ -13,7 +13,11 @@
         Helvetica, Arial, sans-serif;
 }
 
+body {
+    min-width: 320px;
+}
+
 // global fix
-.q-btn .q-btn__content {
-    margin-top: 2px;
+.q-btn .q-btn__content div {
+    padding-top: 3px;
 }
