@@ -6,10 +6,6 @@ const routes = [
             { path: "", component: () => import("pages/Index.vue") },
             { path: "dashboard", component: () => import("pages/Index.vue") },
             {
-                path: "accounts",
-                component: () => import("pages/accounts/Index.vue")
-            },
-            {
                 path: "announcements",
                 component: () => import("pages/announcements/Index.vue")
             },
@@ -40,6 +36,17 @@ const routes = [
         ]
     },
 
+    {
+        path: "/accounts",
+        component: () => import("layouts/MainLayout.vue"),
+        children: [
+            { path: "", component: () => import("pages/accounts/Index.vue") },
+            {
+                path: "edit/:id",
+                component: () => import("pages/accounts/Edit.vue")
+            }
+        ]
+    },
     {
         path: "/login",
         component: () => import("layouts/LoginLayout.vue"),
