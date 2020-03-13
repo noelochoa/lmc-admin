@@ -12,6 +12,7 @@
                     >
                 </q-btn>
                 <q-input
+                    debounce="500"
                     v-model="searchText"
                     placeholder="Search products"
                     dense
@@ -51,7 +52,11 @@
                     side="right"
                     class="settings-toggle-btn q-ml-xs"
                 >
-                    <q-menu square :offset="[10, 11]">
+                    <q-menu
+                        square
+                        :offset="[10, 11]"
+                        content-class="settings-menu"
+                    >
                         <div class="row no-wrap q-pa-sm">
                             <div class="column">
                                 <q-item
@@ -157,16 +162,13 @@
 .q-toolbar__title {
     font-size: 16px;
 }
-.q-placeholder {
-    color: white;
-}
 .q-drawer {
     position: fixed;
 }
 .scrolled {
     background: rgb(26, 29, 26) !important;
 }
-.q-menu {
+.settings-menu {
     color: white;
     background: #736656;
 }
