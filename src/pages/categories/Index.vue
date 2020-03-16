@@ -1,6 +1,13 @@
 <template>
-  <q-page class="flex flex-center">
-    <h3>Product Categories</h3>
+  <q-page class="q-px-md q-pt-lg">
+    <div class="page-heading text-white q-pa-md">
+      <div class="heading-caption">
+        <h6>Product Categories</h6>
+        <br />
+        <p>The following are product categories visible in the webstore.</p>
+      </div>
+    </div>
+    <div class="page-contents text-white q-pa-md"></div>
   </q-page>
 </template>
 <style lang="scss" scoped>
