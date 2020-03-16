@@ -2,9 +2,9 @@
   <q-page class="q-px-md q-pt-lg">
     <div class="page-heading text-white q-pa-md">
       <div class="heading-caption">
-        <h6>Business Holidays</h6>
+        <h6>Edit Business Holiday Details</h6>
         <br />
-        <p>The following business holidays are unselectable delivery or pickup dates when ordering.</p>
+        <p>You may edit the details of this business holiday.</p>
       </div>
     </div>
     <div class="page-contents text-white q-pa-md"></div>
@@ -14,10 +14,10 @@
 </style>
 <script>
 export default {
-  name: "HolidayIndex",
+  name: "BusinessHolidayEdit",
   meta() {
     return {
-      title: "Business Holidays"
+      title: "Edit Business Holiday"
     };
   }
 };
