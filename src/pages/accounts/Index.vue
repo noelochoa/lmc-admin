@@ -10,13 +10,13 @@
         <div class="page-contents text-white q-pa-md">
             <div class="content-1">
                 <q-select
-                    outlined
                     class="filter-select"
-                    color="black"
                     v-model="customerFilter"
                     :options="filter"
                     @input="filterChanged"
+                    dark
                     dense
+                    outlined
                     options-dense
                 >
                     <template v-slot:prepend>
@@ -29,8 +29,8 @@
                     v-model="search"
                     type="search"
                     debounce="500"
-                    color="black"
                     @input="searchInput"
+                    dark
                     dense
                     outlined
                 >
@@ -52,7 +52,7 @@
             <div class="content-3">
                 <q-table
                     square
-                    class="customer-table bg-gray-alpha"
+                    class="customer-table"
                     row-key="id"
                     :data="data"
                     :columns="columns"
@@ -154,6 +154,10 @@
 }
 </style>
 <style lang="scss">
+.customer-table {
+    background: rgba(128, 128, 128, 0.65);
+    color: #fff;
+}
 .customer-table th:last-child,
 .customer-table td:last-child {
     background: gray;
@@ -164,8 +168,9 @@
 </style>
 <script>
 export default {
-    preFetch({ store, currentRoute }) {},
-
+    preFetch({ store }) {
+        console.log("prefetch called!");
+    },
     name: "AccountsIndex",
     meta() {
         return {
@@ -179,6 +184,9 @@ export default {
                     this.customerFilter = el;
                 }
             });
+        }
+        if (this.$route.query.s) {
+            this.search = this.$route.query.s;
         }
     },
     mounted() {
@@ -306,6 +314,7 @@ export default {
         filterChanged(val) {
             if (this.filter.includes(val)) {
                 this.$router.push({ query: { type: val } }).catch(err => {});
+                this.search = "";
             }
         },
         searchInput(val) {
@@ -319,6 +328,11 @@ export default {
                 .catch(thrown => {
                     console.log(thrown);
                 });
+            this.$router
+                .push({
+                    query: Object.assign({}, this.$route.query, { s: val })
+                })
+                .catch(err => {});
         },
         /**TODO */
         onRequest(props) {
