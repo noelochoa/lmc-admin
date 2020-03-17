@@ -4,11 +4,7 @@ const routes = [
         component: () => import("layouts/MainLayout.vue"),
         children: [
             { path: "", component: () => import("pages/Index.vue") },
-            { path: "dashboard", component: () => import("pages/Index.vue") },
-            {
-                path: "accounts",
-                component: () => import("pages/accounts/Index.vue")
-            }
+            { path: "dashboard", component: () => import("pages/Index.vue") }
         ]
     },
 
@@ -125,17 +121,6 @@ const routes = [
             {
                 path: "changepw",
                 component: () => import("pages/users/ChangePW.vue")
-            }
-        ]
-    },
-    {
-        path: "/accounts",
-        component: () => import("layouts/MainLayout.vue"),
-        children: [
-            { path: "", component: () => import("pages/accounts/Index.vue") },
-            {
-                path: "edit/:id",
-                component: () => import("pages/accounts/Edit.vue")
             }
         ]
     },
