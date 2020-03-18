@@ -65,25 +65,25 @@
                 >
                     <template v-slot:body="props">
                         <q-tr :props="props">
-                            <q-td key="name" :props="props">{{
-                                props.row.name
-                            }}</q-td>
-                            <q-td key="type" :props="props">{{
-                                props.row.type
-                            }}</q-td>
-                            <q-td key="joined" :props="props">{{
-                                props.row.joined
-                            }}</q-td>
-                            <q-td key="login" :props="props">{{
-                                props.row.login
-                            }}</q-td>
+                            <q-td key="name" :props="props">
+                                {{ props.row.name }}
+                            </q-td>
+                            <q-td key="type" :props="props">
+                                {{ props.row.type }}
+                            </q-td>
+                            <q-td key="joined" :props="props">
+                                {{ props.row.joined }}
+                            </q-td>
+                            <q-td key="login" :props="props">
+                                {{ props.row.login }}
+                            </q-td>
                             <q-td key="active" :props="props">
                                 <q-btn-toggle
                                     size="sm"
                                     readonly
                                     v-model="props.row.active"
                                     :toggle-color="
-                                        statusColor(props.row.active)
+                                        props.row.active ? 'green-4' : 'red-4'
                                     "
                                     :options="[
                                         { label: 'Active', value: true },
@@ -174,7 +174,10 @@ export default {
     name: "AccountsIndex",
     meta() {
         return {
-            title: "Customer Accounts"
+            title: "Customer Accounts",
+            meta: {
+                robots: { name: "robots", content: "noindex" }
+            }
         };
     },
     created() {
@@ -277,7 +280,7 @@ export default {
                 },
                 {
                     id: 4,
-                    name: "Jr",
+                    name: "SSSSRRRRR ",
                     type: "Regular",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
@@ -285,7 +288,7 @@ export default {
                 },
                 {
                     id: 5,
-                    name: "Jr 444",
+                    name: "AABBCC 444",
                     type: "Reseller",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
@@ -293,7 +296,7 @@ export default {
                 },
                 {
                     id: 6,
-                    name: "Jr 123",
+                    name: "TQWERTY sadda 123",
                     type: "Regular",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
@@ -301,7 +304,7 @@ export default {
                 },
                 {
                     id: 7,
-                    name: "Jr 55555555",
+                    name: "ASD BCC 55555555",
                     type: "Regular",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
@@ -415,10 +418,6 @@ export default {
                 }
             });
             return count;
-        },
-
-        statusColor(state) {
-            return state ? "primary" : "red-4";
         }
     }
 };
