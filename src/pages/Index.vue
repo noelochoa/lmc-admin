@@ -232,8 +232,11 @@ div[class*="content-"] > div {
     min-height: 4em;
     justify-content: left;
     margin: 1px 0;
-    background: rgba(128, 128, 128, 0.65);
+    background: rgba(128, 128, 128, 0.35);
     width: 100%;
+}
+div[class*="content-"] > div:nth-child(2) {
+    background: #424242;
 }
 
 div[class*="content-"] > div:nth-child(3) {

@@ -170,7 +170,7 @@
     color: #fff;
 }
 .sm-layout .q-drawer {
-    background: rgb(26, 29, 26) !important;
+    background: #1a1d1a !important;
 }
 
 .q-toolbar__title {
@@ -180,7 +180,7 @@
     position: fixed;
 }
 .scrolled {
-    background: rgb(26, 29, 26) !important;
+    background: #1a1d1a !important;
 }
 .settings-menu {
     color: white;

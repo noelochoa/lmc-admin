@@ -155,12 +155,12 @@
 </style>
 <style lang="scss">
 .customer-table {
-    background: rgba(128, 128, 128, 0.65);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
 .customer-table th:last-child,
 .customer-table td:last-child {
-    background: gray;
+    background: #424242;
     position: sticky;
     right: 0;
     z-index: 1;
@@ -217,6 +217,7 @@ export default {
             columns: [
                 {
                     name: "name",
+                    field: "name",
                     required: true,
                     label: "Name",
                     align: "left",
@@ -224,24 +225,28 @@ export default {
                 },
                 {
                     name: "type",
+                    field: "type",
                     align: "left",
                     label: "Type",
                     sortable: true
                 },
                 {
                     name: "joined",
+                    field: "joined",
                     align: "left",
                     label: "Joined",
                     sortable: true
                 },
                 {
                     name: "login",
+                    field: "login",
                     align: "left",
                     label: "Last Login",
                     sortable: true
                 },
                 {
                     name: "active",
+                    field: "active",
                     align: "center",
                     label: "Status",
                     sortable: true
