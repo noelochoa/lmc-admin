@@ -276,12 +276,15 @@ div[class*="content-"] > div {
 }
 </style>
 <script>
+import HelperMixin from "../../mixins/helpers";
+
 export default {
     preFetch({ store, currentRoute, previousRoute }) {
         console.log("prefetch!");
     },
 
     name: "AccountsEdit",
+    mixins: [HelperMixin],
     meta() {
         return {
             title: "Review Account",
@@ -330,16 +333,6 @@ export default {
                 mobilePattern.test(this.resolvedPhone) ||
                 "Invalid mobile phone format"
             );
-        },
-        showNotif: function(isSuccess, msg) {
-            this.$q.notify({
-                color: isSuccess ? "green-4" : "negative",
-                textColor: "white",
-                icon: isSuccess ? "check_circle_outline" : "error_outline",
-                timeout: "2500",
-                position: "top",
-                message: msg
-            });
         },
         onSubmit: function(evt) {
             /**TODO */

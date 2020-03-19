@@ -6,8 +6,8 @@
                 <br />
                 <p>
                     The following is a list web store announcements. <br />
-                    Note that only one entry will be visible at a time for
-                    overlapping dates.
+                    Note that only the latest entry will be visible at a time
+                    for overlapping dates.
                 </p>
             </div>
             <div class="heading-stat-1 text-caption">
@@ -20,9 +20,24 @@
         </div>
         <div class="page-contents text-white q-pa-md">
             <div class="content-1">
+                <q-btn
+                    flat
+                    round
+                    icon="note_add"
+                    class="q-mr-sm"
+                    to="/announcements/add"
+                >
+                    <q-tooltip
+                        anchor="bottom right"
+                        self="top middle"
+                        :offset="[10, 10]"
+                        >Add Announcement</q-tooltip
+                    >
+                </q-btn>
                 <q-input
                     v-model="search"
                     type="search"
+                    placeholder="Search text"
                     debounce="500"
                     @input="searchInput"
                     dark
@@ -38,11 +53,38 @@
                                 v-show="search != ''"
                                 name="close"
                                 class="cursor-pointer"
-                                @click="search = ''"
+                                @click="searchClear"
                             />
                         </transition>
                     </template>
                 </q-input>
+                <ConfirmDialog v-bind="{ showDlg }" @close="showDlg = false">
+                    <template v-slot:avatar>
+                        <q-avatar
+                            icon="delete_forever"
+                            color="red-4"
+                            text-color="white"
+                        />
+                    </template>
+                    <template v-slot:message>
+                        Continue on removing this announcement?<br />
+                        Warning: This action is permanent.
+                    </template>
+                    <template v-slot:actions>
+                        <q-btn
+                            flat
+                            label="Cancel"
+                            color="black"
+                            @click="showDlg = false"
+                        />
+                        <q-btn
+                            flat
+                            label="Remove"
+                            color="red-4"
+                            @click="onRemove"
+                        />
+                    </template>
+                </ConfirmDialog>
             </div>
             <div class="content-2">
                 <q-table
@@ -60,7 +102,7 @@
                         <div
                             class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3"
                         >
-                            <q-card class="bg-grey-9">
+                            <q-card class="bg-grey-8">
                                 <q-card-section>
                                     {{ props.row.text }}
                                 </q-card-section>
@@ -86,26 +128,36 @@
                                     </q-item>
                                 </q-list>
                                 <q-separator />
-                                <q-card-actions>
-                                    <q-btn dense flat round icon="build">
+                                <q-card-actions align="right">
+                                    <q-btn
+                                        dense
+                                        flat
+                                        round
+                                        icon="build"
+                                        :to="
+                                            '/announcements/edit/' +
+                                                props.row.id
+                                        "
+                                    >
                                         <q-tooltip
                                             anchor="bottom right"
                                             self="top middle"
                                             :offset="[10, 10]"
-                                            >Edit Announcement</q-tooltip
-                                        >
+                                            >Edit Announcement
+                                        </q-tooltip>
                                     </q-btn>
                                     <q-btn
                                         dense
                                         flat
                                         round
                                         icon="delete_outline"
+                                        @click="confirmDel(props.row.id)"
                                         ><q-tooltip
                                             anchor="bottom right"
                                             self="top middle"
                                             :offset="[10, 10]"
-                                            >Delete Announcement</q-tooltip
-                                        >
+                                            >Delete Announcement
+                                        </q-tooltip>
                                     </q-btn>
                                 </q-card-actions>
                             </q-card>
@@ -142,6 +194,8 @@
 .content-1 {
     grid-area: content-1;
     min-width: 160px;
+    display: flex;
+    flex-direction: row;
 }
 .content-2 {
     grid-area: content-2;
@@ -167,8 +221,14 @@
 }
 </style>
 <script>
+import ConfirmDialog from "../../components/ConfirmDialog";
+import HelperMixin from "../../mixins/helpers";
+
 export default {
     name: "AnnoucementIndex",
+    components: { ConfirmDialog },
+    mixins: [HelperMixin],
+
     preFetch({ store }) {
         console.log("prefetch called");
     },
@@ -213,6 +273,8 @@ export default {
             searchReq: null,
             nameFilter: "",
             loading: false,
+            showDlg: false,
+            toDelID: -1,
             pagination: {
                 sortBy: "start",
                 descending: true,
@@ -246,8 +308,7 @@ export default {
             original: [
                 {
                     id: 1,
-                    text:
-                        "Announcement Announcement AnnouncementAnnouncementAnnouncementAnnouncementAnnouncementAnnouncementAnnouncement",
+                    text: "Announcement Announcement ",
                     start: "Feb 20, 2020",
                     end: "Mar 4, 2020"
                 },
@@ -292,7 +353,19 @@ export default {
         };
     },
     methods: {
-        searchInput(val) {},
+        searchClear(evt) {
+            this.search = "";
+            /** TODO */
+            this.$router.replace("/announcements");
+        },
+        searchInput(val) {
+            /** TODO */
+            this.$router
+                .push({
+                    query: Object.assign({}, this.$route.query, { s: val })
+                })
+                .catch(err => {});
+        },
         /**TODO */
         onRequest(props) {
             this.loading = true;
@@ -303,6 +376,19 @@ export default {
                 this.data = this.original;
                 this.loading = false;
             }, 500);
+        },
+        confirmDel(psaID) {
+            this.showDlg = true;
+            this.toDelID = psaID;
+        },
+        onRemove() {
+            if (this.toDelID !== -1) {
+                /**TODO */
+                this.showNotif(true, "Successfully removed announcement.");
+            }
+            // Reset
+            this.toDelID = -1;
+            this.showDlg = false;
         }
     }
 };

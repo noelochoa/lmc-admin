@@ -236,7 +236,7 @@ div[class*="content-"] > div {
     width: 100%;
 }
 div[class*="content-"] > div:nth-child(2) {
-    background: #424242;
+    background: $grey-8;
 }
 
 div[class*="content-"] > div:nth-child(3) {

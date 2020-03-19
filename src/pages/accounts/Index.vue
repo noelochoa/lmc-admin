@@ -29,6 +29,7 @@
                     v-model="search"
                     type="search"
                     debounce="500"
+                    placeholder="Search Name"
                     @input="searchInput"
                     dark
                     dense
@@ -43,7 +44,7 @@
                                 v-show="search != ''"
                                 name="close"
                                 class="cursor-pointer"
-                                @click="search = ''"
+                                @click="searchClear"
                             />
                         </transition>
                     </template>
@@ -160,7 +161,7 @@
 }
 .customer-table th:last-child,
 .customer-table td:last-child {
-    background: #424242;
+    background: $grey-8;
     position: sticky;
     right: 0;
     z-index: 1;
@@ -324,6 +325,13 @@ export default {
                 this.$router.push({ query: { type: val } }).catch(err => {});
                 this.search = "";
             }
+        },
+        searchClear(evt) {
+            /** TODO */
+            let query = Object.assign({}, this.$route.query);
+            delete query.s;
+            this.$router.replace({ query });
+            this.search = "";
         },
         searchInput(val) {
             /** TODO */
