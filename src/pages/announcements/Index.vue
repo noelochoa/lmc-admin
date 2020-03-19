@@ -58,33 +58,6 @@
                         </transition>
                     </template>
                 </q-input>
-                <ConfirmDialog v-bind="{ showDlg }" @close="showDlg = false">
-                    <template v-slot:avatar>
-                        <q-avatar
-                            icon="delete_forever"
-                            color="red-4"
-                            text-color="white"
-                        />
-                    </template>
-                    <template v-slot:message>
-                        Continue on removing this announcement?<br />
-                        Warning: This action is permanent.
-                    </template>
-                    <template v-slot:actions>
-                        <q-btn
-                            flat
-                            label="Cancel"
-                            color="black"
-                            @click="showDlg = false"
-                        />
-                        <q-btn
-                            flat
-                            label="Remove"
-                            color="red-4"
-                            @click="onRemove"
-                        />
-                    </template>
-                </ConfirmDialog>
             </div>
             <div class="content-2">
                 <q-table
@@ -164,6 +137,34 @@
                         </div>
                     </template>
                 </q-table>
+                <ConfirmDialog v-bind="{ showDlg }" @close="showDlg = false">
+                    <template v-slot:avatar>
+                        <q-avatar
+                            icon="delete_forever"
+                            color="red-4"
+                            text-color="white"
+                        />
+                    </template>
+                    <template v-slot:message>
+                        Continue on removing this announcement?<br />
+                        Warning: This action is permanent.
+                    </template>
+                    <template v-slot:actions>
+                        <q-btn
+                            flat
+                            label="Cancel"
+                            color="black"
+                            v-close-popup
+                        />
+                        <q-btn
+                            flat
+                            label="Remove"
+                            color="red-4"
+                            @click="onRemove"
+                            v-close-popup
+                        />
+                    </template>
+                </ConfirmDialog>
             </div>
         </div>
     </q-page>
@@ -370,7 +371,6 @@ export default {
             }
             // Reset
             this.toDelID = -1;
-            this.showDlg = false;
         }
     }
 };
