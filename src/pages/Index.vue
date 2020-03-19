@@ -157,6 +157,7 @@
                     <q-date
                         class="date"
                         :value="today.yyyymmdd"
+                        mask="YYYY-MM-DD"
                         :events="holidays"
                         event-color="orange"
                         flat
@@ -298,29 +299,14 @@ div[class*="content-"] > div:nth-child(3) {
 import Accounts from "../components/Accounts";
 import Statistic from "../components/Statistic";
 import Comments from "../components/Comments";
+import HelperMixin from "../mixins/helpers";
 
 export default {
     name: "DashboardIndex",
 
     components: { Accounts, Statistic, Comments },
-    computed: {
-        today() {
-            const d = new Date();
-            const today = {
-                month: d.toLocaleString("en-US", { month: "long" }),
-                year: d.getFullYear(),
-                dayOfMonth: d.getDate(),
-                dayOfWeek: d.getDay(),
-                yyyymmdd:
-                    d.getFullYear() +
-                    "/" +
-                    (d.getMonth() + 1).toString().padStart(2, 0) +
-                    "/" +
-                    d.getDate()
-            };
-            return today;
-        }
-    },
+    mixins: [HelperMixin],
+
     data() {
         return {
             accountsList: [

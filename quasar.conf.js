@@ -45,7 +45,13 @@ module.exports = function(ctx) {
             directives: [],
 
             // Quasar plugins
-            plugins: ["Meta", "Notify"]
+            plugins: ["Meta", "Notify", "LoadingBar"],
+            config: {
+                loadingBar: {
+                    color: "black",
+                    size: "2px"
+                }
+            }
         },
 
         // https://quasar.dev/quasar-cli/cli-documentation/supporting-ie

@@ -237,34 +237,16 @@ export default {
             title: "Store Announcements"
         };
     },
+    created() {
+        if (this.$route.query.s) {
+            this.search = this.$route.query.s;
+        }
+    },
     mounted() {
         this.onRequest({
             pagination: this.pagination,
             filter: undefined
         });
-    },
-    computed: {
-        today() {
-            const d = new Date();
-            const today = {
-                month: d.toLocaleString("en-US", { month: "long" }),
-                year: d.getFullYear(),
-                dayOfMonth: d.getDate(),
-                dayOfWeek: d.getDay(),
-                human: d.toLocaleString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric"
-                }),
-                yyyymmdd:
-                    d.getFullYear() +
-                    "/" +
-                    (d.getMonth() + 1).toString().padStart(2, 0) +
-                    "/" +
-                    d.getDate()
-            };
-            return today;
-        }
     },
     data() {
         return {
