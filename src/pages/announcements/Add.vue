@@ -25,8 +25,15 @@
                                 <q-input
                                     dense
                                     outlined
+                                    hide-bottom-space
                                     dark
+                                    class="field-value"
                                     v-model="announcement.start"
+                                    :rules="[
+                                        val =>
+                                            val !== null && val.trim() !== '',
+                                        _isValidDatetime
+                                    ]"
                                 >
                                     <template v-slot:prepend>
                                         <q-icon
@@ -81,8 +88,16 @@
                                 <q-input
                                     dense
                                     outlined
+                                    hide-bottom-space
                                     dark
+                                    class="field-value"
                                     v-model="announcement.end"
+                                    lazy-rules
+                                    :rules="[
+                                        val =>
+                                            val !== null && val.trim() !== '',
+                                        _isValidDatetime
+                                    ]"
                                 >
                                     <template v-slot:prepend>
                                         <q-icon
@@ -132,15 +147,47 @@
                                     </template>
                                 </q-input>
                             </q-item>
+                            <q-item class="detail-field">
+                                <span class="field-label">Text</span>
+                                <q-editor
+                                    ref="qTxtEditor"
+                                    class="field-value qtext-editor"
+                                    :class="{ 'has-error': contentEmpty }"
+                                    v-model="announcement.text"
+                                    flat
+                                    content-class="text-black bg-grey-3 font-arial"
+                                    toolbar-text-color="black"
+                                    toolbar-toggle-color="yellow-8"
+                                    :toolbar="[
+                                        ['bold', 'italic'],
+                                        ['undo', 'redo']
+                                    ]"
+                                    @input="hasTyped = true"
+                                />
+                            </q-item>
+                            <q-item class="detail-field">
+                                <span class="field-label">Link</span>
+                                <q-input
+                                    dense
+                                    outlined
+                                    dark
+                                    hide-bottom-space
+                                    placeholder="Optional URL"
+                                    class="field-value"
+                                    v-model="announcement.link"
+                                    lazy-rules
+                                    :rules="[_isValidLink]"
+                                />
+                            </q-item>
                         </q-list>
                         <q-separator />
                         <div class="q-pa-md">
                             <q-btn
-                                label="Save"
+                                label="Create"
                                 type="submit"
                                 color="primary"
                                 :loading="loading"
-                                :disable="loading"
+                                :disable="loading || !hasTyped"
                             >
                                 <template v-slot:loading>
                                     <q-spinner-gears />
@@ -154,13 +201,14 @@
         </div>
     </q-page>
 </template>
+
 <style lang="scss" scoped>
 .page-heading,
 .page-contents {
     display: grid;
 }
 .page-contents {
-    grid-template-columns: minmax(240px, 480px);
+    grid-template-columns: minmax(240px, 560px);
     grid-template-rows: auto;
     grid-template-areas:
         "content-1"
@@ -201,6 +249,30 @@ div[class*="content-"] > div {
 }
 .detail-field .field-value {
     flex: 1;
+    max-width: 388px;
+}
+.qtext-editor {
+    border: 2px solid white;
+}
+.has-error {
+    border: 2px solid $negative;
+}
+
+@media (max-width: 400px) {
+    .detail-field {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .detail-field .field-label,
+    .detail-field .field-value {
+        line-height: 2em;
+        width: 100%;
+    }
+}
+</style>
+<style lang="scss">
+.q-field__bottom {
+    display: none;
 }
 </style>
 <script>
@@ -214,29 +286,70 @@ export default {
             title: "Add Announcement"
         };
     },
-    mounted() {
+    created() {
         this.announcement.start = this.today.yyyymmdd + " 00:00";
         this.announcement.end = this.today.yyyymmdd + " 23:59";
+    },
+    mounted() {
+        this.$refs.qTxtEditor.focus();
+    },
+    computed: {
+        contentEmpty() {
+            return (
+                this.hasTyped && this._isContentEmpty(this.announcement.text)
+            );
+        }
     },
     data() {
         return {
             loading: false,
+            hasTyped: false,
             announcement: {
                 text: "",
+                link: "",
                 start: "",
                 end: ""
             }
         };
     },
     methods: {
+        _isValidDatetime(val) {
+            const dtpattern = /^\d{4}(-\d\d(-\d\d(\s\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/;
+            return dtpattern.test(val) || "Invalid date & time format";
+        },
+        _isValidLink(val) {
+            if (!val || val == "") return true;
+
+            const urlpattern = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
+            return urlpattern.test(val) || "Invalid URL format";
+        },
+
+        _isContentEmpty(val) {
+            val = this.replaceAll(val, "&nbsp;", "");
+            val = this.replaceAll(val, " ", "");
+            val = val.replace(/(<([^>]+)>)/gi, "").trim();
+
+            return val.length == 0 ? true : false;
+        },
+
         onSubmit: function(evt) {
             /**TODO */
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully added new announcement.");
+            if (!this._isContentEmpty(this.announcement.text)) {
+                console.log(this.announcement);
+                setTimeout(() => {
+                    this.showNotif(
+                        true,
+                        "Successfully added new announcement. " +
+                            this.announcement.text
+                    );
+                    this.loading = false;
+                    this.$router.go(-1);
+                }, 2500);
+            } else {
+                this.$refs.qTxtEditor.focus();
                 this.loading = false;
-                this.$router.go(-1);
-            }, 2500);
+            }
         }
     }
 };

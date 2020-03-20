@@ -137,7 +137,7 @@
                                         val =>
                                             (val && val.length > 0) ||
                                             'Please type your email',
-                                        isValidEmail
+                                        _isValidEmail
                                     ]"
                                 />
                             </q-item>
@@ -171,7 +171,7 @@
                                     placeholder="Ex. (+63) 000-000-0000"
                                     mask="(+##) ###-###-####"
                                     lazy-rules
-                                    :rules="[isValidPhoneNum]"
+                                    :rules="[_isValidPhoneNum]"
                                 />
                             </q-item>
                             <q-item class="detail-field">
@@ -321,11 +321,11 @@ export default {
         };
     },
     methods: {
-        isValidEmail(val) {
+        _isValidEmail(val) {
             const emailPattern = /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
             return emailPattern.test(val) || "Invalid email format";
         },
-        isValidPhoneNum(val) {
+        _isValidPhoneNum(val) {
             if (!val) return true;
 
             const mobilePattern = /^\+\d{1,3}\s\d{1,14}(\s\d{1,13})?/;

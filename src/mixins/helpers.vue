@@ -27,6 +27,10 @@ export default {
     },
     methods: {
         // Shared methods
+        replaceAll: function(txt, search, replace) {
+            return txt.replace(new RegExp(search, "g"), replace);
+        },
+
         showNotif: function(isSuccess, msg) {
             this.$q.notify({
                 color: isSuccess ? "green-4" : "negative",

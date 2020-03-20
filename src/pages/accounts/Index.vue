@@ -66,18 +66,18 @@
                 >
                     <template v-slot:body="props">
                         <q-tr :props="props">
-                            <q-td key="name" :props="props">
-                                {{ props.row.name }}
-                            </q-td>
-                            <q-td key="type" :props="props">
-                                {{ props.row.type }}
-                            </q-td>
-                            <q-td key="joined" :props="props">
-                                {{ props.row.joined }}
-                            </q-td>
-                            <q-td key="login" :props="props">
-                                {{ props.row.login }}
-                            </q-td>
+                            <q-td key="name" :props="props">{{
+                                props.row.name
+                            }}</q-td>
+                            <q-td key="type" :props="props">{{
+                                props.row.type
+                            }}</q-td>
+                            <q-td key="joined" :props="props">{{
+                                props.row.joined
+                            }}</q-td>
+                            <q-td key="login" :props="props">{{
+                                props.row.login
+                            }}</q-td>
                             <q-td key="active" :props="props">
                                 <q-btn-toggle
                                     size="sm"
@@ -165,6 +165,12 @@
     position: sticky;
     right: 0;
     z-index: 1;
+}
+.customer-table td {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>
 <script>
@@ -262,7 +268,8 @@ export default {
             original: [
                 {
                     id: 444,
-                    name: "Frozen Yogurt",
+                    name:
+                        "Frozen Frozen Frozen FrozenFrozenFrozenFrozenFrozenFrozenFrozenFrozenYogurt",
                     type: "Reseller",
                     joined: "Feb 20, 2020",
                     login: "March 1, 2020",

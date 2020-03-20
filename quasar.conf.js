@@ -48,7 +48,7 @@ module.exports = function(ctx) {
             plugins: ["Meta", "Notify", "LoadingBar"],
             config: {
                 loadingBar: {
-                    color: "black",
+                    color: "secondary",
                     size: "2px"
                 }
             }
