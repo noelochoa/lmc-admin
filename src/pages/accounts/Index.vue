@@ -66,18 +66,18 @@
                 >
                     <template v-slot:body="props">
                         <q-tr :props="props">
-                            <q-td key="name" :props="props">{{
-                                props.row.name
-                            }}</q-td>
-                            <q-td key="type" :props="props">{{
-                                props.row.type
-                            }}</q-td>
-                            <q-td key="joined" :props="props">{{
-                                props.row.joined
-                            }}</q-td>
-                            <q-td key="login" :props="props">{{
-                                props.row.login
-                            }}</q-td>
+                            <q-td key="name" :props="props">
+                                {{ props.row.name }}
+                            </q-td>
+                            <q-td key="type" :props="props">
+                                {{ props.row.type }}
+                            </q-td>
+                            <q-td key="joined" :props="props">
+                                {{ props.row.joined }}
+                            </q-td>
+                            <q-td key="login" :props="props">
+                                {{ props.row.login }}
+                            </q-td>
                             <q-td key="active" :props="props">
                                 <q-btn-toggle
                                     size="sm"

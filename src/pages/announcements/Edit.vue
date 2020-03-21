@@ -153,7 +153,7 @@
                                     :class="{ 'has-error': contentEmpty }"
                                     v-model="announcement.text"
                                     flat
-                                    content-class="text-black bg-grey-3 font-arial"
+                                    content-class="text-black bg-grey-3"
                                     toolbar-text-color="black"
                                     toolbar-toggle-color="yellow-8"
                                     :toolbar="[

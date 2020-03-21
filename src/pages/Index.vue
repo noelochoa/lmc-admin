@@ -55,8 +55,9 @@
                         to="/accounts"
                         dense
                         class="text-center flex flex-center"
-                        >see all</q-item
                     >
+                        see all
+                    </q-item>
                 </div>
             </div>
             <div class="content-2">
@@ -78,8 +79,9 @@
                         to="/products"
                         dense
                         class="text-center flex flex-center"
-                        >see all</q-item
                     >
+                        see all
+                    </q-item>
                 </div>
             </div>
             <div class="content-3">
@@ -103,8 +105,9 @@
                         to="/orders"
                         dense
                         class="text-center flex flex-center"
-                        >see all</q-item
                     >
+                        see all
+                    </q-item>
                 </div>
             </div>
             <div class="content-4">
@@ -132,8 +135,9 @@
                         to="/comments"
                         dense
                         class="text-center flex flex-center"
-                        >see all</q-item
                     >
+                        see all
+                    </q-item>
                 </div>
             </div>
             <div class="content-5">
@@ -170,8 +174,9 @@
                         to="/holidays"
                         dense
                         class="text-center flex flex-center"
-                        >see all</q-item
                     >
+                        see all
+                    </q-item>
                 </div>
             </div>
         </div>
@@ -232,12 +237,12 @@ div[class*="content-"] {
 div[class*="content-"] > div {
     min-height: 4em;
     justify-content: left;
-    margin: 1px 0;
     background: rgba(128, 128, 128, 0.35);
+    margin: 1px 0;
     width: 100%;
 }
 div[class*="content-"] > div:nth-child(2) {
-    background: $grey-8;
+    background: rgba(128, 128, 128, 0.55);
 }
 
 div[class*="content-"] > div:nth-child(3) {

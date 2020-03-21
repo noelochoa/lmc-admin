@@ -169,6 +169,9 @@
     background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
+.bg-gray-alpha-2 {
+    background: rgba(128, 128, 128, 0.55);
+}
 .sm-layout .q-drawer {
     background: #1a1d1a !important;
 }
@@ -199,7 +202,7 @@
 .alias {
     text-transform: capitalize;
 }
-.q-drawer .q-router-link--exact-active {
+.q-drawer .q-router-link--active {
     border-right: 3px solid $primary;
 }
 

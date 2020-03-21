@@ -1,6 +1,15 @@
 <script>
 export default {
-    created() {},
+    data() {
+        return {
+            prevRoute: null
+        };
+    },
+    beforeRouteEnter(to, from, next) {
+        next(vm => {
+            vm.prevRoute = from;
+        });
+    },
     computed: {
         today() {
             const d = new Date();
@@ -40,6 +49,14 @@ export default {
                 position: "top",
                 message: msg
             });
+        },
+
+        returnToPageIndex: function(path) {
+            if (this.prevRoute && this.prevRoute.path !== "/") {
+                this.$router.go(-1);
+            } else {
+                this.$router.push(path);
+            }
         }
     }
 };

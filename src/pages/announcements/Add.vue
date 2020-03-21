@@ -155,7 +155,7 @@
                                     :class="{ 'has-error': contentEmpty }"
                                     v-model="announcement.text"
                                     flat
-                                    content-class="text-black bg-grey-3 font-arial"
+                                    content-class="text-black bg-grey-3"
                                     toolbar-text-color="black"
                                     toolbar-toggle-color="yellow-8"
                                     :toolbar="[
@@ -344,7 +344,7 @@ export default {
                             this.announcement.text
                     );
                     this.loading = false;
-                    this.$router.go(-1);
+                    this.returnToPageIndex("/announcements");
                 }, 2500);
             } else {
                 this.$refs.qTxtEditor.focus();

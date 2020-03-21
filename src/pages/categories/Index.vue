@@ -15,7 +15,7 @@
                 <q-btn
                     flat
                     round
-                    icon="note_add"
+                    icon="post_add"
                     class="q-mr-sm"
                     to="/categories/add"
                 >
@@ -27,6 +27,7 @@
                     >
                 </q-btn>
                 <q-input
+                    class="filter-search-box"
                     v-model="search"
                     type="search"
                     placeholder="Search category"
@@ -175,6 +176,10 @@
 }
 .content-2 {
     grid-area: content-2;
+}
+.filter-search-box {
+    min-width: 237px;
+    width: 100%;
 }
 @media (max-width: 1280px) {
     .page-contents {

@@ -23,7 +23,7 @@
                 <q-btn
                     flat
                     round
-                    icon="note_add"
+                    icon="post_add"
                     class="q-mr-sm"
                     to="/announcements/add"
                 >
@@ -35,6 +35,7 @@
                     >
                 </q-btn>
                 <q-input
+                    class="filter-search-box"
                     v-model="search"
                     type="search"
                     placeholder="Search text"
@@ -73,9 +74,9 @@
                 >
                     <template v-slot:item="props">
                         <div
-                            class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3"
+                            class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-4"
                         >
-                            <q-card class="bg-grey-8">
+                            <q-card class="bg-gray-alpha-2">
                                 <q-card-section>
                                     {{ props.row.text }}
                                 </q-card-section>
@@ -88,15 +89,14 @@
                                         :key="col.name"
                                     >
                                         <q-item-section>
-                                            <q-item-label>{{
-                                                col.label
-                                            }}</q-item-label>
+                                            <q-item-label>
+                                                {{ col.label }}
+                                            </q-item-label>
                                         </q-item-section>
                                         <q-item-section side>
-                                            <q-item-label
-                                                class="text-primary"
-                                                >{{ col.value }}</q-item-label
-                                            >
+                                            <q-item-label class="text-primary">
+                                                {{ col.value }}
+                                            </q-item-label>
                                         </q-item-section>
                                     </q-item>
                                 </q-list>
@@ -205,6 +205,10 @@
     overflow-wrap: break-word;
     word-wrap: break-word;
     hyphens: auto;
+}
+.filter-search-box {
+    min-width: 237px;
+    width: 100%;
 }
 @media (max-width: 360px) {
     .page-heading {
