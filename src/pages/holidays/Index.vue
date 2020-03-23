@@ -68,17 +68,16 @@
                         :name="item.value"
                         class="bg-gray-alpha"
                     >
-                        <div class="text-subtitle2 q-mb-md flex flex-center">
+                        <div class="text-subtitle2 q-mb-md holiday-item">
                             <div class="reason">
                                 {{ item.reason }}
                             </div>
-                            <div class="ml-auto">
+                            <div>
                                 <q-btn
                                     dense
                                     flat
                                     rounded
                                     icon="edit"
-                                    class="q-ml-md"
                                     :to="'/holidays/edit/' + item.id"
                                 >
                                     <q-tooltip
@@ -93,7 +92,6 @@
                                     flat
                                     rounded
                                     icon="delete"
-                                    class="add-btn"
                                     @click="confirmDel(item.id)"
                                 >
                                     <q-tooltip
@@ -188,11 +186,16 @@ div[class*="content-"] > div {
 div[class*="content-"] > div:nth-child(2) {
     background: rgba(128, 128, 128, 0.55);
 }
+.holiday-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
 .reason {
-    max-width: 300px;
     overflow: auto;
     overflow-wrap: break-word;
     hyphens: auto;
+    flex: 1 1 auto;
 }
 .ml-auto {
     margin-left: auto;
