@@ -137,7 +137,7 @@
                         </div>
                     </template>
                 </q-table>
-                <ConfirmDialog v-bind="{ showDlg }" @close="showDlg = false">
+                <ConfirmDialog :showDlg.sync="showDlg">
                     <template v-slot:avatar>
                         <q-avatar
                             icon="delete_forever"

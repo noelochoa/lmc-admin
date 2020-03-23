@@ -153,6 +153,16 @@
 .content-4 {
     grid-area: content-4;
 }
+@media (max-width: 410px) {
+    .page-contents {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "content-1 ."
+            "content-2 ."
+            "content-3 content-3";
+        grid-row-gap: 1rem;
+    }
+}
 </style>
 <style lang="scss">
 .customer-table {

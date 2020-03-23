@@ -14,11 +14,11 @@ export default {
         today() {
             const d = new Date();
             const today = {
-                month: d.toLocaleString("en-US", { month: "long" }),
+                month: d.toLocaleDateString("en-US", { month: "long" }),
                 year: d.getFullYear(),
                 dayOfMonth: d.getDate(),
                 dayOfWeek: d.getDay(),
-                human: d.toLocaleString("en-US", {
+                human: d.toLocaleDateString("en-US", {
                     weekday: "long",
                     month: "long",
                     day: "numeric"
@@ -57,6 +57,29 @@ export default {
             } else {
                 this.$router.push(path);
             }
+        },
+
+        toHumanReadableDt: function(str_date) {
+            const d = new Date(str_date);
+            if (!d) return str_date;
+
+            return (
+                d.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric"
+                }) +
+                " " +
+                d
+                    .getHours()
+                    .toString()
+                    .padStart(2, 0) +
+                ":" +
+                d
+                    .getMinutes()
+                    .toString()
+                    .padStart(2, 0)
+            );
         }
     }
 };

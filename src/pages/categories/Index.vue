@@ -100,7 +100,7 @@
                                     dense
                                     flat
                                     round
-                                    icon="delete_outline"
+                                    icon="delete"
                                     @click="confirmDel(props.row.id)"
                                     ><q-tooltip
                                         anchor="bottom right"
@@ -113,7 +113,7 @@
                         </q-tr>
                     </template>
                 </q-table>
-                <ConfirmDialog v-bind="{ showDlg }" @close="showDlg = false">
+                <ConfirmDialog :showDlg.sync="showDlg">
                     <template v-slot:avatar>
                         <q-avatar
                             icon="delete_forever"

@@ -25,7 +25,7 @@ export default {
     },
     methods: {
         emitClose() {
-            this.$emit("close");
+            this.$emit("update:showDlg", false);
         }
     }
 };

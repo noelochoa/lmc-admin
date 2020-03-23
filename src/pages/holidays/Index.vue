@@ -24,94 +24,98 @@
                         name="calendar_today"
                         class="caption-icon q-mx-md"
                     />Business Holidays
+                    <q-btn
+                        flat
+                        dense
+                        rounded
+                        icon="add"
+                        class="add-btn q-mx-md"
+                        to="/holidays/add"
+                    >
+                        <q-tooltip
+                            anchor="bottom right"
+                            self="top middle"
+                            :offset="[10, 10]"
+                            >Add new
+                        </q-tooltip>
+                    </q-btn>
                 </div>
                 <div class="bg-gray-alpha">
                     <q-date
                         class="date"
-                        :value="today.yyyymmdd"
+                        v-model="date"
                         mask="YYYY-MM-DD"
                         :events="holidayList"
                         event-color="orange"
+                        emit-immediately
                         flat
                         minimal
-                        landscape
+                        @input="getHolidaysList"
                     />
                 </div>
             </div>
             <div class="content-2">
                 <q-tab-panels
+                    class="bg-none"
                     v-model="date"
                     animated
                     transition-prev="jump-up"
                     transition-next="jump-up"
                 >
-                    <q-tab-panel name="2020-03-21">
-                        <div class="text-h4 q-mb-md">
-                            2019/02/01
+                    <q-tab-panel
+                        v-for="item in holidayItems"
+                        :key="item.id"
+                        :name="item.value"
+                        class="bg-gray-alpha"
+                    >
+                        <div class="text-subtitle1 q-mb-md">
+                            {{ item.reason }}
+                            <q-btn
+                                dense
+                                flat
+                                rounded
+                                icon="edit"
+                                class="add-btn q-ml-md"
+                                :to="'/holidays/edit/' + item.id"
+                            >
+                                <q-tooltip
+                                    anchor="bottom right"
+                                    self="top middle"
+                                    :offset="[10, 10]"
+                                    >Edit
+                                </q-tooltip>
+                            </q-btn>
+                            <q-btn
+                                dense
+                                flat
+                                rounded
+                                icon="delete"
+                                class="add-btn"
+                                @click="confirmDel(item.id)"
+                            >
+                                <q-tooltip
+                                    anchor="bottom right"
+                                    self="top middle"
+                                    :offset="[10, 10]"
+                                    >Delete
+                                </q-tooltip>
+                            </q-btn>
                         </div>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing
-                            elit. Quis praesentium cumque magnam odio iure
-                            quidem, quod illum numquam possimus obcaecati
-                            commodi minima assumenda consectetur culpa fuga
-                            nulla ullam. In, libero.
-                        </p>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing
-                            elit. Quis praesentium cumque magnam odio iure
-                            quidem, quod illum numquam possimus obcaecati
-                            commodi minima assumenda consectetur culpa fuga
-                            nulla ullam. In, libero.
-                        </p>
-                    </q-tab-panel>
-
-                    <q-tab-panel name="2020-03-25" class="text-black">
-                        <div class="text-h4 q-mb-md">
-                            2019/02/05
-                        </div>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing
-                            elit. Quis praesentium cumque magnam odio iure
-                            quidem, quod illum numquam possimus obcaecati
-                            commodi minima assumenda consectetur culpa fuga
-                            nulla ullam. In, libero.
-                        </p>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing
-                            elit. Quis praesentium cumque magnam odio iure
-                            quidem, quod illum numquam possimus obcaecati
-                            commodi minima assumenda consectetur culpa fuga
-                            nulla ullam. In, libero.
-                        </p>
-                    </q-tab-panel>
-                    <q-tab-panel name="2019-02-06">
-                        <div class="text-h4 q-mb-md">
-                            2019/02/06
-                        </div>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing
-                            elit. Quis praesentium cumque magnam odio iure
-                            quidem, quod illum numquam possimus obcaecati
-                            commodi minima assumenda consectetur culpa fuga
-                            nulla ullam. In, libero.
-                        </p>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing
-                            elit. Quis praesentium cumque magnam odio iure
-                            quidem, quod illum numquam possimus obcaecati
-                            commodi minima assumenda consectetur culpa fuga
-                            nulla ullam. In, libero.
-                        </p>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing
-                            elit. Quis praesentium cumque magnam odio iure
-                            quidem, quod illum numquam possimus obcaecati
-                            commodi minima assumenda consectetur culpa fuga
-                            nulla ullam. In, libero.
-                        </p>
+                        <q-item class="detail-field">
+                            <span class="field-label"> Start</span>
+                            <span class="text-primary field-value">
+                                {{ humanReadableDt(item.start) }}
+                            </span>
+                        </q-item>
+                        <q-item class="detail-field">
+                            <span class="field-label"> End</span>
+                            <span class="text-primary field-value">
+                                {{ humanReadableDt(item.end) }}
+                            </span>
+                        </q-item>
                     </q-tab-panel>
                 </q-tab-panels>
-                <ConfirmDialog v-bind="{ showDlg }" @close="showDlg = false">
+                <ConfirmDialog :showDlg.sync="showDlg">
                     <template v-slot:avatar>
                         <q-avatar
                             icon="delete_forever"
@@ -120,7 +124,7 @@
                         />
                     </template>
                     <template v-slot:message>
-                        Continue on removing this announcement?<br />
+                        Continue on removing this holiday entry?<br />
                         Warning: This action is permanent.
                     </template>
                     <template v-slot:actions>
@@ -158,7 +162,7 @@
     grid-area: heading-caption;
 }
 .page-contents {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr minmax(200px, 300px) 1fr;
     grid-template-rows: auto;
     grid-template-areas: "content-1 content-2 .";
     grid-column-gap: 1rem;
@@ -180,9 +184,48 @@ div[class*="content-"] > div {
 div[class*="content-"] > div:nth-child(2) {
     background: rgba(128, 128, 128, 0.55);
 }
+.add-btn {
+    margin-left: auto;
+}
+.caption-icon {
+    font-size: 2.5rem;
+    display: inline-flex;
+}
 .date {
     width: 100%;
     background: none;
+}
+.bg-none {
+    background: none !important;
+}
+.detail-field {
+    flex-direction: row;
+    padding-left: 0 !important;
+}
+.detail-field .field-label {
+    width: 50px;
+}
+.detail-field .field-value {
+    flex: 1;
+}
+@media (max-width: 877px) {
+    .detail-field {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .detail-field .field-label,
+    .detail-field .field-value {
+        width: 100%;
+    }
+}
+@media (max-width: 550px) {
+    .page-contents {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "content-1 ."
+            "content-2 .";
+    }
 }
 @media (max-width: 360px) {
     .page-heading {
@@ -222,39 +265,30 @@ export default {
     mounted() {},
     data() {
         return {
-            splitterModel: 25,
             date: "2020-03-21",
-            holidayList: ["2020/03/21", "2020/03/25"],
+            holidayList: ["2020/03/21", "2020/03/25", "2020/03/27"],
+            holidayItems: [
+                {
+                    id: "111",
+                    value: "2020-03-21",
+                    reason: "Covid 19 Holiday",
+                    start: "2020-03-21T16:30:00+01:00",
+                    end: "2020/04/30 16:00"
+                },
+                {
+                    id: "112",
+                    value: "2020-03-25",
+                    reason: "Business Holiday",
+                    start: "2020/03/25 15:00",
+                    end: "2020/03/25 16:00"
+                }
+            ],
             loading: false,
             showDlg: false,
             toDelID: -1
         };
     },
     methods: {
-        searchClear(evt) {
-            this.search = "";
-            /** TODO */
-            this.$router.replace("/announcements");
-        },
-        searchInput(val) {
-            /** TODO */
-            this.$router
-                .push({
-                    query: Object.assign({}, this.$route.query, { s: val })
-                })
-                .catch(err => {});
-        },
-        /**TODO */
-        onRequest(props) {
-            this.loading = true;
-
-            // emulate server
-            setTimeout(() => {
-                // clear out existing data and add new
-                this.data = this.original;
-                this.loading = false;
-            }, 500);
-        },
         confirmDel(psaID) {
             this.showDlg = true;
             this.toDelID = psaID;
@@ -262,10 +296,17 @@ export default {
         onRemove() {
             if (this.toDelID !== -1) {
                 /**TODO */
-                this.showNotif(true, "Successfully removed announcement.");
+                this.showNotif(true, "Successfully removed holiday entry.");
             }
             // Reset
             this.toDelID = -1;
+        },
+        humanReadableDt(val) {
+            return this.toHumanReadableDt(val);
+        },
+        getHolidaysList(value, reason, details) {
+            /**TODO */
+            console.log(reason);
         }
     }
 };
