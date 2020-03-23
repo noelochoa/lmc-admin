@@ -123,7 +123,7 @@
                                         dense
                                         flat
                                         round
-                                        icon="delete_outline"
+                                        icon="delete"
                                         @click="confirmDel(props.row.id)"
                                         ><q-tooltip
                                             anchor="bottom right"
