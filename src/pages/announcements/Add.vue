@@ -314,7 +314,7 @@ export default {
     },
     methods: {
         _isValidDatetime(val) {
-            const dtpattern = /^\d{4}(-\d\d(-\d\d(\s\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/;
+            const dtpattern = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/g;
             return dtpattern.test(val) || "Invalid date & time format";
         },
         _isValidLink(val) {
