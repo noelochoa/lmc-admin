@@ -46,6 +46,7 @@
                         v-model="date"
                         mask="YYYY-MM-DD"
                         :events="holidayList"
+                        :options="holidayList"
                         event-color="orange"
                         emit-immediately
                         flat
@@ -55,73 +56,43 @@
                 </div>
             </div>
             <div class="content-2">
-                <q-tab-panels
-                    class="bg-none"
-                    v-model="date"
-                    animated
-                    transition-prev="jump-up"
-                    transition-next="jump-up"
-                >
-                    <q-tab-panel
-                        v-for="item in holidayItems"
-                        :key="item.id"
-                        :name="item.value"
-                        class="bg-gray-alpha"
-                    >
-                        <div class="text-subtitle2 q-mb-md holiday-item">
-                            <div class="reason">
-                                {{ item.reason }}
-                            </div>
-                            <div>
-                                <q-btn
-                                    dense
-                                    flat
-                                    rounded
-                                    icon="edit"
-                                    :to="'/holidays/edit/' + item.id"
-                                >
-                                    <q-tooltip
-                                        anchor="bottom right"
-                                        self="top middle"
-                                        :offset="[10, 10]"
-                                        >Edit
-                                    </q-tooltip>
-                                </q-btn>
-                                <q-btn
-                                    dense
-                                    flat
-                                    rounded
-                                    icon="delete"
-                                    @click="confirmDel(item.id)"
-                                >
-                                    <q-tooltip
-                                        anchor="bottom right"
-                                        self="top middle"
-                                        :offset="[10, 10]"
-                                        >Delete
-                                    </q-tooltip>
-                                </q-btn>
-                            </div>
-                        </div>
-                        <q-item class="detail-field" dense>
-                            <span class="field-label"> Start</span>
-                            <span class="text-primary field-value">
-                                {{ humanReadableDt(item.start) }}
-                            </span>
-                        </q-item>
-                        <q-item class="detail-field" dense>
-                            <span class="field-label"> End</span>
-                            <span class="text-primary field-value">
-                                {{ humanReadableDt(item.end) }}
-                            </span>
-                        </q-item>
-                    </q-tab-panel>
-                </q-tab-panels>
+                <Holidays v-bind="{ date, data }">
+                    <template v-slot:actions="slotProps">
+                        <q-btn
+                            dense
+                            flat
+                            rounded
+                            icon="edit"
+                            :to="'/holidays/edit/' + slotProps.item.id"
+                        >
+                            <q-tooltip
+                                anchor="bottom right"
+                                self="top middle"
+                                :offset="[10, 10]"
+                                >Edit
+                            </q-tooltip>
+                        </q-btn>
+                        <q-btn
+                            dense
+                            flat
+                            rounded
+                            icon="delete"
+                            @click="confirmDel(slotProps.item.id)"
+                        >
+                            <q-tooltip
+                                anchor="bottom right"
+                                self="top middle"
+                                :offset="[10, 10]"
+                                >Delete
+                            </q-tooltip>
+                        </q-btn>
+                    </template>
+                </Holidays>
                 <ConfirmDialog :showDlg.sync="showDlg">
                     <template v-slot:avatar>
                         <q-avatar
                             icon="delete_forever"
-                            color="red-4"
+                            color="red-5"
                             text-color="white"
                         />
                     </template>
@@ -130,16 +101,11 @@
                         Warning: This action is permanent.
                     </template>
                     <template v-slot:actions>
-                        <q-btn
-                            flat
-                            label="Cancel"
-                            color="black"
-                            v-close-popup
-                        />
+                        <q-btn flat label="Cancel" v-close-popup />
                         <q-btn
                             flat
                             label="Remove"
-                            color="red-4"
+                            color="red-5"
                             @click="onRemove"
                             v-close-popup
                         />
@@ -186,17 +152,6 @@ div[class*="content-"] > div {
 div[class*="content-"] > div:nth-child(2) {
     background: rgba(128, 128, 128, 0.55);
 }
-.holiday-item {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-}
-.reason {
-    overflow: auto;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    flex: 1 1 auto;
-}
 .ml-auto {
     margin-left: auto;
 }
@@ -207,19 +162,6 @@ div[class*="content-"] > div:nth-child(2) {
 .date {
     width: 100%;
     background: none;
-}
-.bg-none {
-    background: none !important;
-}
-.detail-field {
-    flex-direction: row;
-    padding-left: 0 !important;
-}
-.detail-field .field-label {
-    width: 50px;
-}
-.detail-field .field-value {
-    flex: 1;
 }
 
 @media (max-width: 780px) {
@@ -247,11 +189,12 @@ div[class*="content-"] > div:nth-child(2) {
 </style>
 <script>
 import ConfirmDialog from "../../components/ConfirmDialog";
+import Holidays from "../../components/Holidays";
 import HelperMixin from "../../mixins/helpers";
 
 export default {
     name: "HolidayIndex",
-    components: { ConfirmDialog },
+    components: { ConfirmDialog, Holidays },
     mixins: [HelperMixin],
 
     preFetch({ store }) {
@@ -263,28 +206,54 @@ export default {
         };
     },
     created() {
-        // this.date = this.today.yyyymmdd;
+        this.data.splice(
+            0,
+            this.data.length,
+            ...this.selectInclusive(this.date)
+        );
     },
-    mounted() {},
+    computed: {
+        holidayList() {
+            const dayList = new Set();
+            this.holidayItems.map(item => {
+                const start = new Date(item.start),
+                    end = new Date(item.end);
+                // console.log(start, end);
+                for (
+                    let dt = start;
+                    dt.getDate() <= end.getDate();
+                    dt.setDate(dt.getDate() + 1)
+                ) {
+                    dayList.add(this.toQDateFormat(dt));
+                }
+            });
+
+            return [...dayList];
+        }
+    },
     data() {
         return {
             date: "2020-03-21",
-            holidayList: ["2020/03/21", "2020/03/25", "2020/03/27"],
+            // holidayList: ["2020/03/21", "2020/03/25", "2020/03/27"],
+            data: [],
             holidayItems: [
                 {
                     id: "111",
-                    value: "2020-03-21",
                     reason: "Covid 19 Holiday",
-                    start: "2020-03-21T16:30:00+01:00",
-                    end: "2020/04/30 16:00"
+                    start: "2020-03-18 16:00:00+00:00",
+                    end: "2020/03/22 19:00:00"
                 },
                 {
                     id: "112",
-                    value: "2020-03-25",
-                    reason:
-                        "BusinesBusinessBusinessBusinessBusinessBusinessBusinessBusinessBusinessBusinessBusinesss Holiday",
-                    start: "2020/03/25 15:00",
-                    end: "2020/03/25 16:00"
+                    reason: "Covid 19 Holiday 2",
+                    start: "2020-03-20 15:00:00+00:00",
+                    end: "2020/03/25 19:00:00"
+                },
+                {
+                    id: "113",
+                    reason: "Covid 19 Holiday 3",
+                    start: "2020-04-02 15:00:00+00:00",
+                    end: "2020/04/13 19:00:00"
                 }
             ],
             loading: false,
@@ -300,15 +269,28 @@ export default {
         onRemove() {
             if (this.toDelID !== -1) {
                 /**TODO */
-                this.showNotif(true, "Successfully removed holiday entry.");
+                this.showNotif(
+                    true,
+                    "Successfully removed holiday entry." + this.toDelID
+                );
             }
             // Reset
             this.toDelID = -1;
         },
-        humanReadableDt(val) {
-            return this.toHumanReadableDt(val);
+        selectInclusive(val) {
+            const dt = new Date(val);
+            return this.holidayItems.filter(function(item) {
+                const start = new Date(item.start),
+                    end = new Date(item.end);
+                return start <= dt && end >= dt;
+            });
         },
         getHolidaysList(value, reason, details) {
+            this.data.splice(
+                0,
+                this.data.length,
+                ...this.selectInclusive(value)
+            );
             /**TODO */
             console.log(reason);
         }

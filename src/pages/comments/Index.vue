@@ -114,25 +114,20 @@
                     <template v-slot:avatar>
                         <q-avatar
                             icon="report_problem"
-                            color="red-4"
+                            color="red-5"
                             text-color="white"
                         />
                     </template>
                     <template v-slot:message>
                         This action will mark this comment as flagged. <br />
-                        This will no longer be visible in the product page.
+                        Comment will no longer be visible in the product page.
                     </template>
                     <template v-slot:actions>
-                        <q-btn
-                            flat
-                            label="Cancel"
-                            color="black"
-                            v-close-popup
-                        />
+                        <q-btn flat label="Cancel" v-close-popup />
                         <q-btn
                             flat
                             label="Proceed"
-                            color="red-4"
+                            color="red-5"
                             @click="onProceed"
                             v-close-popup
                         />

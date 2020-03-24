@@ -58,6 +58,20 @@ export default {
                 this.$router.push(path);
             }
         },
+        toQDateFormat: function(d) {
+            // YYYY/MM/DD format
+            if (d) {
+                return (
+                    d.getFullYear() +
+                    "/" +
+                    (d.getMonth() + 1).toString().padStart(2, 0) +
+                    "/" +
+                    d.getDate()
+                );
+            }
+
+            return d;
+        },
 
         toHumanReadableDt: function(str_date) {
             const d = new Date(str_date);

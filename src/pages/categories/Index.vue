@@ -117,7 +117,7 @@
                     <template v-slot:avatar>
                         <q-avatar
                             icon="delete_forever"
-                            color="red-4"
+                            color="red-5"
                             text-color="white"
                         />
                     </template>
@@ -126,16 +126,11 @@
                         Warning: Can not delete categories with products.
                     </template>
                     <template v-slot:actions>
-                        <q-btn
-                            flat
-                            label="Cancel"
-                            color="black"
-                            v-close-popup
-                        />
+                        <q-btn flat label="Cancel" v-close-popup />
                         <q-btn
                             flat
                             label="Remove"
-                            color="red-4"
+                            color="red-5"
                             @click="onRemove"
                             v-close-popup
                         />

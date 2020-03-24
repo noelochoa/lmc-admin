@@ -1,6 +1,6 @@
 <template>
     <q-dialog :value="showDlg" square @hide="emitClose">
-        <q-card>
+        <q-card dark>
             <q-card-section class="row items-center">
                 <slot name="avatar"></slot>
                 <span class="q-ml-sm">

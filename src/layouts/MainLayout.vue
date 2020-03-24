@@ -146,6 +146,25 @@
 .fade-leave-to {
     opacity: 0;
 }
+.slide-enter-active,
+.slide-leave-active {
+    transition: all 0.5s;
+}
+.slide-leave-active {
+    position: absolute;
+}
+.slide-move {
+    transition: transform 0.5s;
+}
+.slide-enter {
+    transform: translateY(30px);
+    opacity: 0;
+}
+.slide-leave-to {
+    transform: translateY(30px);
+    opacity: 0;
+}
+
 .no-select {
     user-select: none;
 }

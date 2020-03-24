@@ -94,7 +94,8 @@
                                     :rules="[
                                         val =>
                                             val !== null && val.trim() !== '',
-                                        _isValidDatetime
+                                        _isValidDatetime,
+                                        _isValidEndDt
                                     ]"
                                 >
                                     <template v-slot:prepend>
@@ -286,8 +287,16 @@ export default {
     },
     methods: {
         _isValidDatetime(val) {
-            const dtpattern = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/g;
+            const dtpattern = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (0?[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/g;
             return dtpattern.test(val) || "Invalid date & time format";
+        },
+        _isValidEndDt(val) {
+            const end = new Date(val);
+            const start = new Date(this.holiday.start);
+            return (
+                end.getTime() > start.getTime() ||
+                "End date needs to be greater"
+            );
         },
 
         onSubmit: function(evt) {
