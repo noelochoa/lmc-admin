@@ -19,12 +19,15 @@
                     >
                 </q-btn>
                 <q-input
-                    debounce="500"
+                    debounce="250"
                     v-model="searchText"
-                    placeholder="Search products"
+                    placeholder="Quick search"
                     dense
                     color="white"
                     class="quick-search"
+                    ref="quickSearch"
+                    @focus="searchFocused = true"
+                    @blur="searchFocused = false"
                 >
                     <template v-slot:prepend>
                         <q-icon name="search" color="white" />
@@ -66,11 +69,7 @@
                     side="right"
                     class="settings-toggle-btn q-ml-xs"
                 >
-                    <q-menu
-                        square
-                        :offset="[10, 11]"
-                        content-class="settings-menu"
-                    >
+                    <q-menu square :offset="[10, 11]" dark>
                         <div class="row no-wrap q-pa-sm">
                             <div class="column">
                                 <q-item
@@ -90,7 +89,12 @@
                                     >Change Password</q-item
                                 >
                             </div>
-                            <q-separator vertical inset class="q-mx-lg" />
+                            <q-separator
+                                vertical
+                                inset
+                                class="q-mx-lg"
+                                color="white"
+                            />
                             <div class="column items-center">
                                 <div
                                     class="text-subtitle1 q-mt-sm q-mb-sm alias"
@@ -108,6 +112,7 @@
                     </q-menu>
                 </q-btn>
             </q-toolbar>
+            <SearchResults v-bind="{ showSearch, searchResults }" />
         </q-header>
 
         <q-drawer
@@ -204,10 +209,6 @@
 .scrolled {
     background: #1a1d1a !important;
 }
-.settings-menu {
-    color: white;
-    background: #736656;
-}
 .quick-search {
     font-size: 12px;
     width: 185px;
@@ -234,6 +235,7 @@
 
 <script>
 import Navigation from "../components/Navigation";
+import SearchResults from "../components/SearchResults";
 
 export default {
     preFetch({ store, redirect }) {
@@ -243,10 +245,14 @@ export default {
     },
 
     name: "MainLayout",
-    components: { Navigation },
+    components: { Navigation, SearchResults },
     computed: {
         name() {
             return this.$store.state.auth.name;
+        },
+        showSearch() {
+            // return false;
+            return this.searchFocused && this.searchText.trim() !== "";
         }
     },
     mounted() {
@@ -276,10 +282,54 @@ export default {
     data() {
         return {
             searchText: "",
+            searchFocused: false,
             eventTimer: null,
             scrolled: false,
             drawer: false,
             showNavBtn: false,
+
+            searchResults: [
+                {
+                    category: "Categories Categories",
+                    path: "/categories",
+                    items: [
+                        {
+                            title: "Cakes",
+                            id: "1",
+                            link: "/categories/edit/1"
+                        },
+                        {
+                            title: "Cupcakes",
+                            id: "2",
+                            link: "/categories/edit/2"
+                        }
+                    ]
+                },
+                {
+                    category: "Products",
+                    path: "/products",
+                    items: [
+                        {
+                            title: "Test Product 1",
+                            id: "1",
+                            link: "/products/edit/1"
+                        },
+                        {
+                            title: "Test Product 2",
+                            id: "2",
+                            link: "/products/edit/2"
+                        }
+                    ]
+                },
+                {
+                    category: "Customers",
+                    path: "/customers",
+                    items: []
+                },
+                {
+                    category: "Comments"
+                }
+            ],
             navigationlinks: [
                 {
                     title: "Dashboard",

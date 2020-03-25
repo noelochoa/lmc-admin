@@ -233,7 +233,7 @@ export default {
     },
     data() {
         return {
-            date: "2020-03-21",
+            date: "2020-03-18",
             // holidayList: ["2020/03/21", "2020/03/25", "2020/03/27"],
             data: [],
             holidayItems: [

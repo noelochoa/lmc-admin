@@ -21,3 +21,12 @@ body {
 .q-btn .q-btn__content div {
     padding-top: 3px;
 }
+
+.bg-none {
+    background: none !important;
+    // box-shadow: none;
+}
+
+.hover-underline:hover {
+    text-decoration: underline;
+}

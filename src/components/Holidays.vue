@@ -32,9 +32,6 @@
     </q-list>
 </template>
 <style lang="scss" scoped>
-.bg-none {
-    background: none !important;
-}
 .detail-field {
     flex-direction: row;
     padding-left: 0 !important;
