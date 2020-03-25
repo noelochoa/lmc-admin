@@ -338,8 +338,8 @@ export default {
     },
     methods: {
         filterChanged(val) {
-            if (this.filter.includes(val)) {
-                this.$router.push({ query: { type: val } }).catch(err => {});
+            if (this.filter.includes(val) && this.$route.query.type != val) {
+                this.$router.replace({ query: { type: val } }).catch(err => {});
                 this.search = "";
             }
         },
@@ -347,7 +347,7 @@ export default {
             /** TODO */
             let query = Object.assign({}, this.$route.query);
             delete query.s;
-            this.$router.replace({ query });
+            this.$router.replace({ query }).catch(err => {});
             this.search = "";
         },
         searchInput(val) {
@@ -362,7 +362,7 @@ export default {
                     console.log(thrown);
                 });
             this.$router
-                .push({
+                .replace({
                     query: Object.assign({}, this.$route.query, { s: val })
                 })
                 .catch(err => {});

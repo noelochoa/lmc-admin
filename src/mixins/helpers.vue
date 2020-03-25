@@ -55,7 +55,7 @@ export default {
             if (this.prevRoute && this.prevRoute.path !== "/") {
                 this.$router.go(-1);
             } else {
-                this.$router.push(path);
+                this.$router.push(path).catch(err => {});
             }
         },
         toQDateFormat: function(d) {

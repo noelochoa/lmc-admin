@@ -201,7 +201,7 @@ export default {
             setTimeout(() => {
                 this.showNotif(true, "Successfully updated.");
                 this.loading = false;
-                this.$router.push("/dashboard");
+                this.returnToPageIndex("/dashboard");
             }, 2500);
         }
     }

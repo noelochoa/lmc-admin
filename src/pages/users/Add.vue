@@ -193,7 +193,7 @@ export default {
             setTimeout(() => {
                 this.showNotif(true, "Created new Admin account.");
                 this.loading = false;
-                this.$router.push("/dashboard");
+                this.returnToPageIndex("/dashboard");
             }, 2500);
         }
     }

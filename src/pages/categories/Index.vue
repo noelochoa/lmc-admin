@@ -308,13 +308,16 @@ export default {
         searchClear(evt) {
             this.search = "";
             /** TODO */
-            this.$router.replace("/categories");
+            this.$router.replace("/categories").catch(err => {});
         },
         searchInput(val) {
             /** TODO */
+            let searchQry = Object.assign({}, this.$route.query, { s: val });
+            if (!val) delete searchQry.s;
+
             this.$router
-                .push({
-                    query: Object.assign({}, this.$route.query, { s: val })
+                .replace({
+                    query: searchQry
                 })
                 .catch(err => {});
         },
