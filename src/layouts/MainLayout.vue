@@ -26,7 +26,7 @@
                     color="white"
                     class="quick-search"
                     ref="quickSearch"
-                    @focus="searchFocused = true"
+                    @input="searchFocused = true"
                     @blur="searchFocused = false"
                 >
                     <template v-slot:prepend>
@@ -296,7 +296,8 @@ export default {
                         {
                             title: "Cakes",
                             id: "1",
-                            link: "/categories/edit/1"
+                            link: "/categories/edit/1",
+                            caption: "Sweets"
                         },
                         {
                             title: "Cupcakes",
@@ -312,7 +313,9 @@ export default {
                         {
                             title: "Test Product 1",
                             id: "1",
-                            link: "/products/edit/1"
+                            link: "/products/edit/1",
+                            caption:
+                                "Lorem lorem loremloremloremloremloremloremlorem"
                         },
                         {
                             title: "Test Product 2",

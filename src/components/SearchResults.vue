@@ -16,20 +16,25 @@
             </div>
         </div>
         <div class="row no-wrap bg-grey-8" v-else>
-            <q-list dense>
+            <q-list>
                 <q-list
-                    dense
                     v-for="result in filteredResults"
                     :key="result.category"
                 >
                     <q-item
+                        dense
                         :to="result.path"
-                        class="q-pt-xs category-hover"
+                        class="q-pt-xs "
                         active-class="text-white"
                     >
                         <q-item-section>
-                            <q-item-label class="search-result">
+                            <q-item-label class="result-value">
                                 {{ result.category }}
+                            </q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                            <q-item-label class="text-white">
+                                see all
                             </q-item-label>
                         </q-item-section>
                     </q-item>
@@ -37,11 +42,19 @@
                         v-for="item in result.items"
                         :key="item.title"
                         :to="item.link"
-                        class="bg-grey-10 text-white item-hover"
+                        class="bg-grey-10 text-white result-item"
                     >
                         <q-item-section>
-                            <q-item-label class="text-caption search-result">
-                                &nbsp;{{ item.title }}
+                            <q-item-label
+                                class="text-caption text-primary result-value q-mt-xs"
+                            >
+                                {{ item.title }}
+                            </q-item-label>
+                            <q-item-label
+                                v-if="item.caption"
+                                class="text-caption result-value q-mb-xs"
+                            >
+                                <i>{{ item.caption }}</i>
                             </q-item-label>
                         </q-item-section>
                     </q-item>
@@ -51,7 +64,13 @@
     </q-menu>
 </template>
 <style lang="scss" scoped>
-.search-result {
+.result-item {
+    border-bottom: 1px solid $grey-8;
+}
+.result-item:last-child {
+    border-bottom: 0;
+}
+.result-value {
     min-width: 200px;
     max-width: 320px;
     overflow: hidden;
