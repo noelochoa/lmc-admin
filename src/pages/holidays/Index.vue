@@ -130,7 +130,7 @@
     grid-area: heading-caption;
 }
 .page-contents {
-    grid-template-columns: 1fr minmax(200px, 300px) 1fr;
+    grid-template-columns: 360px minmax(280px, 360px) 1fr;
     grid-template-rows: auto;
     grid-template-areas: "content-1 content-2 .";
     grid-column-gap: 1rem;
@@ -164,20 +164,27 @@ div[class*="content-"] > div:nth-child(2) {
     background: none;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 948px) {
     .page-contents {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 360px 1fr;
         grid-template-areas:
             "content-1 ."
             "content-2 .";
     }
 }
-@media (max-width: 360px) {
+
+@media (max-width: 400px) {
     .page-heading {
         grid-template-columns: 1fr;
         grid-template-areas:
             "heading-caption"
             "heading-stat-1";
+    }
+    .page-contents {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "content-1"
+            "content-2";
     }
 }
 </style>
@@ -213,16 +220,17 @@ export default {
             this.holidayItems.map(item => {
                 const start = new Date(item.start),
                     end = new Date(item.end);
+
                 // console.log(start, end);
                 for (
                     let dt = start;
-                    dt.getDate() <= end.getDate();
+                    dt.getTime() <= end.getTime();
                     dt.setDate(dt.getDate() + 1)
                 ) {
                     dayList.add(this.toQDateFormat(dt));
                 }
             });
-
+            // console.log(dayList);
             return [...dayList];
         }
     },
@@ -234,21 +242,21 @@ export default {
             holidayItems: [
                 {
                     id: "111",
-                    reason: "Covid 19 Holiday",
+                    reason: "Covid 19 ",
                     start: "2020-03-18 16:00:00+00:00",
                     end: "2020/03/22 19:00:00"
                 },
                 {
                     id: "112",
-                    reason: "Covid 19 Holiday 2",
+                    reason: "Covid 19  2",
                     start: "2020-03-20 15:00:00+00:00",
                     end: "2020/03/25 19:00:00"
                 },
                 {
                     id: "113",
                     reason: "Covid 19 Holiday 3",
-                    start: "2020-04-02 15:00:00+00:00",
-                    end: "2020/04/13 19:00:00"
+                    start: "2020-03-30 15:00:00+00:00",
+                    end: "2020/04/03 19:00:00"
                 }
             ],
             loading: false,

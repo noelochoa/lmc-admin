@@ -221,7 +221,7 @@ export default {
             search: "",
             searchReq: null,
             customerFilter: "All",
-            filter: ["All", "Regular", "Reseller"],
+            filter: ["All", "Regular", "Reseller", "Partner"],
             nameFilter: "",
             loading: false,
             pagination: {
