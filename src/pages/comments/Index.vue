@@ -189,7 +189,7 @@
 </style>
 <style lang="scss">
 .comments-table {
-    background: rgba(128, 128, 128, 0.35);
+    background: rgba(128, 128, 128, 0.25);
     color: #fff;
 }
 </style>

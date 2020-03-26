@@ -125,9 +125,9 @@
             @on-layout="drawerLayoutChange"
         >
             <q-list class="nav-list">
-                <q-item-label header class="text-grey-5"
-                    >Navigation</q-item-label
-                >
+                <q-item-label header class="text-grey-4">
+                    Navigation
+                </q-item-label>
                 <Navigation
                     v-for="link in navigationlinks"
                     :key="link.title"
@@ -135,7 +135,6 @@
                 />
             </q-list>
         </q-drawer>
-
         <q-page-container>
             <router-view />
         </q-page-container>
@@ -190,7 +189,7 @@
 .q-toolbar,
 .bg-gray-alpha,
 .navheader {
-    background: rgba(128, 128, 128, 0.35);
+    background: rgba(128, 128, 128, 0.25);
     color: #fff;
 }
 .bg-gray-alpha-2 {
@@ -358,6 +357,11 @@ export default {
                     title: "Products",
                     icon: "cake",
                     link: "/products"
+                },
+                {
+                    title: "Discounts",
+                    icon: "money_off",
+                    link: "/discounts"
                 },
                 {
                     title: "Comments",

@@ -229,6 +229,7 @@
 }
 .content-5 {
     grid-area: content-5;
+    max-width: 360px;
 }
 div[class*="content-"] {
     display: flex;
@@ -237,7 +238,7 @@ div[class*="content-"] {
 div[class*="content-"] > div {
     min-height: 4em;
     justify-content: left;
-    background: rgba(128, 128, 128, 0.35);
+    background: rgba(128, 128, 128, 0.25);
     margin: 1px 0;
     width: 100%;
 }
@@ -255,6 +256,7 @@ div[class*="content-"] > div:nth-child(3) {
 }
 .date {
     width: 100%;
+    min-width: 240px;
     max-height: 250px;
     background: none;
 }
@@ -269,7 +271,7 @@ div[class*="content-"] > div:nth-child(3) {
             "content-5 content-5";
     }
     .page-heading {
-        grid-template-columns: 2fr 1fr 1fr 1fr;
+        grid-template-columns: 2fr repeat(3, 1fr);
     }
 }
 @media (max-width: 850px) {

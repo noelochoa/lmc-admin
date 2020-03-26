@@ -16,7 +16,20 @@ Vue.use(VueRouter);
 
 export default function(/* { store, ssrContext } */) {
     const Router = new VueRouter({
-        scrollBehavior: () => ({ x: 0, y: 0 }),
+        scrollBehavior: (to, from, savedPosition) => {
+            // no scroll if query has been changed
+            if (from && to.name === from.name) {
+                return false;
+            }
+            if (savedPosition) {
+                return savedPosition;
+            }
+            if (to.hash) {
+                return { selector: to.hash };
+            }
+
+            return { x: 0, y: 0 };
+        },
         routes,
 
         // Leave these as they are and change in quasar.conf.js instead!

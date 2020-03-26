@@ -5,7 +5,7 @@
                 v-for="item in data"
                 :key="item.id"
                 name="2020-03-21"
-                class="holiday-item-container bg-gray-alpha no-scroll q-pa-md q-mb-xs"
+                class="holiday-item-container bg-gray-alpha-2 no-scroll q-pa-md q-mb-xs"
             >
                 <div class="text-subtitle2 q-mb-md holiday-item">
                     <div class="reason">

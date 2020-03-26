@@ -58,6 +58,7 @@ export default {
                 this.$router.push(path).catch(err => {});
             }
         },
+
         toQDateFormat: function(d) {
             // YYYY/MM/DD format
             if (d) {

@@ -77,9 +77,6 @@
                             <q-td key="products" :props="props">{{
                                 props.row.products
                             }}</q-td>
-                            <q-td key="login" :props="props">{{
-                                props.row.login
-                            }}</q-td>
                             <q-td>
                                 <q-btn
                                     dense
@@ -187,7 +184,7 @@
 </style>
 <style lang="scss">
 .categories-table {
-    background: rgba(128, 128, 128, 0.35);
+    background: rgba(128, 128, 128, 0.25);
     color: #fff;
 }
 .categories-table th:last-child,

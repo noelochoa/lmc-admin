@@ -78,6 +78,24 @@ const routes = [
         ]
     },
     {
+        path: "/discounts",
+        component: () => import("layouts/MainLayout.vue"),
+        children: [
+            {
+                path: "",
+                component: () => import("pages/discounts/Index.vue")
+            },
+            {
+                path: "add",
+                component: () => import("pages/discounts/Add.vue")
+            },
+            {
+                path: "edit/:id",
+                component: () => import("pages/discounts/Edit.vue")
+            }
+        ]
+    },
+    {
         path: "/comments",
         component: () => import("layouts/MainLayout.vue"),
         children: [

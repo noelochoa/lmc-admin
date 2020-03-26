@@ -145,7 +145,7 @@
 div[class*="content-"] > div {
     min-height: 4em;
     justify-content: left;
-    background: rgba(128, 128, 128, 0.35);
+    background: rgba(128, 128, 128, 0.25);
     margin: 1px 0;
     width: 100%;
 }
@@ -181,12 +181,7 @@ div[class*="content-"] > div:nth-child(2) {
     }
 }
 </style>
-<style lang="scss">
-.holidays-table {
-    background: rgba(128, 128, 128, 0.35);
-    color: #fff;
-}
-</style>
+<style lang="scss" scoped></style>
 <script>
 import ConfirmDialog from "../../components/ConfirmDialog";
 import Holidays from "../../components/Holidays";

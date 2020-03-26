@@ -166,7 +166,7 @@
 </style>
 <style lang="scss">
 .customer-table {
-    background: rgba(128, 128, 128, 0.35);
+    background: rgba(128, 128, 128, 0.25);
     color: #fff;
 }
 .customer-table th:last-child,
@@ -338,7 +338,10 @@ export default {
     },
     methods: {
         filterChanged(val) {
-            if (this.filter.includes(val) && this.$route.query.type != val) {
+            if (
+                this.filter.includes(val) &&
+                !val.match(new RegExp(this.$route.query.type, "i"))
+            ) {
                 this.$router.replace({ query: { type: val } }).catch(err => {});
                 this.search = "";
             }
@@ -361,9 +364,13 @@ export default {
                 .catch(thrown => {
                     console.log(thrown);
                 });
+
+            /** TODO */
+            let searchQry = Object.assign({}, this.$route.query, { s: val });
+            if (!val) delete searchQry.s;
             this.$router
                 .replace({
-                    query: Object.assign({}, this.$route.query, { s: val })
+                    query: searchQry
                 })
                 .catch(err => {});
         },
