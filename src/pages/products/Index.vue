@@ -23,11 +23,27 @@
                         >Add Product</q-tooltip
                     >
                 </q-btn>
+                <q-select
+                    class="filter-select"
+                    v-model="category"
+                    :options="filter"
+                    @input="filterChanged"
+                    dark
+                    dense
+                    outlined
+                    options-dense
+                >
+                    <template v-slot:prepend>
+                        <q-icon name="category" />
+                    </template>
+                </q-select>
+            </div>
+            <div class="content-2">
                 <q-input
                     class="filter-search-box"
                     v-model="search"
                     type="search"
-                    placeholder="Search category"
+                    placeholder="Search product"
                     debounce="500"
                     @input="searchInput"
                     dark
@@ -49,7 +65,7 @@
                     </template>
                 </q-input>
             </div>
-            <div class="content-2">
+            <div class="content-3">
                 <q-table
                     grid
                     grid-header
@@ -256,7 +272,6 @@
 }
 .page-heading {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
     grid-template-areas: "heading-caption";
     grid-column-gap: 1rem;
 }
@@ -265,21 +280,24 @@
 }
 .page-contents {
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto;
     grid-template-areas:
-        "content-1 . . ."
-        "content-2 content-2 content-2 content-2";
+        "content-1 . . content-2"
+        "content-3 content-3 content-3 content-3";
     grid-column-gap: 1rem;
     grid-row-gap: 2rem;
 }
 .content-1 {
     grid-area: content-1;
-    min-width: 160px;
+    min-width: 200px;
     display: flex;
     flex-direction: row;
 }
 .content-2 {
     grid-area: content-2;
+    min-width: 160px;
+}
+.content-3 {
+    grid-area: content-3;
 }
 .product-img {
     width: 100%;
@@ -292,9 +310,19 @@
     max-height: 120px;
     background: rgba(0, 0, 0, 0.2);
 }
-.filter-search-box {
-    min-width: 237px;
-    width: 90%;
+.filter-select {
+    flex: 1;
+}
+
+@media (max-width: 410px) {
+    .page-contents {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "content-1 ."
+            "content-2 ."
+            "content-3 content-3";
+        grid-row-gap: 1rem;
+    }
 }
 @media (max-width: 360px) {
     .page-heading {
@@ -337,6 +365,13 @@ export default {
         };
     },
     created() {
+        if (this.$route.query.type) {
+            this.filter.forEach(el => {
+                if (el.match(new RegExp(this.$route.query.type, "i"))) {
+                    this.customerFilter = el;
+                }
+            });
+        }
         if (this.$route.query.s) {
             this.search = this.$route.query.s;
         }
@@ -354,6 +389,8 @@ export default {
             search: "",
             searchReq: null,
             nameFilter: "",
+            category: "All",
+            filter: ["All", "Cakes", "Cookies", "Others"],
             loading: false,
             showDlg: false,
             toFlagID: -1,
@@ -427,6 +464,15 @@ export default {
         };
     },
     methods: {
+        filterChanged(val) {
+            if (
+                this.filter.includes(val) &&
+                !val.match(new RegExp(this.$route.query.type, "i"))
+            ) {
+                this.$router.replace({ query: { type: val } }).catch(err => {});
+                this.search = "";
+            }
+        },
         searchClear(evt) {
             this.search = "";
             /** TODO */
@@ -450,14 +496,14 @@ export default {
                 this.loading = false;
             }, 500);
         },
-        confirmAction(categoryID) {
+        confirmAction(productID) {
             this.showDlg = true;
-            this.toFlagID = categoryID;
+            this.toFlagID = productID;
         },
         onProceed() {
             if (this.toFlagID !== -1) {
                 /**TODO */
-                this.showNotif(true, "Successfully hidden category.");
+                this.showNotif(true, "Successfully hidden product.");
             }
             // Reset
             this.toFlagID = -1;

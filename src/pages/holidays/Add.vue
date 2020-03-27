@@ -193,7 +193,6 @@
 }
 .page-contents {
     grid-template-columns: minmax(240px, 560px);
-    grid-template-rows: auto;
     grid-template-areas:
         "content-1"
         "content-2";

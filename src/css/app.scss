@@ -1,7 +1,7 @@
 // app global css in SCSS form
 
 @font-face {
-    font-family: SpartanMed;
+    font-family: Spartan;
     src: url("../statics/fonts/Spartan-Medium.ttf");
 }
 
@@ -9,8 +9,8 @@
     margin: 0;
     padding: 0;
     text-decoration: none;
-    font-family: SpartanMed, "Roboto", "-apple-system", "Helvetica Neue",
-        Helvetica, Arial, sans-serif;
+    font-family: Spartan, "Roboto", "-apple-system", "Helvetica Neue", Helvetica,
+        Arial, sans-serif;
 }
 
 body {
@@ -18,7 +18,8 @@ body {
 }
 
 // global fix
-.q-btn .q-btn__content div {
+.q-btn .q-btn__content div,
+.q-chip__content span {
     padding-top: 3px;
 }
 
@@ -29,4 +30,8 @@ body {
 
 .hover-underline:hover {
     text-decoration: underline;
+}
+
+.highlighted {
+    color: $primary;
 }

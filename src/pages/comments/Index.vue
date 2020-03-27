@@ -144,7 +144,6 @@
 }
 .page-heading {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
     grid-template-areas: "heading-caption";
     grid-column-gap: 1rem;
 }
@@ -153,7 +152,6 @@
 }
 .page-contents {
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto;
     grid-template-areas:
         "content-1 . . ."
         "content-2 content-2 content-2 content-2";

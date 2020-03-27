@@ -18,11 +18,15 @@ export default function(/* { store, ssrContext } */) {
     const Router = new VueRouter({
         scrollBehavior: (to, from, savedPosition) => {
             // no scroll if query has been changed
-            if (from && to.name === from.name) {
+            if (from && to.path === from.path) {
                 return false;
             }
             if (savedPosition) {
-                return savedPosition;
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(savedPosition);
+                    }, 500);
+                });
             }
             if (to.hash) {
                 return { selector: to.hash };

@@ -156,7 +156,6 @@
 }
 .page-heading {
     grid-template-columns: 2fr 1fr;
-    grid-template-rows: auto;
     grid-template-areas: "heading-caption heading-stat-1";
     grid-column-gap: 1rem;
 }
@@ -168,7 +167,6 @@
 }
 .page-contents {
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto;
     grid-template-areas:
         "content-1 . . ."
         "content-2 content-2 content-2 .";
@@ -279,7 +277,7 @@ export default {
                     name: "target",
                     field: "target",
                     align: "left",
-                    label: "Target",
+                    label: "Target Customer",
                     sortable: true
                 },
                 {

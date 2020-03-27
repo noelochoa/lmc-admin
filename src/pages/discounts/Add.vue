@@ -147,7 +147,7 @@
                                 </q-input>
                             </q-item>
                             <q-item class="detail-field">
-                                <span class="field-label">Target</span>
+                                <span class="field-label">Target Customer</span>
                                 <q-select
                                     class="field-value"
                                     v-model="discount.target"
@@ -181,6 +181,50 @@
                                     </template>
                                 </q-select>
                             </q-item>
+                            <q-item class="detail-field">
+                                <span class="field-label">Discount (%)</span>
+                                <q-slider
+                                    class="field-value q-mx-xs"
+                                    v-model="discount.value"
+                                    :min="1"
+                                    :max="99"
+                                    label
+                                    color="green-4"
+                                />
+                            </q-item>
+                            <q-item class="detail-field">
+                                <span class="field-label">Apply to</span>
+                                <q-select
+                                    class="field-value products-select"
+                                    v-model="discount.products"
+                                    :options="options"
+                                    label="Products"
+                                    hide-dropdown-icon
+                                    hide-bottom-space
+                                    dark
+                                    outlined
+                                    multiple
+                                    use-chips
+                                    use-input
+                                    @filter="filterFn"
+                                    emit-value
+                                    map-options
+                                    lazy-rules
+                                    :rules="[
+                                        val => val !== null && val.length > 0
+                                    ]"
+                                >
+                                    <template v-slot:no-option>
+                                        <q-item>
+                                            <q-item-section
+                                                class="text-italic text-grey"
+                                            >
+                                                No products found.
+                                            </q-item-section>
+                                        </q-item>
+                                    </template>
+                                </q-select>
+                            </q-item>
                         </q-list>
                         <q-separator />
                         <div class="q-pa-md">
@@ -195,6 +239,7 @@
                                     <q-spinner-gears />
                                 </template>
                             </q-btn>
+                            {{ discount.products }}
                         </div>
                     </q-form>
                 </div>
@@ -203,7 +248,16 @@
         </div>
     </q-page>
 </template>
-
+<style lang="scss">
+.q-chip__content {
+    overflow: hidden;
+    white-space: nowrap;
+    align-items: center;
+}
+.products-select .q-field__control-container {
+    min-height: 5rem;
+}
+</style>
 <style lang="scss" scoped>
 .page-heading,
 .page-contents {
@@ -211,7 +265,6 @@
 }
 .page-contents {
     grid-template-columns: minmax(240px, 560px);
-    grid-template-rows: auto;
     grid-template-areas:
         "content-1"
         "content-2";
@@ -253,12 +306,6 @@ div[class*="content-"] > div {
     flex: 1;
     max-width: 388px;
 }
-.qtext-editor {
-    border: 2px solid white;
-}
-.has-error {
-    border: 2px solid $negative;
-}
 
 @media (max-width: 400px) {
     .detail-field {
@@ -296,9 +343,45 @@ export default {
         return {
             loading: false,
             hasSelect: true,
+            options: null,
+            productsList: [
+                {
+                    label:
+                        "GoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogle",
+                    value: 1,
+                    description: "Search engine",
+                    icon: "mail"
+                },
+                {
+                    label:
+                        "FacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebook",
+                    value: 2,
+                    description: "Social media",
+                    icon: "bluetooth"
+                },
+                {
+                    label: "Twitter",
+                    value: 3,
+                    description: "Quick updates",
+                    icon: "map"
+                },
+                {
+                    label: "Apple",
+                    value: 4,
+                    description: "iStuff",
+                    icon: "golf_course"
+                },
+                {
+                    label: "Oracle",
+                    value: 5,
+                    description: "Databases",
+                    icon: "casino"
+                }
+            ],
             discount: {
+                value: 10,
                 target: "All",
-                products: [],
+                products: null,
                 start: "",
                 end: ""
             }
@@ -318,6 +401,19 @@ export default {
             );
         },
 
+        filterFn(val, update, abort) {
+            if (!val || val.trim() == "") {
+                abort();
+                return;
+            }
+
+            update(() => {
+                const needle = val.toLowerCase();
+                this.options = this.productsList.filter(
+                    v => v.label.toLowerCase().indexOf(needle) > -1
+                );
+            });
+        },
         onSubmit: function(evt) {
             /**TODO */
             this.loading = true;

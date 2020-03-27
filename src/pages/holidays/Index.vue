@@ -122,25 +122,19 @@
 }
 .page-heading {
     grid-template-columns: 2fr 1fr;
-    grid-template-rows: auto;
     grid-template-areas: "heading-caption heading-stat-1";
     grid-column-gap: 1rem;
 }
 .heading-caption {
     grid-area: heading-caption;
 }
+.heading-stat-1 {
+    grid-area: heading-stat-1;
+}
 .page-contents {
-    grid-template-columns: 360px minmax(280px, 360px) 1fr;
-    grid-template-rows: auto;
-    grid-template-areas: "content-1 content-2 .";
+    grid-template-columns: repeat(auto-fit, 360px);
     grid-column-gap: 1rem;
     grid-row-gap: 2rem;
-}
-.content-1 {
-    grid-area: content-1;
-}
-.content-2 {
-    grid-area: content-2;
 }
 div[class*="content-"] > div {
     min-height: 4em;
@@ -164,15 +158,6 @@ div[class*="content-"] > div:nth-child(2) {
     background: none;
 }
 
-@media (max-width: 948px) {
-    .page-contents {
-        grid-template-columns: 360px 1fr;
-        grid-template-areas:
-            "content-1 ."
-            "content-2 .";
-    }
-}
-
 @media (max-width: 400px) {
     .page-heading {
         grid-template-columns: 1fr;
@@ -182,9 +167,6 @@ div[class*="content-"] > div:nth-child(2) {
     }
     .page-contents {
         grid-template-columns: 1fr;
-        grid-template-areas:
-            "content-1"
-            "content-2";
     }
 }
 </style>
@@ -242,13 +224,13 @@ export default {
             holidayItems: [
                 {
                     id: "111",
-                    reason: "Covid 19 ",
+                    reason: "Business Holiday",
                     start: "2020-03-18 16:00:00+00:00",
                     end: "2020/03/22 19:00:00"
                 },
                 {
                     id: "112",
-                    reason: "Covid 19  2",
+                    reason: "Emergency Store Renovation",
                     start: "2020-03-20 15:00:00+00:00",
                     end: "2020/03/25 19:00:00"
                 },

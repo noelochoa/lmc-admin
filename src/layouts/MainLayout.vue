@@ -112,7 +112,7 @@
                     </q-menu>
                 </q-btn>
             </q-toolbar>
-            <SearchResults v-bind="{ showSearch, searchResults }" />
+            <SearchResults v-bind="{ showSearch, searchResults, searchText }" />
         </q-header>
 
         <q-drawer
@@ -168,7 +168,6 @@
     transform: translateY(30px);
     opacity: 0;
 }
-
 .no-select {
     user-select: none;
 }

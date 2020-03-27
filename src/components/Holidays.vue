@@ -43,7 +43,6 @@
 }
 .holiday-item-container {
     width: 100%;
-    max-width: 360px;
 }
 .holiday-item {
     display: flex;

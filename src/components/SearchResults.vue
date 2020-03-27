@@ -9,7 +9,9 @@
         content-class="bg-none no-box-shadow"
         @hide="emitClose"
     >
-        <div class="row menu-arrow bg-grey-8">&nbsp;</div>
+        <div class="row menu-arrow bg-grey-8">
+            &nbsp;
+        </div>
         <div class="row no-wrap bg-grey-8" v-if="filteredResults.length == 0">
             <div class="block q-pa-md">
                 No results found.
@@ -21,21 +23,22 @@
                     v-for="result in filteredResults"
                     :key="result.category"
                 >
-                    <q-item
-                        dense
-                        :to="result.path"
-                        class="q-pt-xs "
-                        active-class="text-white"
-                    >
+                    <q-item dense class="q-pt-xs" active-class="text-white">
                         <q-item-section>
                             <q-item-label class="result-value">
                                 {{ result.category }}
                             </q-item-label>
                         </q-item-section>
                         <q-item-section side>
-                            <q-item-label class="text-white">
+                            <q-btn
+                                size="sm"
+                                flat
+                                dense
+                                class="text-primary"
+                                :to="result.path"
+                            >
                                 see all
-                            </q-item-label>
+                            </q-btn>
                         </q-item-section>
                     </q-item>
                     <q-item
@@ -46,15 +49,15 @@
                     >
                         <q-item-section>
                             <q-item-label
-                                class="text-caption text-primary result-value q-mt-xs"
+                                class="text-caption result-value q-mt-xs"
+                                v-html="markText(item.title)"
                             >
-                                {{ item.title }}
                             </q-item-label>
                             <q-item-label
                                 v-if="item.caption"
                                 class="text-caption result-value q-mb-xs"
                             >
-                                <i>{{ item.caption }}</i>
+                                <i v-html="markText(item.caption)"></i>
                             </q-item-label>
                         </q-item-section>
                     </q-item>
@@ -80,7 +83,7 @@
 .menu-arrow {
     width: 12px;
     margin-left: 26px;
-    height: 6px;
+    height: 8px;
     clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 </style>
@@ -88,6 +91,11 @@
 export default {
     name: "ConfirmDialog",
     props: {
+        searchText: {
+            type: String,
+            required: true,
+            default: ""
+        },
         showSearch: {
             type: Boolean,
             required: true,
@@ -106,9 +114,20 @@ export default {
             });
         }
     },
+
     methods: {
         emitClose() {
             this.$emit("update:searchFocused", false);
+        },
+        markText(str) {
+            if (str && this.searchText) {
+                return str.replace(
+                    new RegExp(`(${this.searchText})`, "ig"),
+                    `<span class='highlighted'>$1</span>`
+                );
+            }
+
+            return str;
         }
     }
 };
