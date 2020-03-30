@@ -36,6 +36,12 @@
                     <template v-slot:prepend>
                         <q-icon name="category" />
                     </template>
+                    <template v-slot:after-options>
+                        <q-item dense to="/categories/add" class="q-pt-xs">
+                            <q-icon name="add" color="white" class="q-mr-sm" />
+                            Add category
+                        </q-item>
+                    </template>
                 </q-select>
             </div>
             <div class="content-2">
@@ -212,12 +218,20 @@
                                             >Configure
                                         </q-tooltip>
                                     </q-btn>
-                                    <q-btn dense flat round icon="star_outline">
+                                    <q-btn
+                                        dense
+                                        flat
+                                        round
+                                        icon="star_outline"
+                                        :to="
+                                            '/products/feature/' + props.row.id
+                                        "
+                                    >
                                         <q-tooltip
                                             anchor="bottom right"
                                             self="top middle"
                                             :offset="[10, 10]"
-                                            >Feature this category
+                                            >Feature this product
                                         </q-tooltip>
                                     </q-btn>
                                     <q-btn

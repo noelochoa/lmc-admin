@@ -74,6 +74,10 @@ const routes = [
             {
                 path: "edit/:id",
                 component: () => import("pages/products/Edit.vue")
+            },
+            {
+                path: "feature/:id",
+                component: () => import("pages/products/Feature.vue")
             }
         ]
     },
