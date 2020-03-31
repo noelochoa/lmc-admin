@@ -15,95 +15,174 @@
                     <q-icon name="cake" class="caption-icon q-mx-md" />Product
                     Info
                 </div>
-                <q-stepper v-model="step" vertical animated>
-                    <q-step
-                        :name="1"
-                        title="Select category and fill out basic info"
-                        icon="assignment"
-                        :done="step > 1"
-                    >
-                        For each ad campaign that you create, you can control
-                        how much you're willing to spend on clicks and
-                        conversions, which networks and geographical locations
-                        you want your ads to show on, and more.
+                <div>
+                    <q-form @submit.prevent.stop="onSubmit">
+                        <q-stepper
+                            v-model="step"
+                            vertical
+                            animated
+                            class="bg-none"
+                        >
+                            <q-step
+                                :name="1"
+                                title="Select category and fill out basic info"
+                                icon="assignment"
+                                :done="step > 1"
+                            >
+                                <q-list class="detail-list" separator>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Category
+                                        </span>
+                                        <q-select
+                                            class="field-value"
+                                            v-model="product.category"
+                                            :options="categories"
+                                            dark
+                                            dense
+                                            outlined
+                                            hide-bottom-space
+                                            options-dense
+                                            emit-value
+                                            map-options
+                                            lazy-rules
+                                            :rules="[
+                                                val =>
+                                                    val !== null &&
+                                                    val.trim() !== '',
+                                                val => categories.includes(val)
+                                            ]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label"
+                                            >Product Name</span
+                                        >
+                                        <q-input
+                                            type="text"
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="product.name"
+                                            lazy-rules
+                                            :rules="[
+                                                val =>
+                                                    val !== null &&
+                                                    val.trim() !== ''
+                                            ]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label"
+                                            >Description</span
+                                        >
+                                        <q-input
+                                            type="textarea"
+                                            textarea
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="product.description"
+                                            lazy-rules
+                                            :rules="[
+                                                val =>
+                                                    val !== null &&
+                                                    val.trim() !== ''
+                                            ]"
+                                        />
+                                    </q-item>
+                                </q-list>
 
-                        <q-stepper-navigation>
-                            <q-btn
-                                @click="step = 2"
-                                color="primary"
-                                label="Continue"
-                            />
-                        </q-stepper-navigation>
-                    </q-step>
+                                <q-stepper-navigation>
+                                    <q-btn
+                                        @click="step = 2"
+                                        color="primary"
+                                        label="Continue"
+                                    />
+                                </q-stepper-navigation>
+                            </q-step>
 
-                    <q-step
-                        :name="2"
-                        title="Upload product images"
-                        icon="add_photo_alternate"
-                        :done="step > 2"
-                    >
-                        An ad group contains one or more ads which target a
-                        shared set of keywords.
+                            <q-step
+                                :name="2"
+                                title="Upload product images"
+                                icon="add_photo_alternate"
+                                :done="step > 2"
+                            >
+                                An ad group contains one or more ads which
+                                target a shared set of keywords.
 
-                        <q-stepper-navigation>
-                            <q-btn
-                                @click="step = 3"
-                                color="primary"
-                                label="Continue"
-                            />
-                            <q-btn
-                                flat
-                                @click="step = 1"
-                                color="primary"
-                                label="Back"
-                                class="q-ml-sm"
-                            />
-                        </q-stepper-navigation>
-                    </q-step>
+                                <q-stepper-navigation>
+                                    <q-btn
+                                        @click="step = 3"
+                                        color="primary"
+                                        label="Continue"
+                                    />
+                                    <q-btn
+                                        flat
+                                        @click="step = 1"
+                                        color="primary"
+                                        label="Back"
+                                        class="q-ml-sm"
+                                    />
+                                </q-stepper-navigation>
+                            </q-step>
 
-                    <q-step
-                        :name="3"
-                        title="Ad template"
-                        icon="assignment"
-                        :done="step > 3"
-                    >
-                        This step won't show up because it is disabled.
+                            <q-step
+                                :name="3"
+                                title="Ad template"
+                                icon="assignment"
+                                :done="step > 3"
+                            >
+                                This step won't show up because it is disabled.
 
-                        <q-stepper-navigation>
-                            <q-btn
-                                @click="step = 4"
-                                color="primary"
-                                label="Continue"
-                            />
-                            <q-btn
-                                flat
-                                @click="step = 2"
-                                color="primary"
-                                label="Back"
-                                class="q-ml-sm"
-                            />
-                        </q-stepper-navigation>
-                    </q-step>
+                                <q-stepper-navigation>
+                                    <q-btn
+                                        @click="step = 4"
+                                        color="primary"
+                                        label="Continue"
+                                    />
+                                    <q-btn
+                                        flat
+                                        @click="step = 2"
+                                        color="primary"
+                                        label="Back"
+                                        class="q-ml-sm"
+                                    />
+                                </q-stepper-navigation>
+                            </q-step>
 
-                    <q-step :name="4" title="Create an ad" icon="add_comment">
-                        Try out different ad text to see what brings in the most
-                        customers, and learn how to enhance your ads using
-                        features like ad extensions. If you run into any
-                        problems with your ads, find out how to tell if they're
-                        running and how to resolve approval issues.
+                            <q-step
+                                :name="4"
+                                title="Create an ad"
+                                icon="add_comment"
+                            >
+                                Try out different ad text to see what brings in
+                                the most customers, and learn how to enhance
+                                your ads using features like ad extensions. If
+                                you run into any problems with your ads, find
+                                out how to tell if they're running and how to
+                                resolve approval issues.
 
-                        <q-stepper-navigation>
-                            <q-btn color="primary" label="Finish" />
-                            <q-btn
-                                flat
-                                @click="step = 3"
-                                color="primary"
-                                label="Back"
-                                class="q-ml-sm"
-                            />
-                        </q-stepper-navigation>
-                    </q-step>
-                </q-stepper>
+                                <q-stepper-navigation>
+                                    <q-btn color="primary" label="Finish" />
+                                    <q-btn
+                                        flat
+                                        @click="step = 3"
+                                        color="primary"
+                                        label="Back"
+                                        class="q-ml-sm"
+                                    />
+                                </q-stepper-navigation>
+                            </q-step>
+                        </q-stepper>
+                    </q-form>
+                </div>
             </div>
 
             <div class="content-2"></div>
@@ -150,6 +229,7 @@ div[class*="content-"] > div {
 }
 .detail-field {
     align-items: center;
+    padding-left: 0;
 }
 .detail-field .field-label {
     width: 140px;
@@ -165,7 +245,7 @@ div[class*="content-"] > div {
     border: 2px solid $negative;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 500px) {
     .detail-field {
         flex-direction: column;
         align-items: flex-start;
@@ -183,8 +263,11 @@ div[class*="content-"] > div {
 }
 </style>
 <script>
+import HelperMixin from "../../mixins/helpers";
+
 export default {
     name: "ProductAdd",
+    mixins: [HelperMixin],
     meta() {
         return {
             title: "Add Product"
@@ -192,8 +275,42 @@ export default {
     },
     data() {
         return {
-            step: 1
+            step: 1,
+            categories: [
+                {
+                    label: "Cakes",
+                    value: 1
+                },
+                {
+                    label: "Cupcakes",
+                    value: 2
+                }
+            ],
+            product: {
+                name: "",
+                category: 2,
+                basePrice: 1,
+                minOrderQuantity: 1,
+                description: "",
+                details: null,
+                variants: null,
+                images: null
+            }
         };
+    },
+    methods: {
+        onSubmit: function(evt) {
+            /**TODO */
+            this.loading = true;
+            setTimeout(() => {
+                this.showNotif(
+                    true,
+                    "Successfully added new holiday. " + this.holiday.reason
+                );
+                this.loading = false;
+                this.returnToPageIndex("/holidays");
+            }, 2500);
+        }
     }
 };
 </script>

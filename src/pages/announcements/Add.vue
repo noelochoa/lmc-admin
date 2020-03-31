@@ -151,6 +151,7 @@
                             <q-item class="detail-field">
                                 <span class="field-label">Text</span>
                                 <q-editor
+                                    placeholder="Announcement text"
                                     ref="qTxtEditor"
                                     class="field-value qtext-editor"
                                     :class="{ 'has-error': contentEmpty }"
@@ -160,7 +161,7 @@
                                     toolbar-text-color="black"
                                     toolbar-toggle-color="yellow-8"
                                     :toolbar="[
-                                        ['bold', 'italic'],
+                                        ['bold', 'italic', 'underline'],
                                         ['undo', 'redo']
                                     ]"
                                     @input="hasTyped = true"

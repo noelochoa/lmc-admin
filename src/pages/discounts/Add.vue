@@ -151,12 +151,7 @@
                                 <q-select
                                     class="field-value"
                                     v-model="discount.target"
-                                    :options="[
-                                        'All',
-                                        'Regular',
-                                        'Reseller',
-                                        'Partner'
-                                    ]"
+                                    :options="targets"
                                     @input="hasSelect = true"
                                     dark
                                     dense
@@ -167,13 +162,7 @@
                                     :rules="[
                                         val =>
                                             val !== null && val.trim() !== '',
-                                        val =>
-                                            [
-                                                'All',
-                                                'Regular',
-                                                'Reseller',
-                                                'Partner'
-                                            ].includes(val)
+                                        val => targets.includes(val)
                                     ]"
                                 >
                                     <template v-slot:prepend>
@@ -248,16 +237,7 @@
         </div>
     </q-page>
 </template>
-<style lang="scss">
-.q-chip__content {
-    overflow: hidden;
-    white-space: nowrap;
-    align-items: center;
-}
-.products-select .q-field__control-container {
-    min-height: 5rem;
-}
-</style>
+
 <style lang="scss" scoped>
 .page-heading,
 .page-contents {
@@ -323,6 +303,14 @@ div[class*="content-"] > div {
 .q-field__bottom {
     display: none;
 }
+.q-chip__content {
+    overflow: hidden;
+    white-space: nowrap;
+    align-items: center;
+}
+.products-select .q-field__control-container {
+    min-height: 5rem;
+}
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
@@ -343,6 +331,7 @@ export default {
         return {
             loading: false,
             hasSelect: true,
+            targets: ["All", "Regular", "Reseller", "Partner"],
             options: null,
             productsList: [
                 {
