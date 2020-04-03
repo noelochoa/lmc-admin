@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import auth from "./auth";
+import addProduct from "./addProduct";
 
 Vue.use(Vuex);
 
@@ -17,7 +18,8 @@ Vue.use(Vuex);
 export default async function({ ssrContext }) {
     const Store = await new Vuex.Store({
         modules: {
-            auth
+            auth,
+            addProduct
         },
 
         // enable strict mode (adds overhead!)

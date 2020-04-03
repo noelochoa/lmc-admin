@@ -16,18 +16,16 @@
                     Info
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-stepper
-                            v-model="step"
-                            vertical
-                            animated
-                            class="bg-none"
+                    <q-stepper v-model="step" vertical animated class="bg-none">
+                        <q-step
+                            :name="1"
+                            title="Select category and fill out basic info"
+                            icon="assignment"
+                            :done="step > 1"
                         >
-                            <q-step
-                                :name="1"
-                                title="Select category and fill out basic info"
-                                icon="assignment"
-                                :done="step > 1"
+                            <q-form
+                                ref="step1Form"
+                                @submit.prevent.stop="saveStep1"
                             >
                                 <q-list class="detail-list" separator>
                                     <q-item class="detail-field">
@@ -36,7 +34,7 @@
                                         </span>
                                         <q-select
                                             class="field-value"
-                                            v-model="product.category"
+                                            v-model="newProduct.category"
                                             :options="categories"
                                             dark
                                             dense
@@ -46,18 +44,13 @@
                                             emit-value
                                             map-options
                                             lazy-rules
-                                            :rules="[
-                                                val =>
-                                                    val !== null &&
-                                                    val.trim() !== '',
-                                                val => categories.includes(val)
-                                            ]"
+                                            :rules="[_isValidCategory]"
                                         />
                                     </q-item>
                                     <q-item class="detail-field">
-                                        <span class="field-label"
-                                            >Product Name</span
-                                        >
+                                        <span class="field-label">
+                                            Product Name
+                                        </span>
                                         <q-input
                                             type="text"
                                             dense
@@ -66,7 +59,7 @@
                                             hide-bottom-space
                                             placeholder="Field required. "
                                             class="field-value"
-                                            v-model="product.name"
+                                            v-model="newProduct.name"
                                             lazy-rules
                                             :rules="[
                                                 val =>
@@ -76,9 +69,9 @@
                                         />
                                     </q-item>
                                     <q-item class="detail-field">
-                                        <span class="field-label"
-                                            >Description</span
-                                        >
+                                        <span class="field-label">
+                                            Description
+                                        </span>
                                         <q-input
                                             type="textarea"
                                             textarea
@@ -88,7 +81,7 @@
                                             hide-bottom-space
                                             placeholder="Field required. "
                                             class="field-value"
-                                            v-model="product.description"
+                                            v-model="newProduct.description"
                                             lazy-rules
                                             :rules="[
                                                 val =>
@@ -97,70 +90,124 @@
                                             ]"
                                         />
                                     </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Base price
+                                        </span>
+                                        <q-input
+                                            type="number"
+                                            min="1"
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="newProduct.basePrice"
+                                            lazy-rules
+                                            :rules="[val => !isNaN(val)]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Minimum Order Quantity
+                                        </span>
+                                        <q-input
+                                            type="number"
+                                            min="1"
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="
+                                                newProduct.minOrderQuantity
+                                            "
+                                            lazy-rules
+                                            :rules="[
+                                                val => !isNaN(val) && val > 0
+                                            ]"
+                                        />
+                                    </q-item>
                                 </q-list>
 
                                 <q-stepper-navigation>
                                     <q-btn
-                                        @click="step = 2"
                                         color="primary"
+                                        type="submit"
                                         label="Continue"
                                     />
                                 </q-stepper-navigation>
-                            </q-step>
+                            </q-form>
+                        </q-step>
 
-                            <q-step
-                                :name="2"
-                                title="Upload product images"
-                                icon="add_photo_alternate"
-                                :done="step > 2"
+                        <q-step
+                            :name="2"
+                            title="Upload product images"
+                            icon="add_photo_alternate"
+                            :done="step > 2"
+                        >
+                            <q-form
+                                ref="step2Form"
+                                @submit.prevent.stop="saveStep2"
                             >
                                 An ad group contains one or more ads which
                                 target a shared set of keywords.
-
                                 <q-stepper-navigation>
                                     <q-btn
-                                        @click="step = 3"
+                                        type="submit"
                                         color="primary"
                                         label="Continue"
                                     />
                                     <q-btn
                                         flat
-                                        @click="step = 1"
+                                        @click="goBack(1)"
                                         color="primary"
                                         label="Back"
                                         class="q-ml-sm"
                                     />
                                 </q-stepper-navigation>
-                            </q-step>
+                            </q-form>
+                        </q-step>
 
-                            <q-step
-                                :name="3"
-                                title="Ad template"
-                                icon="assignment"
-                                :done="step > 3"
+                        <q-step
+                            :name="3"
+                            title="Configure selectable options"
+                            icon="assignment"
+                            :done="step > 3"
+                        >
+                            <q-form
+                                ref="step3Form"
+                                @submit.prevent.stop="saveStep3"
                             >
                                 This step won't show up because it is disabled.
 
                                 <q-stepper-navigation>
                                     <q-btn
-                                        @click="step = 4"
+                                        type="submit"
                                         color="primary"
                                         label="Continue"
                                     />
                                     <q-btn
                                         flat
-                                        @click="step = 2"
+                                        @click="goBack(2)"
                                         color="primary"
                                         label="Back"
                                         class="q-ml-sm"
                                     />
                                 </q-stepper-navigation>
-                            </q-step>
+                            </q-form>
+                        </q-step>
 
-                            <q-step
-                                :name="4"
-                                title="Create an ad"
-                                icon="add_comment"
+                        <q-step
+                            :name="4"
+                            title="Publish new product"
+                            icon="add_comment"
+                        >
+                            <q-form
+                                ref="step4Form"
+                                @submit.prevent.stop="saveStep4"
                             >
                                 Try out different ad text to see what brings in
                                 the most customers, and learn how to enhance
@@ -170,18 +217,22 @@
                                 resolve approval issues.
 
                                 <q-stepper-navigation>
-                                    <q-btn color="primary" label="Finish" />
+                                    <q-btn
+                                        color="primary"
+                                        label="Finish"
+                                        type="submit"
+                                    />
                                     <q-btn
                                         flat
-                                        @click="step = 3"
+                                        @click="goBack(3)"
                                         color="primary"
                                         label="Back"
                                         class="q-ml-sm"
                                     />
                                 </q-stepper-navigation>
-                            </q-step>
-                        </q-stepper>
-                    </q-form>
+                            </q-form>
+                        </q-step>
+                    </q-stepper>
                 </div>
             </div>
 
@@ -263,6 +314,7 @@ div[class*="content-"] > div {
 }
 </style>
 <script>
+import { mapState, mapGetters, mapActions } from "vuex";
 import HelperMixin from "../../mixins/helpers";
 
 export default {
@@ -272,6 +324,19 @@ export default {
         return {
             title: "Add Product"
         };
+    },
+    created() {
+        if (this.$route.params.step) {
+            this.step = !isNaN(this.$route.params.step)
+                ? parseInt(this.$route.params.step)
+                : 1;
+        }
+        if (!this.product.category && this.categories) {
+            // this.product.category = this.categories[0].value;
+        }
+    },
+    computed: {
+        ...mapState("addProduct", ["product"])
     },
     data() {
         return {
@@ -286,10 +351,10 @@ export default {
                     value: 2
                 }
             ],
-            product: {
+            newProduct: {
                 name: "",
                 category: 2,
-                basePrice: 1,
+                basePrice: 100,
                 minOrderQuantity: 1,
                 description: "",
                 details: null,
@@ -299,17 +364,107 @@ export default {
         };
     },
     methods: {
+        ...mapActions("addProduct", [
+            "setProductInfo",
+            "setProductImages",
+            "setProductOptions"
+        ]),
+        ...mapGetters("addProduct", ["getProduct"]),
+        _isValidCategory(val) {
+            if (
+                !(
+                    this.newProduct.category &&
+                    this.categories &&
+                    this.categories.length > 0
+                )
+            ) {
+                return "Invalid category selected";
+            }
+
+            const categoryItem = this.categories.find(option => {
+                return option.value === this.newProduct.category;
+            });
+
+            if (!categoryItem) return "Invalid category selected";
+
+            return true;
+        },
         onSubmit: function(evt) {
             /**TODO */
             this.loading = true;
             setTimeout(() => {
-                this.showNotif(
-                    true,
-                    "Successfully added new holiday. " + this.holiday.reason
-                );
+                this.showNotif(true, "Successfully added new product. ");
                 this.loading = false;
-                this.returnToPageIndex("/holidays");
+                this.returnToPageIndex("/products");
             }, 2500);
+        },
+        saveStep1: function(evt) {
+            /** TODO */
+            this.$refs.step1Form.validate().then(success => {
+                if (success) {
+                    this.setProductInfo(this.newProduct);
+                    console.log(this.getProduct());
+                    this.step = 2;
+                    this.$router.replace("/products/add/2").catch(err => {});
+                }
+            });
+        },
+        saveStep2: function(evt) {
+            /** TODO */
+            this.$refs.step2Form.validate().then(success => {
+                if (success) {
+                    const imgs = [
+                        { imageType: "gallery", image: "123.jpg" },
+                        { imageType: "gallery", image: "456.jpg" }
+                    ];
+                    this.setProductImages(imgs);
+                    console.log(this.getProduct());
+                    this.step = 3;
+                    this.$router.replace("/products/add/3").catch(err => {});
+                }
+            });
+        },
+        saveStep3: function(evt) {
+            /** TODO */
+            this.$refs.step3Form.validate().then(success => {
+                if (success) {
+                    const opts = [
+                        {
+                            group: "ingredients",
+                            attribute: "eggs",
+                            value: 2,
+                            unit: "pcs"
+                        },
+                        {
+                            group: "ingredients",
+                            attribute: "flour",
+                            value: 3,
+                            unit: "cups"
+                        },
+                        {
+                            group: "ingredients",
+                            attribute: "cornstarch",
+                            value: 1,
+                            unit: "cup"
+                        }
+                    ];
+                    this.setProductOptions(opts);
+                    console.log(this.getProduct());
+                    this.step = 4;
+                    this.$router.replace("/products/add/4").catch(err => {});
+                }
+            });
+        },
+        saveStep4: function(evt) {
+            /** TODO */
+            // this.setProduct(this.newProduct);
+            console.log(this.getProduct());
+        },
+        goBack: function(step) {
+            if ([1, 2, 3].includes(step)) {
+                this.step = step;
+                this.$router.replace("/products/add/" + step).catch(err => {});
+            }
         }
     }
 };

@@ -68,7 +68,7 @@ const routes = [
                 component: () => import("pages/products/Index.vue")
             },
             {
-                path: "add",
+                path: "add/:step",
                 component: () => import("pages/products/Add.vue")
             },
             {

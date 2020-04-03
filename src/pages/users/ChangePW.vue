@@ -20,7 +20,7 @@
                         <q-list class="detail-list" separator>
                             <q-item class="detail-field">
                                 <span class="field-label">
-                                    Current Password
+                                    Current
                                 </span>
                                 <q-input
                                     type="password"
@@ -40,7 +40,7 @@
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">
-                                    New Password
+                                    New
                                 </span>
                                 <q-input
                                     type="password"
@@ -48,7 +48,7 @@
                                     outlined
                                     dark
                                     hide-bottom-space
-                                    placeholder="Minimum of 6 or more characters."
+                                    placeholder="Minimum of 6 characters."
                                     class="field-value"
                                     v-model="user.newpw"
                                     lazy-rules
@@ -60,7 +60,7 @@
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">
-                                    Retype Password
+                                    Retype new
                                 </span>
                                 <q-input
                                     type="password"
