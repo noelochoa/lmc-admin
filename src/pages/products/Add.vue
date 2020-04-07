@@ -62,9 +62,9 @@
                                             v-model="newProduct.name"
                                             lazy-rules
                                             :rules="[
-                                                val =>
+                                                (val) =>
                                                     val !== null &&
-                                                    val.trim() !== ''
+                                                    val.trim() !== '',
                                             ]"
                                         />
                                     </q-item>
@@ -84,9 +84,9 @@
                                             v-model="newProduct.description"
                                             lazy-rules
                                             :rules="[
-                                                val =>
+                                                (val) =>
                                                     val !== null &&
-                                                    val.trim() !== ''
+                                                    val.trim() !== '',
                                             ]"
                                         />
                                     </q-item>
@@ -105,7 +105,7 @@
                                             class="field-value"
                                             v-model="newProduct.basePrice"
                                             lazy-rules
-                                            :rules="[val => !isNaN(val)]"
+                                            :rules="[(val) => !isNaN(val)]"
                                         />
                                     </q-item>
                                     <q-item class="detail-field">
@@ -126,9 +126,95 @@
                                             "
                                             lazy-rules
                                             :rules="[
-                                                val => !isNaN(val) && val > 0
+                                                (val) => !isNaN(val) && val > 0,
                                             ]"
                                         />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Details
+                                        </span>
+                                        <div class="field-value">
+                                            <q-list
+                                                v-for="(detail,
+                                                grpkey) in newProduct.details"
+                                                :key="grpkey"
+                                                class="detail-group-list"
+                                            >
+                                                <q-item>
+                                                    <q-item-section>
+                                                        <q-item-label>
+                                                            {{ detail.group }}
+                                                        </q-item-label>
+                                                    </q-item-section>
+
+                                                    <q-item-section side>
+                                                        <q-icon
+                                                            name="add"
+                                                            color="white"
+                                                            class="cursor-pointer"
+                                                        >
+                                                            <q-tooltip
+                                                                anchor="bottom right"
+                                                                self="top middle"
+                                                                :offset="[
+                                                                    10,
+                                                                    10,
+                                                                ]"
+                                                                >Add new field
+                                                            </q-tooltip>
+                                                        </q-icon>
+                                                    </q-item-section>
+                                                </q-item>
+                                                <q-item
+                                                    v-for="(value,
+                                                    key) in detail.items"
+                                                    :key="key"
+                                                >
+                                                    <q-input
+                                                        class="detail-list-key"
+                                                        type="text"
+                                                        dense
+                                                        outlined
+                                                        dark
+                                                        hide-bottom-space
+                                                        placeholder="Label required "
+                                                        lazy-rules
+                                                        :value="key"
+                                                        :rules="[
+                                                            (val) =>
+                                                                val !== null &&
+                                                                val.trim() !==
+                                                                    '',
+                                                        ]"
+                                                    />
+                                                    <q-input
+                                                        class="detail-list-value"
+                                                        type="text"
+                                                        dense
+                                                        outlined
+                                                        dark
+                                                        hide-bottom-space
+                                                        placeholder="Value required "
+                                                        lazy-rules
+                                                        :value="value"
+                                                        :rules="[
+                                                            (val) =>
+                                                                val !== null &&
+                                                                val.trim() !==
+                                                                    '',
+                                                        ]"
+                                                    />
+                                                </q-item>
+                                            </q-list>
+                                            <q-btn
+                                                dense
+                                                flat
+                                                no-caps
+                                                icon="add"
+                                                label="Add Detail Group"
+                                            />
+                                        </div>
                                     </q-item>
                                 </q-list>
 
@@ -289,6 +375,22 @@ div[class*="content-"] > div {
     flex: 1;
     max-width: 388px;
 }
+.detail-group-list .q-item {
+    padding: 4px 0;
+}
+.detail-group-list .q-item:first-child {
+    min-height: 1rem;
+}
+.detail-group-list .q-item:last-child {
+    display: flex;
+    flex-wrap: wrap;
+}
+.detail-list-key,
+.detail-list-value {
+    margin: 2px 2px;
+    width: 188px;
+    flex-grow: 1;
+}
 .qtext-editor {
     border: 2px solid white;
 }
@@ -322,7 +424,7 @@ export default {
     mixins: [HelperMixin],
     meta() {
         return {
-            title: "Add Product"
+            title: "Add Product",
         };
     },
     created() {
@@ -336,7 +438,7 @@ export default {
         }
     },
     computed: {
-        ...mapState("addProduct", ["product"])
+        ...mapState("addProduct", ["product"]),
     },
     data() {
         return {
@@ -344,12 +446,12 @@ export default {
             categories: [
                 {
                     label: "Cakes",
-                    value: 1
+                    value: 1,
                 },
                 {
                     label: "Cupcakes",
-                    value: 2
-                }
+                    value: 2,
+                },
             ],
             newProduct: {
                 name: "",
@@ -357,17 +459,33 @@ export default {
                 basePrice: 100,
                 minOrderQuantity: 1,
                 description: "",
-                details: null,
-                variants: null,
-                images: null
-            }
+                details: [
+                    {
+                        group: "General",
+                        items: {
+                            Ingredients: "eggs, flour, etc.",
+                        },
+                    },
+                    // {
+                    //     group: "Shipping",
+                    //     items: {
+                    //         Weight: "5 kg",
+                    //         Height: "1 m",
+                    //         Width: "60 cm",
+                    //         Depth: "20 cm",
+                    //     },
+                    // },
+                ],
+                options: null,
+                images: null,
+            },
         };
     },
     methods: {
         ...mapActions("addProduct", [
             "setProductInfo",
             "setProductImages",
-            "setProductOptions"
+            "setProductOptions",
         ]),
         ...mapGetters("addProduct", ["getProduct"]),
         _isValidCategory(val) {
@@ -381,7 +499,7 @@ export default {
                 return "Invalid category selected";
             }
 
-            const categoryItem = this.categories.find(option => {
+            const categoryItem = this.categories.find((option) => {
                 return option.value === this.newProduct.category;
             });
 
@@ -389,7 +507,7 @@ export default {
 
             return true;
         },
-        onSubmit: function(evt) {
+        onSubmit: function (evt) {
             /**TODO */
             this.loading = true;
             setTimeout(() => {
@@ -398,74 +516,82 @@ export default {
                 this.returnToPageIndex("/products");
             }, 2500);
         },
-        saveStep1: function(evt) {
+        saveStep1: function (evt) {
             /** TODO */
-            this.$refs.step1Form.validate().then(success => {
+            this.$refs.step1Form.validate().then((success) => {
                 if (success) {
                     this.setProductInfo(this.newProduct);
                     console.log(this.getProduct());
                     this.step = 2;
-                    this.$router.replace("/products/add/2").catch(err => {});
+                    this.$router.replace("/products/add/2").catch((err) => {});
                 }
             });
         },
-        saveStep2: function(evt) {
+        saveStep2: function (evt) {
             /** TODO */
-            this.$refs.step2Form.validate().then(success => {
+            this.$refs.step2Form.validate().then((success) => {
                 if (success) {
                     const imgs = [
                         { imageType: "gallery", image: "123.jpg" },
-                        { imageType: "gallery", image: "456.jpg" }
+                        { imageType: "gallery", image: "456.jpg" },
                     ];
                     this.setProductImages(imgs);
                     console.log(this.getProduct());
                     this.step = 3;
-                    this.$router.replace("/products/add/3").catch(err => {});
+                    this.$router.replace("/products/add/3").catch((err) => {});
                 }
             });
         },
-        saveStep3: function(evt) {
+        saveStep3: function (evt) {
             /** TODO */
-            this.$refs.step3Form.validate().then(success => {
+            this.$refs.step3Form.validate().then((success) => {
                 if (success) {
                     const opts = [
                         {
                             group: "ingredients",
                             attribute: "eggs",
                             value: 2,
-                            unit: "pcs"
+                            unit: "pcs",
                         },
                         {
                             group: "ingredients",
                             attribute: "flour",
                             value: 3,
-                            unit: "cups"
+                            unit: "cups",
                         },
                         {
                             group: "ingredients",
                             attribute: "cornstarch",
                             value: 1,
-                            unit: "cup"
-                        }
+                            unit: "cup",
+                        },
                     ];
                     this.setProductOptions(opts);
                     console.log(this.getProduct());
                     this.step = 4;
-                    this.$router.replace("/products/add/4").catch(err => {});
+                    this.$router.replace("/products/add/4").catch((err) => {});
                 }
             });
         },
-        saveStep4: function(evt) {
+        saveStep4: function (evt) {
             /** TODO */
             // this.setProduct(this.newProduct);
             console.log(this.getProduct());
         },
-        goBack: function(step) {
+        goBack: function (step) {
             if ([1, 2, 3].includes(step)) {
                 this.step = step;
-                this.$router.replace("/products/add/" + step).catch(err => {});
+                this.$router
+                    .replace("/products/add/" + step)
+                    .catch((err) => {});
             }
-        }
-    }
+        },
+        removeGroup: function (key) {
+            this.$delete(this.newProduct.details, key);
+        },
+        removeDetailItem: function (grp, key) {
+            this.$delete(this.newProduct.details[grp].items, key);
+        },
+    },
 };
 </script>
