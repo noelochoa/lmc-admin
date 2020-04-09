@@ -12,3 +12,8 @@ export function setProductOptions({ commit }, options) {
     console.log("ACTION setProductOptions", options);
     commit("SET_PRODUCT_OPTIONS", options);
 }
+
+export function clearState({ commit }) {
+    console.log("ACTION clearState");
+    commit("RESET_PRODUCT");
+}

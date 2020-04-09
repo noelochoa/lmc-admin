@@ -1,17 +1,19 @@
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
+const moduleName = "addProduct";
 
 export default {
     computed: {
-        ...mapState("addProduct", ["product"])
+        ...mapState(moduleName, ["product"])
     },
     methods: {
-        ...mapActions("addProduct", [
+        ...mapActions(moduleName, [
             "setProductInfo",
             "setProductImages",
-            "setProductOptions"
+            "setProductOptions",
+            "clearState"
         ]),
-        ...mapGetters("addProduct", ["getProduct"])
+        ...mapGetters(moduleName, ["getProduct"])
     }
 };
 </script>

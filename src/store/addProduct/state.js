@@ -1,4 +1,4 @@
-export default function() {
+export function getinitialState() {
     return {
         product: {
             name: "",
@@ -11,4 +11,10 @@ export default function() {
             images: null
         }
     };
+}
+
+const state = getinitialState();
+
+export default function() {
+    return state;
 }

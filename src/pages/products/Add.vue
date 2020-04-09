@@ -469,7 +469,7 @@ div[class*="content-"] > div {
     padding: 4px 0;
     display: flex;
 }
-.detail-group-list .q-item:first-child .q-input {
+.detail-group-list > .q-item:first-child .q-input {
     max-width: 180px;
 }
 .detail-field-keyval {
@@ -513,6 +513,11 @@ import HelperMixin from "../../mixins/helpers";
 import ProductMixin from "../../mixins/product";
 
 export default {
+    preFetch({ store, currentRoute }) {
+        // console.log(store.state);
+        console.log("PREFETCH CALL");
+    },
+
     name: "ProductAdd",
     mixins: [HelperMixin, ProductMixin],
     meta() {
@@ -530,6 +535,12 @@ export default {
             // this.product.category = this.categories[0].value;
         }
     },
+    destroyed() {
+        this.clearState();
+    },
+    mounted() {
+        this.details = [...this.toReactiveDataFormat(this.newProduct.details)];
+    },
     data() {
         return {
             step: 1,
@@ -543,7 +554,15 @@ export default {
                     value: 2
                 }
             ],
-            details: [],
+            details: [
+                // {
+                //     group: "General",
+                //     items: [
+                //         { label: "Ingredients", value: "2 eggs, 1 cup flour" }
+                //     ],
+                //     edit: true
+                // }
+            ],
             newProduct: {
                 name: "",
                 category: 2,
@@ -554,7 +573,15 @@ export default {
                     {
                         group: "General",
                         items: {
-                            Ingredients: "eggs, flour, etc."
+                            Ingredients: "2 eggs, 2 tbsp vanilla, etc.",
+                            Sweetness: 123
+                        }
+                    },
+                    {
+                        group: "Shipping",
+                        items: {
+                            Weight: "1.5 kg",
+                            Dimensions: "20cm x 15cm x 60cm"
                         }
                     }
                 ],
@@ -592,10 +619,64 @@ export default {
                 this.returnToPageIndex("/products");
             }, 2500);
         },
+        toJSONFormat: function(details) {
+            const retArr = [];
+
+            if (details && details.length > 0) {
+                details.map(detail => {
+                    const groupItems = {};
+                    if (detail.items && detail.items.length > 0) {
+                        detail.items.map(item => {
+                            groupItems[item.label] = item.value;
+                        });
+                    }
+
+                    if (detail.group && Object.keys(groupItems).length > 0) {
+                        retArr.push({
+                            group: detail.group,
+                            items: groupItems
+                        });
+                    }
+                });
+            }
+
+            return retArr;
+        },
+        toReactiveDataFormat: function(details) {
+            const retArr = [];
+
+            if (details && details.length > 0) {
+                details.map(detail => {
+                    const groupItemsArr = [];
+                    if (detail.items && Object.keys(detail.items).length > 0) {
+                        for (let key in detail.items) {
+                            groupItemsArr.push({
+                                label: key,
+                                value: detail.items[key].toString()
+                            });
+                        }
+                    }
+                    if (detail.group && groupItemsArr.length > 0) {
+                        retArr.push({
+                            group: detail.group,
+                            items: groupItemsArr,
+                            edit: true
+                        });
+                    }
+                });
+            }
+
+            console.log(retArr);
+            return retArr;
+        },
         saveStep1: function(evt) {
             /** TODO */
             this.$refs.step1Form.validate().then(success => {
                 if (success) {
+                    this.newProduct.details = [
+                        ...this.toJSONFormat(this.details)
+                    ];
+
                     this.setProductInfo(this.newProduct);
                     console.log(this.getProduct());
                     this.step = 2;
