@@ -206,7 +206,7 @@
     grid-area: heading-stat-3;
 }
 .page-contents {
-    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, minmax(240px, 480px));
     grid-template-areas:
         "content-1 content-2 content-3"
         "content-4 content-4 content-5";
@@ -297,6 +297,13 @@ div[class*="content-"] > div:nth-child(3) {
 @media (max-width: 320px) {
     .caption-icon {
         display: none;
+    }
+}
+
+@media (min-width: 1840px) {
+    .page-heading {
+        grid-template-columns: 744px repeat(3, 248px);
+        grid-template-areas: "heading-caption heading-stat-1 heading-stat-2 heading-stat-3";
     }
 }
 </style>

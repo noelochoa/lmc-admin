@@ -132,6 +132,55 @@
                                     </q-item>
                                     <q-item class="detail-field">
                                         <span class="field-label">
+                                            Colors
+                                        </span>
+                                        <q-select
+                                            class="field-value"
+                                            v-model="newProduct.colors"
+                                            hide-dropdown-icon
+                                            hide-bottom-space
+                                            dark
+                                            outlined
+                                            multiple
+                                            use-chips
+                                            lazy-rules
+                                            :rules="[_isValidColor]"
+                                        >
+                                            <template v-slot:append>
+                                                <q-icon
+                                                    name="colorize"
+                                                    class="cursor-pointer"
+                                                >
+                                                    <q-tooltip
+                                                        :delay="550"
+                                                        anchor="bottom right"
+                                                        self="top middle"
+                                                        :offset="[10, 10]"
+                                                    >
+                                                        Select color
+                                                    </q-tooltip>
+                                                    <q-popup-proxy>
+                                                        <q-color
+                                                            flat
+                                                            square
+                                                            no-header
+                                                            no-footer
+                                                            default-view="palette"
+                                                            format-model="hex"
+                                                            v-model="selcolor"
+                                                            @input="
+                                                                newProduct.colors.push(
+                                                                    selcolor
+                                                                )
+                                                            "
+                                                        />
+                                                    </q-popup-proxy>
+                                                </q-icon>
+                                            </template>
+                                        </q-select>
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
                                             Details
                                         </span>
                                         <div class="field-value">
@@ -200,13 +249,11 @@
                                                                 "
                                                             >
                                                                 <q-tooltip
+                                                                    :delay="550"
                                                                     anchor="bottom right"
                                                                     self="top middle"
-                                                                    :offset="[
-                                                                        10,
-                                                                        10
-                                                                    ]"
-                                                                    >Add new
+                                                                >
+                                                                    Add new
                                                                     field
                                                                 </q-tooltip>
                                                             </q-icon>
@@ -280,13 +327,13 @@
                                                                     "
                                                                 >
                                                                     <q-tooltip
+                                                                        :delay="
+                                                                            550
+                                                                        "
                                                                         anchor="bottom right"
                                                                         self="top middle"
-                                                                        :offset="[
-                                                                            10,
-                                                                            10
-                                                                        ]"
-                                                                        >Remove
+                                                                    >
+                                                                        Remove
                                                                         this
                                                                         field
                                                                     </q-tooltip>
@@ -534,16 +581,15 @@ export default {
         if (!this.product.category && this.categories) {
             // this.product.category = this.categories[0].value;
         }
+        // this.details = [...this.toReactiveDataFormat(this.newProduct.details)];
     },
     destroyed() {
         this.clearState();
     },
-    mounted() {
-        this.details = [...this.toReactiveDataFormat(this.newProduct.details)];
-    },
     data() {
         return {
             step: 1,
+            selcolor: "#FFFFFF",
             categories: [
                 {
                     label: "Cakes",
@@ -555,13 +601,21 @@ export default {
                 }
             ],
             details: [
-                // {
-                //     group: "General",
-                //     items: [
-                //         { label: "Ingredients", value: "2 eggs, 1 cup flour" }
-                //     ],
-                //     edit: true
-                // }
+                {
+                    group: "General",
+                    items: [
+                        { label: "Ingredients", value: "2 eggs, 1 cup flour" }
+                    ],
+                    edit: true
+                },
+                {
+                    group: "Shipping",
+                    items: [
+                        { label: "Weight", value: "1.5 kg" },
+                        { label: "Dimensions", value: "20cm x 15cm x 60cm" }
+                    ],
+                    edit: true
+                }
             ],
             newProduct: {
                 name: "",
@@ -569,21 +623,22 @@ export default {
                 basePrice: 100,
                 minOrderQuantity: 1,
                 description: "",
+                colors: [],
                 details: [
-                    {
-                        group: "General",
-                        items: {
-                            Ingredients: "2 eggs, 2 tbsp vanilla, etc.",
-                            Sweetness: 123
-                        }
-                    },
-                    {
-                        group: "Shipping",
-                        items: {
-                            Weight: "1.5 kg",
-                            Dimensions: "20cm x 15cm x 60cm"
-                        }
-                    }
+                    // {
+                    //     group: "General",
+                    //     items: {
+                    //         Ingredients: "2 eggs, 2 tbsp vanilla, etc.",
+                    //         Sweetness: 123
+                    //     }
+                    // },
+                    // {
+                    //     group: "Shipping",
+                    //     items: {
+                    //         Weight: "1.5 kg",
+                    //         Dimensions: "20cm x 15cm x 60cm"
+                    //     }
+                    // }
                 ],
                 options: null,
                 images: null
@@ -607,6 +662,17 @@ export default {
             });
 
             if (!categoryItem) return "Invalid category selected";
+
+            return true;
+        },
+        _isValidColor(val) {
+            if (val && val.length > 0) {
+                const hexpattern = /^#([0-9A-F]{3}){1,2}$/i;
+                for (let i in val) {
+                    if (!hexpattern.test(val[i]))
+                        return "Invalid hex color selected";
+                }
+            }
 
             return true;
         },
@@ -758,7 +824,6 @@ export default {
             });
         },
         appendDetailItem: function(grp) {
-            console.log(grp);
             if (!isNaN(grp) && this.details[grp]) {
                 this.details[grp].items.push({ label: "", value: "" });
             }

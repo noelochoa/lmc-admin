@@ -6,6 +6,7 @@ export function getinitialState() {
             basePrice: 1,
             minOrderQuantity: 1,
             description: "",
+            colors: null,
             details: null,
             options: null,
             images: null

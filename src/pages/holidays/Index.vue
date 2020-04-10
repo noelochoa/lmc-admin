@@ -169,6 +169,12 @@ div[class*="content-"] > div:nth-child(2) {
         grid-template-columns: 1fr;
     }
 }
+@media (min-width: 1820px) {
+    .page-heading {
+        grid-template-columns: repeat(4, 494px);
+        grid-template-areas: "heading-caption heading-caption heading-stat-1 .";
+    }
+}
 </style>
 <style lang="scss" scoped></style>
 <script>

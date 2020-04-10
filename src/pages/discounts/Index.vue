@@ -181,6 +181,7 @@
 }
 .content-2 {
     grid-area: content-2;
+    max-width: 1200px;
 }
 .filter-search-box {
     min-width: 237px;
@@ -201,6 +202,13 @@
         grid-template-areas:
             "content-1 ."
             "content-2 content-2";
+    }
+}
+
+@media (min-width: 1820px) {
+    .page-heading {
+        grid-template-columns: repeat(4, 494px);
+        grid-template-areas: "heading-caption heading-caption heading-stat-1 .";
     }
 }
 </style>

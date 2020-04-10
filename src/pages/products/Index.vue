@@ -346,6 +346,16 @@
             "heading-stat-1";
     }
 }
+@media (min-width: 1820px) {
+    .page-contents {
+        grid-template-columns: repeat(4, 494px);
+        grid-template-areas:
+            "content-1 . content-2 . "
+            "content-3 content-3 content-3 .";
+        grid-column-gap: 1rem;
+        grid-row-gap: 2rem;
+    }
+}
 </style>
 <style lang="scss">
 .products-table {
