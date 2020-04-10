@@ -1,4 +1,4 @@
-import getInitialState from "./state";
+import { getInitialState } from "./state";
 
 export function SET_PRODUCT_INFO(state, info) {
     state.product = { ...state.product, ...info };

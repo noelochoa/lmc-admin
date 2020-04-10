@@ -1,4 +1,4 @@
-export function getinitialState() {
+export function getInitialState() {
     return {
         product: {
             name: "",
@@ -14,7 +14,7 @@ export function getinitialState() {
     };
 }
 
-const state = getinitialState();
+const state = getInitialState();
 
 export default function() {
     return state;
