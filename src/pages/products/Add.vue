@@ -19,10 +19,11 @@
                     <q-stepper v-model="step" vertical animated class="bg-none">
                         <q-step
                             :name="1"
-                            title="Select category and fill out basic info"
+                            title="Basic Information"
                             icon="assignment"
                             :done="step > 1"
                         >
+                            <p>Select category and fill out basic info.</p>
                             <q-form
                                 ref="step1Form"
                                 @submit.prevent.stop="saveStep1"
@@ -192,7 +193,7 @@
                                                     v-for="(detail,
                                                     grpkey) in details"
                                                     :key="'grp-' + grpkey"
-                                                    class="detail-group-list"
+                                                    class="group-list"
                                                 >
                                                     <q-item>
                                                         <q-item-section
@@ -341,9 +342,11 @@
                                                             </q-item-section>
                                                         </q-item>
                                                     </transition-group>
+                                                    <br /><q-separator />
                                                 </q-list>
                                             </transition-group>
                                             <q-btn
+                                                class="q-mt-sm"
                                                 dense
                                                 flat
                                                 no-caps
@@ -367,16 +370,15 @@
 
                         <q-step
                             :name="2"
-                            title="Upload product images"
+                            title="Product Images"
                             icon="add_photo_alternate"
                             :done="step > 2"
                         >
+                            <p>Upload product images.</p>
                             <q-form
                                 ref="step2Form"
                                 @submit.prevent.stop="saveStep2"
                             >
-                                An ad group contains one or more ads which
-                                target a shared set of keywords.
                                 <q-stepper-navigation>
                                     <q-btn
                                         type="submit"
@@ -396,15 +398,226 @@
 
                         <q-step
                             :name="3"
-                            title="Configure selectable options"
+                            title="Customization Options"
                             icon="assignment"
                             :done="step > 3"
                         >
+                            <p>Configure selectable options for orders.</p>
+                            <p>
+                                You may toggle between fixed choices and
+                                customer customizable list.
+                            </p>
                             <q-form
                                 ref="step3Form"
                                 @submit.prevent.stop="saveStep3"
                             >
-                                This step won't show up because it is disabled.
+                                <q-list class="detail-list" separator>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Options
+                                        </span>
+                                        <div class="field-value">
+                                            <transition-group
+                                                name="fade"
+                                                tag="div"
+                                            >
+                                                <q-list
+                                                    v-for="(option,
+                                                    grpkey) in options"
+                                                    :key="'optgrp-' + grpkey"
+                                                    class="group-list"
+                                                >
+                                                    <q-item>
+                                                        <q-item-section
+                                                            @click="
+                                                                option.edit = true
+                                                            "
+                                                        >
+                                                            <q-item-label
+                                                                v-if="
+                                                                    option.edit
+                                                                "
+                                                            >
+                                                                <q-input
+                                                                    @keydown.enter.prevent="
+                                                                        option.edit = false
+                                                                    "
+                                                                    class=""
+                                                                    type="text"
+                                                                    dense
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Attribute required "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        option.attribute
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                null &&
+                                                                            val.trim() !==
+                                                                                ''
+                                                                    ]"
+                                                                />
+                                                            </q-item-label>
+                                                            <q-item-label
+                                                                v-else
+                                                            >
+                                                                {{
+                                                                    option.attribute
+                                                                }}
+                                                            </q-item-label>
+                                                        </q-item-section>
+                                                        <q-item-section>
+                                                            <q-toggle
+                                                                v-model="
+                                                                    option.userCustomizable
+                                                                "
+                                                                unchecked-icon="lock"
+                                                                color="green-4"
+                                                                :label="
+                                                                    option.userCustomizable
+                                                                        ? 'User editable'
+                                                                        : 'Fixed options'
+                                                                "
+                                                                @input="
+                                                                    toggleCustomChoice(
+                                                                        $event,
+                                                                        grpkey
+                                                                    )
+                                                                "
+                                                            />
+                                                        </q-item-section>
+
+                                                        <q-item-section side>
+                                                            <q-icon
+                                                                name="add"
+                                                                color="white"
+                                                                class="cursor-pointer"
+                                                                @click="
+                                                                    appendOptionItem(
+                                                                        grpkey
+                                                                    )
+                                                                "
+                                                            >
+                                                                <q-tooltip
+                                                                    :delay="550"
+                                                                    anchor="bottom right"
+                                                                    self="top middle"
+                                                                >
+                                                                    Add option
+                                                                </q-tooltip>
+                                                            </q-icon>
+                                                        </q-item-section>
+                                                    </q-item>
+                                                    <transition-group
+                                                        name="fade"
+                                                        tag="div"
+                                                    >
+                                                        <q-item
+                                                            v-for="(choice,
+                                                            key) in filteredOptions(
+                                                                option.choices,
+                                                                option.userCustomizable
+                                                            )"
+                                                            :key="
+                                                                'selitem-' + key
+                                                            "
+                                                        >
+                                                            <div
+                                                                class="detail-field-keyval"
+                                                            >
+                                                                <q-input
+                                                                    :readonly="
+                                                                        choice.value ==
+                                                                            'Other'
+                                                                    "
+                                                                    class="option-list-key"
+                                                                    type="text"
+                                                                    dense
+                                                                    outlined
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Option required "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        choice.value
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                null &&
+                                                                            val.trim() !==
+                                                                                ''
+                                                                    ]"
+                                                                />
+                                                                <q-input
+                                                                    class="option-list-price"
+                                                                    type="number"
+                                                                    dense
+                                                                    outlined
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Price "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        choice.price
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                '' &&
+                                                                            !isNaN(
+                                                                                val
+                                                                            )
+                                                                    ]"
+                                                                />
+                                                            </div>
+                                                            <q-item-section
+                                                                side
+                                                            >
+                                                                <q-icon
+                                                                    name="remove"
+                                                                    color="white"
+                                                                    class="cursor-pointer remove-icon"
+                                                                    @click="
+                                                                        removeOptionItem(
+                                                                            grpkey,
+                                                                            key
+                                                                        )
+                                                                    "
+                                                                >
+                                                                    <q-tooltip
+                                                                        :delay="
+                                                                            550
+                                                                        "
+                                                                        anchor="bottom right"
+                                                                        self="top middle"
+                                                                    >
+                                                                        Remove
+                                                                        this
+                                                                        option
+                                                                    </q-tooltip>
+                                                                </q-icon>
+                                                            </q-item-section>
+                                                        </q-item>
+                                                    </transition-group>
+                                                    <br /><q-separator />
+                                                </q-list>
+                                            </transition-group>
+                                            <q-btn
+                                                class="q-mt-sm"
+                                                dense
+                                                flat
+                                                no-caps
+                                                icon="add"
+                                                label="Add Customizable Option"
+                                                @click="appendOptions"
+                                            />
+                                        </div>
+                                    </q-item>
+                                </q-list>
 
                                 <q-stepper-navigation>
                                     <q-btn
@@ -512,11 +725,11 @@ div[class*="content-"] > div {
     flex: 1;
     max-width: 388px;
 }
-.detail-group-list .q-item {
+.group-list .q-item {
     padding: 4px 0;
     display: flex;
 }
-.detail-group-list > .q-item:first-child .q-input {
+.group-list > .q-item:first-child .q-input {
     max-width: 180px;
 }
 .detail-field-keyval {
@@ -527,6 +740,14 @@ div[class*="content-"] > div {
 .detail-list-value {
     margin: 2px 2px;
     flex: 1 1 164px;
+}
+.option-list-key {
+    margin: 2px 2px;
+    flex: 1 1 228px;
+}
+.option-list-price {
+    margin: 2px 2px;
+    flex: 1 1 100px;
 }
 .remove-icon {
     margin-right: -16px;
@@ -582,6 +803,9 @@ export default {
             // this.product.category = this.categories[0].value;
         }
         // this.details = [...this.toReactiveDataFormat(this.newProduct.details)];
+        this.options = [
+            ...this.toReactiveOptionsDataFormat(this.newProduct.options)
+        ];
     },
     destroyed() {
         this.clearState();
@@ -617,6 +841,27 @@ export default {
                     edit: true
                 }
             ],
+            options: [
+                {
+                    attribute: "Theme",
+                    choices: [
+                        { value: "Other", price: 10 },
+                        { value: "Disney Character", price: -10 },
+                        { value: "Cars", price: 0 }
+                    ],
+                    edit: false,
+                    userCustomizable: false
+                },
+                {
+                    attribute: "Icing type",
+                    choices: [
+                        { value: "Butter creme", price: 0 },
+                        { value: "Fondant", price: 50 }
+                    ],
+                    edit: false,
+                    userCustomizable: true
+                }
+            ],
             newProduct: {
                 name: "",
                 category: 2,
@@ -624,6 +869,26 @@ export default {
                 minOrderQuantity: 1,
                 description: "",
                 colors: [],
+                options: [
+                    {
+                        attribute: "Theme",
+                        choices: [
+                            { value: "Other", price: 110 },
+                            { value: "Disney Character", price: -10 },
+                            { value: "Cars", price: 0 }
+                        ],
+                        userCustomizable: true
+                    },
+                    {
+                        attribute: "Icing type",
+                        choices: [
+                            { value: "Other", price: 23 },
+                            { value: "Butter creme", price: 0 },
+                            { value: "Fondant", price: 50 }
+                        ],
+                        userCustomizable: false
+                    }
+                ],
                 details: [
                     // {
                     //     group: "General",
@@ -640,7 +905,6 @@ export default {
                     //     }
                     // }
                 ],
-                options: null,
                 images: null
             }
         };
@@ -685,7 +949,57 @@ export default {
                 this.returnToPageIndex("/products");
             }, 2500);
         },
-        toJSONFormat: function(details) {
+        toJSONFormatOptions: function(options) {
+            const retArr = [];
+
+            if (options && options.length > 0) {
+                options.map(option => {
+                    let choices = [];
+                    // check settings
+                    if (
+                        option.userCustomizable &&
+                        !this.hasCustomChoice(option.choices)
+                    ) {
+                        // add 'Other'
+                        choices = [
+                            { value: "Other", price: 0 },
+                            ...option.choices
+                        ];
+                    } else if (
+                        !option.userCustomizable &&
+                        this.hasCustomChoice(option.choices)
+                    ) {
+                        // remove 'Other'
+                        choices = this.filteredOptions(option.choices, false);
+                    } else {
+                        choices = [...option.choices];
+                    }
+
+                    retArr.push({
+                        attribute: option.attribute,
+                        choices: choices,
+                        userCustomizable: option.userCustomizable
+                    });
+                });
+            }
+            return retArr;
+        },
+        toReactiveOptionsDataFormat: function(options) {
+            const retArr = [];
+            if (options && options.length > 0) {
+                options.map(option => {
+                    retArr.push({
+                        attribute: option.attribute,
+                        userCustomizable: option.userCustomizable,
+                        choices: option.choices,
+                        edit: true
+                    });
+                });
+            }
+
+            return retArr;
+        },
+        toJSONFormatDetails: function(details) {
             const retArr = [];
 
             if (details && details.length > 0) {
@@ -735,12 +1049,20 @@ export default {
             console.log(retArr);
             return retArr;
         },
+        filteredOptions(list, showOther) {
+            if (list && list.length > 0 && !showOther) {
+                return list.filter(item => {
+                    return item.value !== "Other";
+                });
+            }
+            return list;
+        },
         saveStep1: function(evt) {
             /** TODO */
             this.$refs.step1Form.validate().then(success => {
                 if (success) {
                     this.newProduct.details = [
-                        ...this.toJSONFormat(this.details)
+                        ...this.toJSONFormatDetails(this.details)
                     ];
 
                     this.setProductInfo(this.newProduct);
@@ -769,26 +1091,7 @@ export default {
             /** TODO */
             this.$refs.step3Form.validate().then(success => {
                 if (success) {
-                    const opts = [
-                        {
-                            group: "ingredients",
-                            attribute: "eggs",
-                            value: 2,
-                            unit: "pcs"
-                        },
-                        {
-                            group: "ingredients",
-                            attribute: "flour",
-                            value: 3,
-                            unit: "cups"
-                        },
-                        {
-                            group: "ingredients",
-                            attribute: "cornstarch",
-                            value: 1,
-                            unit: "cup"
-                        }
-                    ];
+                    const opts = [...this.toJSONFormatOptions(this.options)];
                     this.setProductOptions(opts);
                     console.log(this.getProduct());
                     this.step = 4;
@@ -816,7 +1119,7 @@ export default {
                 this.removeGroup(grp);
             }
         },
-        appendGroup: function(grp) {
+        appendGroup: function(evt) {
             this.details.push({
                 group: "New Group",
                 edit: true,
@@ -826,6 +1129,60 @@ export default {
         appendDetailItem: function(grp) {
             if (!isNaN(grp) && this.details[grp]) {
                 this.details[grp].items.push({ label: "", value: "" });
+            }
+        },
+
+        removeOptions: function(key) {
+            this.$delete(this.options, key);
+        },
+        removeOptionItem: function(grp, key) {
+            console.log(grp, key);
+            this.$delete(this.options[grp].choices, key);
+            if (this.options[grp].choices.length === 0) {
+                this.removeOptions(grp);
+            }
+        },
+        appendOptions: function(evt) {
+            this.options.push({
+                attribute: "New Option",
+                userCustomizable: false,
+                edit: true,
+                choices: [{ value: "", price: "" }]
+            });
+        },
+        appendOptionItem: function(grp) {
+            if (!isNaN(grp) && this.options[grp]) {
+                this.options[grp].choices.push({ value: "", price: "" });
+            }
+        },
+        hasCustomChoice(list) {
+            if (list && list.length > 0) {
+                return list.find(item => {
+                    return item.value == "Other";
+                });
+            }
+
+            return false;
+        },
+        toggleCustomChoice: function(toggle, grp) {
+            console.log(grp);
+            if (toggle) {
+                if (
+                    this.options[grp] &&
+                    !this.hasCustomChoice(this.options[grp].choices)
+                ) {
+                    this.options[grp].choices.unshift({
+                        value: "Other",
+                        price: ""
+                    });
+                }
+            } else {
+                if (
+                    this.options[grp] &&
+                    this.hasCustomChoice(this.options[grp].choices)
+                ) {
+                    this.options[grp].choices.shift();
+                }
             }
         }
     }

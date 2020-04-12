@@ -85,6 +85,7 @@
                     :selected.sync="selected"
                     selection="multiple"
                     :filter="nameFilter"
+                    :loading="loading"
                     @request="onRequest"
                 >
                     <template v-slot:top-right>
@@ -489,9 +490,11 @@ export default {
     },
     methods: {
         filterChanged(val) {
+            const typeSel = this.$route.query.type;
+
             if (
                 this.filter.includes(val) &&
-                !val.match(new RegExp(this.$route.query.type, "i"))
+                (!typeSel || !val.match(new RegExp(typeSel, "i")))
             ) {
                 this.$router.replace({ query: { type: val } }).catch(err => {});
                 this.search = "";

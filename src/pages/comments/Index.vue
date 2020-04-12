@@ -45,6 +45,7 @@
                     :rows-per-page-options="[0]"
                     :pagination.sync="pagination"
                     :filter="nameFilter"
+                    :loading="loading"
                     @request="onRequest"
                 >
                     <template v-slot:item="props">
