@@ -16,7 +16,14 @@
                     Info
                 </div>
                 <div>
-                    <q-stepper v-model="step" vertical animated class="bg-none">
+                    <q-stepper
+                        v-model="step"
+                        vertical
+                        animated
+                        class="bg-none"
+                        done-color="primary"
+                        inactive-color="grey-5"
+                    >
                         <q-step
                             :name="1"
                             title="Basic Information"
@@ -398,7 +405,7 @@
 
                         <q-step
                             :name="3"
-                            title="Customization Options"
+                            title="Order Customization Options"
                             icon="assignment"
                             :done="step > 3"
                         >
@@ -803,9 +810,9 @@ export default {
             // this.product.category = this.categories[0].value;
         }
         // this.details = [...this.toReactiveDataFormat(this.newProduct.details)];
-        this.options = [
-            ...this.toReactiveOptionsDataFormat(this.newProduct.options)
-        ];
+        // this.options = [
+        //     ...this.toReactiveOptionsDataFormat(this.newProduct.options)
+        // ];
     },
     destroyed() {
         this.clearState();
@@ -870,24 +877,24 @@ export default {
                 description: "",
                 colors: [],
                 options: [
-                    {
-                        attribute: "Theme",
-                        choices: [
-                            { value: "Other", price: 110 },
-                            { value: "Disney Character", price: -10 },
-                            { value: "Cars", price: 0 }
-                        ],
-                        userCustomizable: true
-                    },
-                    {
-                        attribute: "Icing type",
-                        choices: [
-                            { value: "Other", price: 23 },
-                            { value: "Butter creme", price: 0 },
-                            { value: "Fondant", price: 50 }
-                        ],
-                        userCustomizable: false
-                    }
+                    // {
+                    //     attribute: "Theme",
+                    //     choices: [
+                    //         { value: "Other", price: 110 },
+                    //         { value: "Disney Character", price: -10 },
+                    //         { value: "Cars", price: 0 }
+                    //     ],
+                    //     userCustomizable: true
+                    // },
+                    // {
+                    //     attribute: "Icing type",
+                    //     choices: [
+                    //         { value: "Other", price: 23 },
+                    //         { value: "Butter creme", price: 0 },
+                    //         { value: "Fondant", price: 50 }
+                    //     ],
+                    //     userCustomizable: false
+                    // }
                 ],
                 details: [
                     // {
@@ -955,24 +962,28 @@ export default {
             if (options && options.length > 0) {
                 options.map(option => {
                     let choices = [];
+
+                    // copy choices list
+                    for (let i in option.choices) {
+                        choices.push({
+                            value: option.choices[i].value,
+                            price: option.choices[i].price
+                        });
+                    }
+
                     // check settings
                     if (
                         option.userCustomizable &&
                         !this.hasCustomChoice(option.choices)
                     ) {
                         // add 'Other'
-                        choices = [
-                            { value: "Other", price: 0 },
-                            ...option.choices
-                        ];
+                        choices.unshift({ value: "Other", price: 0 });
                     } else if (
                         !option.userCustomizable &&
                         this.hasCustomChoice(option.choices)
                     ) {
                         // remove 'Other'
-                        choices = this.filteredOptions(option.choices, false);
-                    } else {
-                        choices = [...option.choices];
+                        choices = this.filteredOptions(choices, false);
                     }
 
                     retArr.push({
