@@ -31,10 +31,5 @@
     },
     "browserslist": [
         "last 1 version, not dead, ie >= 11"
-    ],
-    "resolutions": {
-        "@babel/parser": "7.7.5",
-        "acorn": "^7.1.1",
-        "minimist": "^1.2.2"
-    }
+    ]
 }
