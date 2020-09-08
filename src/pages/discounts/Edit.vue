@@ -219,7 +219,7 @@
                         <q-separator />
                         <div class="q-pa-md">
                             <q-btn
-                                label="Create"
+                                label="Save"
                                 type="submit"
                                 color="primary"
                                 :loading="loading"

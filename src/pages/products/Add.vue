@@ -664,6 +664,8 @@
                                         color="primary"
                                         label="Finish"
                                         type="submit"
+                                        :loading="loading"
+                                        :disable="loading"
                                     />
                                     <q-btn
                                         flat
@@ -819,6 +821,7 @@ export default {
     },
     data() {
         return {
+            loading: false,
             step: 1,
             selcolor: "#FFFFFF",
             categories: [
@@ -1114,6 +1117,7 @@ export default {
             /** TODO */
             // this.setProduct(this.newProduct);
             console.log(this.getProduct());
+            this.onSubmit(evt);
         },
         goBack: function(step) {
             if ([1, 2, 3].includes(step)) {

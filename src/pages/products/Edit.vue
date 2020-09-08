@@ -1,24 +1,1206 @@
 <template>
-  <q-page class="q-px-md q-pt-lg">
-    <div class="page-heading text-white q-pa-md">
-      <div class="heading-caption">
-        <h6>Edit Product</h6>
-        <br />
-        <p>You may edit the details of this product.</p>
-      </div>
-    </div>
-    <div class="page-contents text-white q-pa-md"></div>
-  </q-page>
+    <q-page class="q-px-md q-pt-lg">
+        <div class="page-heading text-white q-pa-md">
+            <div class="heading-caption">
+                <h6>Edit Product</h6>
+                <br />
+                <p>
+                    Edit product details and images.
+                </p>
+            </div>
+        </div>
+        <div class="page-contents text-white q-pa-md">
+            <div class="content-1">
+                <div class="text-subtitle2 flex flex-center">
+                    <q-icon name="cake" class="caption-icon q-mx-md" />Product
+                    Info
+                </div>
+                <div>
+                    <q-stepper
+                        v-model="step"
+                        vertical
+                        animated
+                        class="bg-none"
+                        done-color="primary"
+                        inactive-color="grey-5"
+                    >
+                        <q-step
+                            :name="1"
+                            title="Basic Information"
+                            icon="assignment"
+                            :done="step > 1"
+                        >
+                            <p>Select category and fill out basic info.</p>
+                            <q-form
+                                ref="step1Form"
+                                @submit.prevent.stop="saveStep1"
+                            >
+                                <q-list class="detail-list" separator>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Category
+                                        </span>
+                                        <q-select
+                                            class="field-value"
+                                            v-model="editProduct.category"
+                                            :options="categories"
+                                            dark
+                                            dense
+                                            outlined
+                                            hide-bottom-space
+                                            options-dense
+                                            emit-value
+                                            map-options
+                                            lazy-rules
+                                            :rules="[_isValidCategory]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Product Name
+                                        </span>
+                                        <q-input
+                                            type="text"
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="editProduct.name"
+                                            lazy-rules
+                                            :rules="[
+                                                val =>
+                                                    val !== null &&
+                                                    val.trim() !== ''
+                                            ]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Description
+                                        </span>
+                                        <q-input
+                                            type="textarea"
+                                            textarea
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="editProduct.description"
+                                            lazy-rules
+                                            :rules="[
+                                                val =>
+                                                    val !== null &&
+                                                    val.trim() !== ''
+                                            ]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Base price
+                                        </span>
+                                        <q-input
+                                            type="number"
+                                            min="1"
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="editProduct.basePrice"
+                                            lazy-rules
+                                            :rules="[val => !isNaN(val)]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Minimum Order Quantity
+                                        </span>
+                                        <q-input
+                                            type="number"
+                                            min="1"
+                                            dense
+                                            outlined
+                                            dark
+                                            hide-bottom-space
+                                            placeholder="Field required. "
+                                            class="field-value"
+                                            v-model="
+                                                editProduct.minOrderQuantity
+                                            "
+                                            lazy-rules
+                                            :rules="[
+                                                val => !isNaN(val) && val > 0
+                                            ]"
+                                        />
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Colors
+                                        </span>
+                                        <q-select
+                                            class="field-value"
+                                            v-model="editProduct.colors"
+                                            hide-dropdown-icon
+                                            hide-bottom-space
+                                            dark
+                                            outlined
+                                            multiple
+                                            use-chips
+                                            lazy-rules
+                                            :rules="[_isValidColor]"
+                                        >
+                                            <template v-slot:append>
+                                                <q-icon
+                                                    name="colorize"
+                                                    class="cursor-pointer"
+                                                >
+                                                    <q-tooltip
+                                                        :delay="550"
+                                                        anchor="bottom right"
+                                                        self="top middle"
+                                                        :offset="[10, 10]"
+                                                    >
+                                                        Select color
+                                                    </q-tooltip>
+                                                    <q-popup-proxy>
+                                                        <q-color
+                                                            flat
+                                                            square
+                                                            no-header
+                                                            no-footer
+                                                            default-view="palette"
+                                                            format-model="hex"
+                                                            v-model="selcolor"
+                                                            @input="
+                                                                editProduct.colors.push(
+                                                                    selcolor
+                                                                )
+                                                            "
+                                                        />
+                                                    </q-popup-proxy>
+                                                </q-icon>
+                                            </template>
+                                        </q-select>
+                                    </q-item>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Details
+                                        </span>
+                                        <div class="field-value">
+                                            <transition-group
+                                                name="fade"
+                                                tag="div"
+                                            >
+                                                <q-list
+                                                    v-for="(detail,
+                                                    grpkey) in details"
+                                                    :key="'grp-' + grpkey"
+                                                    class="group-list"
+                                                >
+                                                    <q-item>
+                                                        <q-item-section
+                                                            @click="
+                                                                detail.edit = true
+                                                            "
+                                                        >
+                                                            <q-item-label
+                                                                v-if="
+                                                                    detail.edit
+                                                                "
+                                                            >
+                                                                <q-input
+                                                                    @keydown.enter.prevent="
+                                                                        detail.edit = false
+                                                                    "
+                                                                    class=""
+                                                                    type="text"
+                                                                    dense
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Group title required "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        detail.group
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                null &&
+                                                                            val.trim() !==
+                                                                                ''
+                                                                    ]"
+                                                                />
+                                                            </q-item-label>
+                                                            <q-item-label
+                                                                v-else
+                                                            >
+                                                                {{
+                                                                    detail.group
+                                                                }}
+                                                            </q-item-label>
+                                                        </q-item-section>
+
+                                                        <q-item-section side>
+                                                            <q-icon
+                                                                name="add"
+                                                                color="white"
+                                                                class="cursor-pointer"
+                                                                @click="
+                                                                    appendDetailItem(
+                                                                        grpkey
+                                                                    )
+                                                                "
+                                                            >
+                                                                <q-tooltip
+                                                                    :delay="550"
+                                                                    anchor="bottom right"
+                                                                    self="top middle"
+                                                                >
+                                                                    Add new
+                                                                    field
+                                                                </q-tooltip>
+                                                            </q-icon>
+                                                        </q-item-section>
+                                                    </q-item>
+                                                    <transition-group
+                                                        name="fade"
+                                                        tag="div"
+                                                    >
+                                                        <q-item
+                                                            v-for="(item,
+                                                            key) in detail.items"
+                                                            :key="'item-' + key"
+                                                        >
+                                                            <div
+                                                                class="detail-field-keyval"
+                                                            >
+                                                                <q-input
+                                                                    class="detail-list-key"
+                                                                    type="text"
+                                                                    dense
+                                                                    outlined
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Label required "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        item.label
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                null &&
+                                                                            val.trim() !==
+                                                                                ''
+                                                                    ]"
+                                                                />
+                                                                <q-input
+                                                                    class="detail-list-value"
+                                                                    type="text"
+                                                                    dense
+                                                                    outlined
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Value required "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        item.value
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                null &&
+                                                                            val.trim() !==
+                                                                                ''
+                                                                    ]"
+                                                                />
+                                                            </div>
+                                                            <q-item-section
+                                                                side
+                                                            >
+                                                                <q-icon
+                                                                    name="remove"
+                                                                    color="white"
+                                                                    class="cursor-pointer remove-icon"
+                                                                    @click="
+                                                                        removeDetailItem(
+                                                                            grpkey,
+                                                                            key
+                                                                        )
+                                                                    "
+                                                                >
+                                                                    <q-tooltip
+                                                                        :delay="
+                                                                            550
+                                                                        "
+                                                                        anchor="bottom right"
+                                                                        self="top middle"
+                                                                    >
+                                                                        Remove
+                                                                        this
+                                                                        field
+                                                                    </q-tooltip>
+                                                                </q-icon>
+                                                            </q-item-section>
+                                                        </q-item>
+                                                    </transition-group>
+                                                    <br /><q-separator />
+                                                </q-list>
+                                            </transition-group>
+                                            <q-btn
+                                                class="q-mt-sm"
+                                                dense
+                                                flat
+                                                no-caps
+                                                icon="add"
+                                                label="Add Detail Group"
+                                                @click="appendGroup"
+                                            />
+                                        </div>
+                                    </q-item>
+                                </q-list>
+
+                                <q-stepper-navigation>
+                                    <q-btn
+                                        color="primary"
+                                        type="submit"
+                                        label="Continue"
+                                    />
+                                </q-stepper-navigation>
+                            </q-form>
+                        </q-step>
+
+                        <q-step
+                            :name="2"
+                            title="Product Images"
+                            icon="add_photo_alternate"
+                            :done="step > 2"
+                        >
+                            <p>Upload product images.</p>
+                            <q-form
+                                ref="step2Form"
+                                @submit.prevent.stop="saveStep2"
+                            >
+                                <q-stepper-navigation>
+                                    <q-btn
+                                        type="submit"
+                                        color="primary"
+                                        label="Continue"
+                                    />
+                                    <q-btn
+                                        flat
+                                        @click="goBack(1)"
+                                        color="primary"
+                                        label="Back"
+                                        class="q-ml-sm"
+                                    />
+                                </q-stepper-navigation>
+                            </q-form>
+                        </q-step>
+
+                        <q-step
+                            :name="3"
+                            title="Order Customization Options"
+                            icon="assignment"
+                            :done="step > 3"
+                        >
+                            <p>Configure selectable options for orders.</p>
+                            <p>
+                                You may toggle between fixed choices and
+                                customer customizable list.
+                            </p>
+                            <q-form
+                                ref="step3Form"
+                                @submit.prevent.stop="saveStep3"
+                            >
+                                <q-list class="detail-list" separator>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Options
+                                        </span>
+                                        <div class="field-value">
+                                            <transition-group
+                                                name="fade"
+                                                tag="div"
+                                            >
+                                                <q-list
+                                                    v-for="(option,
+                                                    grpkey) in options"
+                                                    :key="'optgrp-' + grpkey"
+                                                    class="group-list"
+                                                >
+                                                    <q-item>
+                                                        <q-item-section
+                                                            @click="
+                                                                option.edit = true
+                                                            "
+                                                        >
+                                                            <q-item-label
+                                                                v-if="
+                                                                    option.edit
+                                                                "
+                                                            >
+                                                                <q-input
+                                                                    @keydown.enter.prevent="
+                                                                        option.edit = false
+                                                                    "
+                                                                    class=""
+                                                                    type="text"
+                                                                    dense
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Attribute required "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        option.attribute
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                null &&
+                                                                            val.trim() !==
+                                                                                ''
+                                                                    ]"
+                                                                />
+                                                            </q-item-label>
+                                                            <q-item-label
+                                                                v-else
+                                                            >
+                                                                {{
+                                                                    option.attribute
+                                                                }}
+                                                            </q-item-label>
+                                                        </q-item-section>
+                                                        <q-item-section>
+                                                            <q-toggle
+                                                                v-model="
+                                                                    option.userCustomizable
+                                                                "
+                                                                unchecked-icon="lock"
+                                                                color="green-4"
+                                                                :label="
+                                                                    option.userCustomizable
+                                                                        ? 'User editable'
+                                                                        : 'Fixed options'
+                                                                "
+                                                                @input="
+                                                                    toggleCustomChoice(
+                                                                        $event,
+                                                                        grpkey
+                                                                    )
+                                                                "
+                                                            />
+                                                        </q-item-section>
+
+                                                        <q-item-section side>
+                                                            <q-icon
+                                                                name="add"
+                                                                color="white"
+                                                                class="cursor-pointer"
+                                                                @click="
+                                                                    appendOptionItem(
+                                                                        grpkey
+                                                                    )
+                                                                "
+                                                            >
+                                                                <q-tooltip
+                                                                    :delay="550"
+                                                                    anchor="bottom right"
+                                                                    self="top middle"
+                                                                >
+                                                                    Add option
+                                                                </q-tooltip>
+                                                            </q-icon>
+                                                        </q-item-section>
+                                                    </q-item>
+                                                    <transition-group
+                                                        name="fade"
+                                                        tag="div"
+                                                    >
+                                                        <q-item
+                                                            v-for="(choice,
+                                                            key) in filteredOptions(
+                                                                option.choices,
+                                                                option.userCustomizable
+                                                            )"
+                                                            :key="
+                                                                'selitem-' + key
+                                                            "
+                                                        >
+                                                            <div
+                                                                class="detail-field-keyval"
+                                                            >
+                                                                <q-input
+                                                                    :readonly="
+                                                                        choice.value ==
+                                                                            'Other'
+                                                                    "
+                                                                    class="option-list-key"
+                                                                    type="text"
+                                                                    dense
+                                                                    outlined
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Option required "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        choice.value
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                null &&
+                                                                            val.trim() !==
+                                                                                ''
+                                                                    ]"
+                                                                />
+                                                                <q-input
+                                                                    class="option-list-price"
+                                                                    type="number"
+                                                                    dense
+                                                                    outlined
+                                                                    dark
+                                                                    hide-bottom-space
+                                                                    placeholder="Price "
+                                                                    lazy-rules
+                                                                    v-model="
+                                                                        choice.price
+                                                                    "
+                                                                    :rules="[
+                                                                        val =>
+                                                                            val !==
+                                                                                '' &&
+                                                                            !isNaN(
+                                                                                val
+                                                                            )
+                                                                    ]"
+                                                                />
+                                                            </div>
+                                                            <q-item-section
+                                                                side
+                                                            >
+                                                                <q-icon
+                                                                    name="remove"
+                                                                    color="white"
+                                                                    class="cursor-pointer remove-icon"
+                                                                    @click="
+                                                                        removeOptionItem(
+                                                                            grpkey,
+                                                                            key
+                                                                        )
+                                                                    "
+                                                                >
+                                                                    <q-tooltip
+                                                                        :delay="
+                                                                            550
+                                                                        "
+                                                                        anchor="bottom right"
+                                                                        self="top middle"
+                                                                    >
+                                                                        Remove
+                                                                        this
+                                                                        option
+                                                                    </q-tooltip>
+                                                                </q-icon>
+                                                            </q-item-section>
+                                                        </q-item>
+                                                    </transition-group>
+                                                    <br /><q-separator />
+                                                </q-list>
+                                            </transition-group>
+                                            <q-btn
+                                                class="q-mt-sm"
+                                                dense
+                                                flat
+                                                no-caps
+                                                icon="add"
+                                                label="Add Customizable Option"
+                                                @click="appendOptions"
+                                            />
+                                        </div>
+                                    </q-item>
+                                </q-list>
+
+                                <q-stepper-navigation>
+                                    <q-btn
+                                        type="submit"
+                                        color="primary"
+                                        label="Continue"
+                                    />
+                                    <q-btn
+                                        flat
+                                        @click="goBack(2)"
+                                        color="primary"
+                                        label="Back"
+                                        class="q-ml-sm"
+                                    />
+                                </q-stepper-navigation>
+                            </q-form>
+                        </q-step>
+
+                        <q-step
+                            :name="4"
+                            title="Save product details"
+                            icon="add_comment"
+                        >
+                            <q-form
+                                ref="step4Form"
+                                @submit.prevent.stop="saveStep4"
+                            >
+                                Try out different ad text to see what brings in
+                                the most customers, and learn how to enhance
+                                your ads using features like ad extensions. If
+                                you run into any problems with your ads, find
+                                out how to tell if they're running and how to
+                                resolve approval issues.
+
+                                <q-stepper-navigation>
+                                    <q-btn
+                                        color="primary"
+                                        label="Finish"
+                                        type="submit"
+                                        :loading="loading"
+                                        :disable="loading"
+                                    />
+                                    <q-btn
+                                        flat
+                                        @click="goBack(3)"
+                                        color="primary"
+                                        label="Back"
+                                        class="q-ml-sm"
+                                    />
+                                </q-stepper-navigation>
+                            </q-form>
+                        </q-step>
+                    </q-stepper>
+                </div>
+            </div>
+
+            <div class="content-2"></div>
+        </div>
+    </q-page>
 </template>
 <style lang="scss" scoped>
+.page-heading,
+.page-contents {
+    display: grid;
+}
+.page-contents {
+    grid-template-columns: minmax(360px, 900px);
+    grid-template-areas:
+        "content-1"
+        "content-2";
+    grid-column-gap: 1rem;
+    grid-row-gap: 2rem;
+}
+.content-1 {
+    grid-area: content-1;
+}
+.content-2 {
+    grid-area: content-2;
+}
+div[class*="content-"] {
+    display: flex;
+    flex-direction: column;
+}
+div[class*="content-"] > div {
+    min-height: 4em;
+    justify-content: left;
+    margin: 1px 0;
+    background: rgba(128, 128, 128, 0.65);
+    width: 100%;
+}
+.caption-icon {
+    font-size: 2.5rem;
+    display: inline-flex;
+}
+.detail-list {
+    display: flex;
+    flex-direction: column;
+}
+.detail-field {
+    align-items: center;
+    padding-left: 0;
+}
+.detail-field .field-label {
+    width: 140px;
+}
+.detail-field .field-value {
+    flex: 1;
+    max-width: 388px;
+}
+.group-list .q-item {
+    padding: 4px 0;
+    display: flex;
+}
+.group-list > .q-item:first-child .q-input {
+    max-width: 180px;
+}
+.detail-field-keyval {
+    display: flex;
+    flex-wrap: wrap;
+}
+.detail-list-key,
+.detail-list-value {
+    margin: 2px 2px;
+    flex: 1 1 164px;
+}
+.option-list-key {
+    margin: 2px 2px;
+    flex: 1 1 228px;
+}
+.option-list-price {
+    margin: 2px 2px;
+    flex: 1 1 100px;
+}
+.remove-icon {
+    margin-right: -16px;
+}
+.qtext-editor {
+    border: 2px solid white;
+}
+.has-error {
+    border: 2px solid $negative;
+}
+
+@media (max-width: 500px) {
+    .detail-field {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .detail-field .field-label,
+    .detail-field .field-value {
+        line-height: 2em;
+        width: 100%;
+    }
+}
+</style>
+<style lang="scss">
+.q-field__bottom {
+    display: none;
+}
 </style>
 <script>
+import HelperMixin from "../../mixins/helpers";
+import ProductMixin from "../../mixins/product";
+
 export default {
-  name: "ProductEdit",
-  meta() {
-    return {
-      title: "Edit Product"
-    };
-  }
+    preFetch({ store, currentRoute }) {
+        // console.log(store.state);
+        console.log("PREFETCH CALL");
+    },
+
+    name: "ProductEdit",
+    mixins: [HelperMixin, ProductMixin],
+    meta() {
+        return {
+            title: "Edit Product"
+        };
+    },
+    created() {
+        if (this.$route.params.step) {
+            this.step = !isNaN(this.$route.params.step)
+                ? parseInt(this.$route.params.step)
+                : 1;
+        }
+        if (!this.product.category && this.categories) {
+            // this.product.category = this.categories[0].value;
+        }
+        // this.details = [...this.toReactiveDataFormat(this.editProduct.details)];
+        // this.options = [
+        //     ...this.toReactiveOptionsDataFormat(this.editProduct.options)
+        // ];
+    },
+    destroyed() {
+        this.clearState();
+    },
+    data() {
+        return {
+            loading: false,
+            step: 1,
+            selcolor: "#FFFFFF",
+            categories: [
+                {
+                    label: "Cakes",
+                    value: 1
+                },
+                {
+                    label: "Cupcakes",
+                    value: 2
+                }
+            ],
+            details: [
+                {
+                    group: "General",
+                    items: [
+                        { label: "Ingredients", value: "2 eggs, 1 cup flour" }
+                    ],
+                    edit: true
+                },
+                {
+                    group: "Shipping",
+                    items: [
+                        { label: "Weight", value: "1.5 kg" },
+                        { label: "Dimensions", value: "20cm x 15cm x 60cm" }
+                    ],
+                    edit: true
+                }
+            ],
+            options: [
+                {
+                    attribute: "Theme",
+                    choices: [
+                        { value: "Other", price: 10 },
+                        { value: "Disney Character", price: -10 },
+                        { value: "Cars", price: 0 }
+                    ],
+                    edit: false,
+                    userCustomizable: false
+                },
+                {
+                    attribute: "Icing type",
+                    choices: [
+                        { value: "Butter creme", price: 0 },
+                        { value: "Fondant", price: 50 }
+                    ],
+                    edit: false,
+                    userCustomizable: true
+                }
+            ],
+            editProduct: {
+                name: "Product 1",
+                category: 2,
+                basePrice: 100,
+                minOrderQuantity: 1,
+                description: "Test desc",
+                colors: ["#00ff00"],
+                options: [
+                    // {
+                    //     attribute: "Theme",
+                    //     choices: [
+                    //         { value: "Other", price: 110 },
+                    //         { value: "Disney Character", price: -10 },
+                    //         { value: "Cars", price: 0 }
+                    //     ],
+                    //     userCustomizable: true
+                    // },
+                    // {
+                    //     attribute: "Icing type",
+                    //     choices: [
+                    //         { value: "Other", price: 23 },
+                    //         { value: "Butter creme", price: 0 },
+                    //         { value: "Fondant", price: 50 }
+                    //     ],
+                    //     userCustomizable: false
+                    // }
+                ],
+                details: [
+                    // {
+                    //     group: "General",
+                    //     items: {
+                    //         Ingredients: "2 eggs, 2 tbsp vanilla, etc.",
+                    //         Sweetness: 123
+                    //     }
+                    // },
+                    // {
+                    //     group: "Shipping",
+                    //     items: {
+                    //         Weight: "1.5 kg",
+                    //         Dimensions: "20cm x 15cm x 60cm"
+                    //     }
+                    // }
+                ],
+                images: null
+            }
+        };
+    },
+    methods: {
+        _isValidCategory(val) {
+            if (
+                !(
+                    this.editProduct.category &&
+                    this.categories &&
+                    this.categories.length > 0
+                )
+            ) {
+                return "Invalid category selected";
+            }
+
+            const categoryItem = this.categories.find(option => {
+                return option.value === this.editProduct.category;
+            });
+
+            if (!categoryItem) return "Invalid category selected";
+
+            return true;
+        },
+        _isValidColor(val) {
+            if (val && val.length > 0) {
+                const hexpattern = /^#([0-9A-F]{3}){1,2}$/i;
+                for (let i in val) {
+                    if (!hexpattern.test(val[i]))
+                        return "Invalid hex color selected";
+                }
+            }
+
+            return true;
+        },
+        onSubmit: function(evt) {
+            console.log(evt);
+            /**TODO */
+            this.loading = true;
+            setTimeout(() => {
+                this.showNotif(true, "Successfully updated product details. ");
+                this.loading = false;
+                this.returnToPageIndex("/products");
+            }, 2500);
+        },
+        toJSONFormatOptions: function(options) {
+            const retArr = [];
+
+            if (options && options.length > 0) {
+                options.map(option => {
+                    let choices = [];
+
+                    // copy choices list
+                    for (let i in option.choices) {
+                        choices.push({
+                            value: option.choices[i].value,
+                            price: option.choices[i].price
+                        });
+                    }
+
+                    // check settings
+                    if (
+                        option.userCustomizable &&
+                        !this.hasCustomChoice(option.choices)
+                    ) {
+                        // add 'Other'
+                        choices.unshift({ value: "Other", price: 0 });
+                    } else if (
+                        !option.userCustomizable &&
+                        this.hasCustomChoice(option.choices)
+                    ) {
+                        // remove 'Other'
+                        choices = this.filteredOptions(choices, false);
+                    }
+
+                    retArr.push({
+                        attribute: option.attribute,
+                        choices: choices,
+                        userCustomizable: option.userCustomizable
+                    });
+                });
+            }
+            return retArr;
+        },
+        toReactiveOptionsDataFormat: function(options) {
+            const retArr = [];
+            if (options && options.length > 0) {
+                options.map(option => {
+                    retArr.push({
+                        attribute: option.attribute,
+                        userCustomizable: option.userCustomizable,
+                        choices: option.choices,
+                        edit: true
+                    });
+                });
+            }
+
+            return retArr;
+        },
+        toJSONFormatDetails: function(details) {
+            const retArr = [];
+
+            if (details && details.length > 0) {
+                details.map(detail => {
+                    const groupItems = {};
+                    if (detail.items && detail.items.length > 0) {
+                        detail.items.map(item => {
+                            groupItems[item.label] = item.value;
+                        });
+                    }
+
+                    if (detail.group && Object.keys(groupItems).length > 0) {
+                        retArr.push({
+                            group: detail.group,
+                            items: groupItems
+                        });
+                    }
+                });
+            }
+
+            return retArr;
+        },
+        toReactiveDataFormat: function(details) {
+            const retArr = [];
+
+            if (details && details.length > 0) {
+                details.map(detail => {
+                    const groupItemsArr = [];
+                    if (detail.items && Object.keys(detail.items).length > 0) {
+                        for (let key in detail.items) {
+                            groupItemsArr.push({
+                                label: key,
+                                value: detail.items[key].toString()
+                            });
+                        }
+                    }
+                    if (detail.group && groupItemsArr.length > 0) {
+                        retArr.push({
+                            group: detail.group,
+                            items: groupItemsArr,
+                            edit: true
+                        });
+                    }
+                });
+            }
+
+            console.log(retArr);
+            return retArr;
+        },
+        filteredOptions(list, showOther) {
+            if (list && list.length > 0 && !showOther) {
+                return list.filter(item => {
+                    return item.value !== "Other";
+                });
+            }
+            return list;
+        },
+        saveStep1: function(evt) {
+            /** TODO */
+            this.$refs.step1Form.validate().then(success => {
+                if (success) {
+                    this.editProduct.details = [
+                        ...this.toJSONFormatDetails(this.details)
+                    ];
+
+                    this.setProductInfo(this.editProduct);
+                    console.log(this.getProduct());
+                    this.step = 2;
+                    this.$router.replace("/products/edit/2").catch(err => {});
+                }
+            });
+        },
+        saveStep2: function(evt) {
+            /** TODO */
+            this.$refs.step2Form.validate().then(success => {
+                if (success) {
+                    const imgs = [
+                        { imageType: "gallery", image: "123.jpg" },
+                        { imageType: "gallery", image: "456.jpg" }
+                    ];
+                    this.setProductImages(imgs);
+                    console.log(this.getProduct());
+                    this.step = 3;
+                    this.$router.replace("/products/edit/3").catch(err => {});
+                }
+            });
+        },
+        saveStep3: function(evt) {
+            /** TODO */
+            this.$refs.step3Form.validate().then(success => {
+                if (success) {
+                    const opts = [...this.toJSONFormatOptions(this.options)];
+                    this.setProductOptions(opts);
+                    console.log(this.getProduct());
+                    this.step = 4;
+                    this.$router.replace("/products/edit/4").catch(err => {});
+                }
+            });
+        },
+        saveStep4: function(evt) {
+            /** TODO */
+            // this.setProduct(this.editProduct);
+            // console.log(this.getProduct());
+            this.onSubmit(evt);
+        },
+        goBack: function(step) {
+            if ([1, 2, 3].includes(step)) {
+                this.step = step;
+                this.$router.replace("/products/edit/" + step).catch(err => {});
+            }
+        },
+        removeGroup: function(key) {
+            this.$delete(this.details, key);
+        },
+        removeDetailItem: function(grp, key) {
+            this.$delete(this.details[grp].items, key);
+            if (this.details[grp].items.length === 0) {
+                this.removeGroup(grp);
+            }
+        },
+        appendGroup: function(evt) {
+            this.details.push({
+                group: "New Group",
+                edit: true,
+                items: [{ label: "", value: "" }]
+            });
+        },
+        appendDetailItem: function(grp) {
+            if (!isNaN(grp) && this.details[grp]) {
+                this.details[grp].items.push({ label: "", value: "" });
+            }
+        },
+
+        removeOptions: function(key) {
+            this.$delete(this.options, key);
+        },
+        removeOptionItem: function(grp, key) {
+            console.log(grp, key);
+            this.$delete(this.options[grp].choices, key);
+            if (this.options[grp].choices.length === 0) {
+                this.removeOptions(grp);
+            }
+        },
+        appendOptions: function(evt) {
+            this.options.push({
+                attribute: "New Option",
+                userCustomizable: false,
+                edit: true,
+                choices: [{ value: "", price: "" }]
+            });
+        },
+        appendOptionItem: function(grp) {
+            if (!isNaN(grp) && this.options[grp]) {
+                this.options[grp].choices.push({ value: "", price: "" });
+            }
+        },
+        hasCustomChoice(list) {
+            if (list && list.length > 0) {
+                return list.find(item => {
+                    return item.value == "Other";
+                });
+            }
+
+            return false;
+        },
+        toggleCustomChoice: function(toggle, grp) {
+            console.log(grp);
+            if (toggle) {
+                if (
+                    this.options[grp] &&
+                    !this.hasCustomChoice(this.options[grp].choices)
+                ) {
+                    this.options[grp].choices.unshift({
+                        value: "Other",
+                        price: ""
+                    });
+                }
+            } else {
+                if (
+                    this.options[grp] &&
+                    this.hasCustomChoice(this.options[grp].choices)
+                ) {
+                    this.options[grp].choices.shift();
+                }
+            }
+        }
+    }
 };
 </script>
