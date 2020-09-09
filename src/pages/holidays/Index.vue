@@ -176,7 +176,6 @@ div[class*="content-"] > div:nth-child(2) {
     }
 }
 </style>
-<style lang="scss" scoped></style>
 <script>
 import ConfirmDialog from "../../components/ConfirmDialog";
 import Holidays from "../../components/Holidays";
@@ -224,7 +223,7 @@ export default {
     },
     data() {
         return {
-            date: "2020-03-18",
+            date: "2020-03-19",
             // holidayList: ["2020/03/21", "2020/03/25", "2020/03/27"],
             data: [],
             holidayItems: [
