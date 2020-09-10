@@ -171,6 +171,14 @@
 .no-select {
     user-select: none;
 }
+.q-drawer-container,
+.q-drawer,
+.q-toolbar,
+.bg-gray-alpha,
+.navheader {
+    background: rgba(128, 128, 128, 0.25);
+    color: #fff;
+}
 .blur-bg {
     position: fixed;
     height: 100%;
@@ -182,14 +190,6 @@
     filter: blur(10px);
     -webkit-filter: blur(10px);
     transform: scale(1.1);
-}
-.q-drawer-container,
-.q-drawer,
-.q-toolbar,
-.bg-gray-alpha,
-.navheader {
-    background: rgba(128, 128, 128, 0.25);
-    color: #fff;
 }
 .bg-gray-alpha-2 {
     background: rgba(128, 128, 128, 0.55);
@@ -369,7 +369,7 @@ export default {
                 },
                 {
                     title: "Orders",
-                    icon: "fireplace",
+                    icon: "store",
                     link: "/orders"
                 },
                 {

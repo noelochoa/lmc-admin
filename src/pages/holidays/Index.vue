@@ -57,13 +57,13 @@
             </div>
             <div class="content-2">
                 <Holidays v-bind="{ date, data }">
-                    <template v-slot:actions="slotProps">
+                    <template v-slot:actions="{ item }">
                         <q-btn
                             dense
                             flat
                             rounded
                             icon="edit"
-                            :to="'/holidays/edit/' + slotProps.item.id"
+                            :to="'/holidays/edit/' + item.id"
                         >
                             <q-tooltip
                                 anchor="bottom right"
@@ -77,7 +77,7 @@
                             flat
                             rounded
                             icon="delete"
-                            @click="confirmDel(slotProps.item.id)"
+                            @click="confirmDel(item.id)"
                         >
                             <q-tooltip
                                 anchor="bottom right"
@@ -253,8 +253,8 @@ export default {
     },
     methods: {
         confirmDel(psaID) {
-            this.showDlg = true;
             this.toDelID = psaID;
+            this.showDlg = true;
         },
         onRemove() {
             if (this.toDelID !== -1) {

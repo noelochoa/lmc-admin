@@ -248,7 +248,7 @@ export default {
             title: "Product Discounts"
         };
     },
-    start() {
+    created() {
         if (this.$route.query.s) {
             this.search = this.$route.query.s;
         }
