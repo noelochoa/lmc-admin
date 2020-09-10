@@ -18,11 +18,19 @@ body {
 }
 
 // global fix
-.q-btn .q-btn__content div,
-.q-chip__content span {
-    padding-top: 2px;
+.q-btn__content span,
+.q-chip__content {
+    padding-top: 3px !important;
 }
-
+.q-drawer-container,
+.q-drawer,
+.q-toolbar,
+.q-table__container,
+.bg-gray-alpha,
+.navheader {
+    background: rgba(128, 128, 128, 0.25);
+    color: #fff;
+}
 .bg-none {
     background: none !important;
     // box-shadow: none;
