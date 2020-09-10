@@ -24,7 +24,7 @@
                         round
                         icon="post_add"
                         class="q-mr-sm"
-                        to="/orders/add/1"
+                        to="/orders/add"
                     >
                         <q-tooltip
                             anchor="bottom right"

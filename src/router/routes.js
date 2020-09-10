@@ -118,6 +118,10 @@ const routes = [
             {
                 path: "process/:id",
                 component: () => import("pages/orders/Process.vue")
+            },
+            {
+                path: "add",
+                component: () => import("pages/orders/Add.vue")
             }
         ]
     },
