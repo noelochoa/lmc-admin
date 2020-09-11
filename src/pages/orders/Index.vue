@@ -293,7 +293,7 @@ export default {
             selDate: dateToday,
             selectedMonth:
                 dateToday.getFullYear() +
-                "/" +
+                "-" +
                 (dateToday.getMonth() + 1).toString().padStart(2, 0),
             orderStats: [
                 { name: "Placed", count: 122 },
@@ -405,7 +405,7 @@ export default {
             if (this.selDate) {
                 this.selectedMonth =
                     this.selDate.getFullYear() +
-                    "/" +
+                    "-" +
                     (this.selDate.getMonth() + 1).toString().padStart(2, 0);
                 this.filterMonth(this.selectedMonth);
             }
