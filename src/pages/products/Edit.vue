@@ -591,7 +591,8 @@
                                                                     @click="
                                                                         removeOptionItem(
                                                                             grpkey,
-                                                                            key
+                                                                            key,
+                                                                            choice.value
                                                                         )
                                                                     "
                                                                 >
@@ -1151,11 +1152,13 @@ export default {
         removeOptions: function(key) {
             this.$delete(this.options, key);
         },
-        removeOptionItem: function(grp, key) {
+        removeOptionItem: function(grp, key, value) {
             console.log(grp, key);
             this.$delete(this.options[grp].choices, key);
             if (this.options[grp].choices.length === 0) {
                 this.removeOptions(grp);
+            } else if (value == "Other") {
+                this.options[grp].userCustomizable = false;
             }
         },
         appendOptions: function(evt) {

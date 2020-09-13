@@ -120,7 +120,7 @@
                 </q-table>
             </div>
         </div>
-        <q-dialog v-model="showSelect" persistent>
+        <q-dialog v-model="showSelect" seamless persistent>
             <q-card dark>
                 <MonthPicker
                     color="primary"

@@ -84,6 +84,23 @@
                                 </q-input>
                             </q-item>
                             <q-item class="detail-field">
+                                <span class="field-label">Delivery Type</span>
+                                <q-select
+                                    class="field-value"
+                                    v-model="order.type"
+                                    :options="deliveryTypes"
+                                    dark
+                                    dense
+                                    outlined
+                                    hide-bottom-space
+                                    options-dense
+                                    emit-value
+                                    map-options
+                                    lazy-rules
+                                    :rules="[_isValidType]"
+                                />
+                            </q-item>
+                            <q-item class="detail-field">
                                 <span class="field-label">Customer</span>
                                 <q-select
                                     class="field-value customer-select"
@@ -120,13 +137,35 @@
                                     </template>
                                 </q-select>
                             </q-item>
+                            <transition name="fade">
+                                <q-item
+                                    class="detail-field"
+                                    v-if="order.type == 1"
+                                >
+                                    <span class="field-label">Address</span>
+                                    <q-input
+                                        dense
+                                        outlined
+                                        dark
+                                        hide-bottom-space
+                                        class="field-value"
+                                        v-model="order.address"
+                                        lazy-rules
+                                        :rules="[
+                                            val =>
+                                                val !== null &&
+                                                val.trim() !== ''
+                                        ]"
+                                    />
+                                </q-item>
+                            </transition>
                             <q-item class="detail-field product-field">
                                 <span class="field-label">
                                     Product Details
                                 </span>
                                 <div class="product-details q-py-sm">
                                     <q-item
-                                        class="bg-grey-9 product-item"
+                                        class="product-item"
                                         v-for="(product, idx) in order.products"
                                         :key="'key-' + idx"
                                     >
@@ -144,13 +183,14 @@
                                                 </q-badge>
                                             </q-avatar>
                                         </q-item-section>
+
                                         <q-item-section>
                                             <q-item-label class="product-name">
                                                 {{ product.name }}
                                             </q-item-label>
                                             <q-item-label
                                                 caption
-                                                class="text-grey-5 product-name"
+                                                class="text-grey-4 product-name"
                                             >
                                                 <span
                                                     v-for="opt in product.options"
@@ -160,7 +200,16 @@
                                                         opt._option +
                                                             ": " +
                                                             opt._selected
-                                                    }}<br />
+                                                    }}
+                                                    <span
+                                                        v-if="
+                                                            opt.otherValue !=
+                                                                null
+                                                        "
+                                                        >({{
+                                                            opt.otherValue
+                                                        }}) </span
+                                                    ><br />
                                                 </span>
                                             </q-item-label>
                                         </q-item-section>
@@ -169,7 +218,8 @@
                                         </q-item-section>
                                         <q-item-section
                                             side
-                                            class="text-grey-5"
+                                            caption
+                                            class="text-white"
                                         >
                                             <q-btn
                                                 flat
@@ -206,7 +256,7 @@
                                 type="submit"
                                 color="primary"
                                 :loading="loading"
-                                :disable="loading || !hasTyped"
+                                :disable="loading"
                             >
                                 <template v-slot:loading>
                                     <q-spinner-gears />
@@ -227,7 +277,7 @@
     display: grid;
 }
 .page-contents {
-    grid-template-columns: minmax(360px, 900px);
+    grid-template-columns: minmax(360px, 720px);
     grid-template-areas:
         "content-1"
         "content-2";
@@ -268,7 +318,6 @@ div[class*="content-"] > div {
 }
 .detail-field .field-value {
     flex: 1;
-    max-width: 388px;
 }
 .product-details {
     display: flex;
@@ -278,6 +327,9 @@ div[class*="content-"] > div {
 }
 .product-details > button {
     align-self: flex-start;
+}
+.product-item {
+    border: 1px solid #fff;
 }
 .product-name {
     overflow: hidden;
@@ -367,8 +419,20 @@ export default {
                 ],
                 total: 12333.01,
                 customer: null,
-                target: null
+                target: null,
+                address: "",
+                type: 1
             },
+            deliveryTypes: [
+                {
+                    label: "For Delivery",
+                    value: 1
+                },
+                {
+                    label: "For Pickup",
+                    value: 2
+                }
+            ],
             customerList: [
                 {
                     label: "John1",
@@ -395,6 +459,26 @@ export default {
         };
     },
     methods: {
+        _isValidType(val) {
+            if (
+                !(
+                    this.order.type &&
+                    this.deliveryTypes &&
+                    this.deliveryTypes.length > 0
+                )
+            ) {
+                return "Invalid type selected";
+            }
+
+            const typeItem = this.deliveryTypes.find(option => {
+                return option.value === this.order.type;
+            });
+
+            if (!typeItem) return "Invalid type selected";
+
+            return true;
+        },
+
         _isValidDatetime(val) {
             const dtpattern = /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (0?[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$/g;
             return dtpattern.test(val) || "Invalid date & time format";
