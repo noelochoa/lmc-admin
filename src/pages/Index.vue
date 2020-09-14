@@ -236,7 +236,7 @@ div[class*="content-"] {
 div[class*="content-"] > div {
     min-height: 4em;
     justify-content: left;
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     margin: 1px 0;
     width: 100%;
 }

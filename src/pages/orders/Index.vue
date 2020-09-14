@@ -222,7 +222,7 @@
     text-decoration: underline;
 }
 .orders-table {
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
 .orders-table th:last-child,

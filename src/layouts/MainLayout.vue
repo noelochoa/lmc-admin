@@ -171,14 +171,6 @@
 .no-select {
     user-select: none;
 }
-.q-drawer-container,
-.q-drawer,
-.q-toolbar,
-.bg-gray-alpha,
-.navheader {
-    background: rgba(128, 128, 128, 0.25);
-    color: #fff;
-}
 .blur-bg {
     position: fixed;
     height: 100%;
@@ -191,13 +183,9 @@
     -webkit-filter: blur(10px);
     transform: scale(1.1);
 }
-.bg-gray-alpha-2 {
-    background: rgba(128, 128, 128, 0.55);
-}
 .sm-layout .q-drawer {
     background: #1a1d1a !important;
 }
-
 .q-toolbar__title {
     font-size: 16px;
 }
@@ -217,6 +205,7 @@
 .adjust-content-left {
     justify-content: left;
 }
+.capitalize,
 .alias {
     text-transform: capitalize;
 }
@@ -388,7 +377,7 @@ export default {
             }
             this.eventTimer = window.setTimeout(() => {
                 this.scrolled = window.scrollY >= 50 ? true : false;
-            }, 50);
+            }, 100);
         },
         drawerLayoutChange(state) {
             this.showNavBtn = !state;

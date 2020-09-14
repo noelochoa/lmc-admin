@@ -182,7 +182,7 @@
 </style>
 <style lang="scss">
 .categories-table {
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
 .categories-table th:last-child,

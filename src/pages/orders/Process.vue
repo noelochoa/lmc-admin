@@ -1,5 +1,59 @@
 <template>
     <q-page class="q-px-md q-pt-lg">
+        <q-drawer
+            content-class="similar-orders"
+            v-model="right"
+            side="right"
+            overlay
+            elevated
+        >
+            <div class="flex q-mx-md q-mt-sm">
+                <q-btn
+                    flat
+                    dense
+                    class="q-ml-auto"
+                    label="Hide"
+                    no-ripple
+                    @click="right = !right"
+                ></q-btn>
+            </div>
+            <div
+                class="q-my-sm text-h6 text-grey-5 flex flex-center"
+                v-if="similarOrders && similarOrders.length > 0"
+            >
+                Similar Orders
+            </div>
+            <div class="q-my-sm text-h6 text-grey-5 flex flex-center" v-else>
+                No similar orders found.
+            </div>
+            <q-card
+                class="q-ma-md bg-grey-8"
+                v-for="item in similarOrders"
+                :key="item.ordernum"
+            >
+                <q-card-section>
+                    <div class="text-subtitle2">{{ item.ordernum }}</div>
+                    <div
+                        square
+                        class="text-subtitle2 capitalize"
+                        :class="'ctext-' + item.status.toLowerCase()"
+                    >
+                        {{ item.status }}
+                    </div>
+                    <div class="text-subtitle2">{{ item.customer }}</div>
+                    <div class="text-subtitle2">{{ item.target }}</div>
+                    <div class="text-subtitle2">{{ item.price }}</div>
+                    <div class="text-grey-5">{{ item.similarity }}</div>
+                </q-card-section>
+                <q-separator />
+                <q-card-actions dense vertical>
+                    <q-btn dense flat :to="'/orders/process/' + item.ordernum"
+                        >Configure</q-btn
+                    >
+                </q-card-actions>
+            </q-card>
+        </q-drawer>
+
         <div class="page-heading text-white q-pa-md">
             <div class="heading-caption">
                 <h6>Process Order</h6>
@@ -16,6 +70,15 @@
                         name="account_circle"
                         class="caption-icon q-mx-md"
                     />Order Info
+
+                    <q-btn
+                        no-ripple
+                        class="q-ml-auto q-mr-sm"
+                        flat
+                        align="right"
+                        :label="(right ? 'Hide' : 'Find') + ' Similar'"
+                        @click="right = !right"
+                    />
                 </div>
                 <div>
                     <q-form @submit.prevent.stop="onSubmit">
@@ -178,7 +241,7 @@
                             </transition>
                             <q-item class="detail-field product-field">
                                 <span class="field-label">
-                                    Product Details
+                                    Products
                                 </span>
                                 <div class="product-details q-py-sm">
                                     <q-item
@@ -251,8 +314,12 @@
                                                 flat
                                                 dense
                                                 rounded
-                                                icon="delete"
+                                                icon="clear"
                                                 @click="removeProduct(idx)"
+                                                :disabled="
+                                                    showProductEdit ||
+                                                        showProductAdd
+                                                "
                                             >
                                                 <q-tooltip>
                                                     Remove
@@ -266,6 +333,9 @@
                                         no-caps
                                         icon="add"
                                         label="Add Product"
+                                        :disabled="
+                                            showProductEdit || showProductAdd
+                                        "
                                     />
                                 </div>
                             </q-item>
@@ -292,6 +362,8 @@
                 </div>
             </div>
             <div class="content-2"></div>
+
+            <!-- Product Picker Dialog -->
             <ProductPicker
                 :showDlg.sync="showProductEdit"
                 v-bind="{
@@ -301,7 +373,79 @@
                 @hide="onCloseDialog(val)"
             >
                 <template v-slot:product>
-                    {{ selectedProduct }}
+                    <q-form @submit.prevent.stop="onSetProduct">
+                        <q-list class="productdlg-list">
+                            <q-item class="productdlg-item">
+                                <q-input
+                                    dense
+                                    outlined
+                                    hide-bottom-space
+                                    dark
+                                    debounce="250"
+                                    placeholder="Search Product"
+                                    class="search-field"
+                                    v-model="searchProduct"
+                                    @
+                                >
+                                    <template v-slot:prepend>
+                                        <q-icon name="search" color="white" />
+                                    </template>
+                                </q-input>
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Name
+                                </div>
+                                <div class="attr-value">
+                                    {{ selectedProduct.name }}
+                                </div>
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Options
+                                </div>
+                                <div
+                                    class="attr-value q-my-sm"
+                                    v-for="(item,
+                                    key) in selectedProduct.options"
+                                    :key="'pkey-' + key"
+                                >
+                                    <span class="capitalize option-label">
+                                        {{ item._option }}
+                                    </span>
+                                    <q-select
+                                        class="option-select"
+                                        dense
+                                        dark
+                                        outlined
+                                        v-model="item._selected"
+                                    />
+                                </div>
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Qty.
+                                </div>
+                                <q-input
+                                    dense
+                                    outlined
+                                    hide-bottom-space
+                                    dark
+                                    type="number"
+                                    class="attr-value"
+                                    v-model="selectedProduct.quantity"
+                                />
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Price (PHP)
+                                </div>
+                                <div class="attr-value">
+                                    {{ selectedProduct.price }}
+                                </div>
+                            </q-item>
+                        </q-list>
+                    </q-form>
                 </template>
                 <template v-slot:actions>
                     <q-btn
@@ -375,7 +519,7 @@ div[class*="content-"] > div {
     display: flex;
     width: 100%;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1em;
 }
 .product-details > button {
     align-self: flex-start;
@@ -387,6 +531,31 @@ div[class*="content-"] > div {
     overflow: hidden;
     text-overflow: ellipsis;
     width: inherit;
+}
+.productdlg-item {
+    flex-wrap: wrap;
+}
+.productdlg-item > div {
+    text-transform: capitalize;
+}
+div[class*="attr-"] {
+    flex-basis: 100%;
+}
+.search-field {
+    width: 100%;
+}
+.ctext-placed {
+    color: $primary;
+}
+.ctext-accepted,
+.ctext-processing {
+    color: #ff9800;
+}
+.ctext-fulfilled {
+    color: #009688;
+}
+.ctext-cancelled {
+    color: #e57373;
 }
 @media (max-width: 580px) {
     .detail-field {
@@ -414,6 +583,11 @@ div[class*="content-"] > div {
 .q-field__bottom {
     display: none;
 }
+@media (max-width: 1290px) {
+    .similar-orders {
+        background: #1a1d1a !important;
+    }
+}
 </style>
 <script>
 import ProductPicker from "../../components/ProductPicker";
@@ -433,19 +607,21 @@ export default {
     computed: {},
     data() {
         return {
+            right: false,
             loading: false,
             dialogLoading: true,
             hasTyped: false,
             productReady: false,
             showProductEdit: false,
             showProductAdd: false,
+            searchProduct: "",
             selectedProduct: null,
             order: {
                 products: [
                     {
-                        id: 12334553,
+                        ID: 12334553,
                         name: "product 1",
-                        quantity: 2,
+                        quantity: 112,
                         price: 200.0,
                         options: [
                             { _option: "color", _selected: "red" },
@@ -453,14 +629,14 @@ export default {
                         ]
                     },
                     {
-                        id: 12334552,
-                        name: "product 2product 2product 2product 2",
-                        quantity: 5,
+                        ID: 12334552,
+                        name: "product 2 Loremipsum",
+                        quantity: 55,
                         price: 1200.0,
                         options: []
                     },
                     {
-                        id: 12334556,
+                        ID: 12334556,
                         name: "product 3",
                         quantity: 1,
                         price: 200.0,
@@ -560,7 +736,39 @@ export default {
                     value: 5
                 }
             ],
-            options: null
+            options: null,
+            similarOrders: [
+                {
+                    ordernum: "507f1f77bcf86cd799439011",
+                    status: "Placed",
+                    target: "Feb 20, 2020",
+                    customer: "John",
+                    similarity: "Same product orders",
+                    total: 1000
+                },
+                {
+                    ordernum: 2,
+                    status: "Processing",
+                    target: "Feb 20, 2020",
+                    customer: "John",
+                    similarity: "Same target date",
+                    total: 3000
+                },
+                {
+                    ordernum: 1,
+                    status: "fulfilled",
+                    target: "Feb 20, 2020 10:30",
+                    customer: "AAAAAAA",
+                    total: 2000
+                },
+                {
+                    ordernum: 22,
+                    status: "Cancelled",
+                    target: "Feb 10, 2020 10:30",
+                    customer: "AAA",
+                    total: 200.5
+                }
+            ]
         };
     },
     methods: {
@@ -657,12 +865,16 @@ export default {
             console.log(productKey);
             this.$delete(this.order.products, productKey);
         },
+        onSetProduct() {
+            /**TODO */
+            // replace list after http request
+        },
         onSubmit: function(evt) {
             /**TODO */
             this.loading = true;
 
             setTimeout(() => {
-                this.showNotif(true, "Successfully added new order. ");
+                this.showNotif(true, "Successfully updated order details. ");
                 this.loading = false;
                 this.returnToPageIndex("/orders");
             }, 2500);

@@ -214,7 +214,7 @@
 </style>
 <style lang="scss">
 .discounts-table {
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
 .discounts-table th:last-child,

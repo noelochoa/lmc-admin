@@ -28,8 +28,11 @@ body {
 .q-table__container,
 .bg-gray-alpha,
 .navheader {
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
+}
+.bg-gray-alpha-2 {
+    background: rgba(128, 128, 128, 0.55);
 }
 .bg-none {
     background: none !important;

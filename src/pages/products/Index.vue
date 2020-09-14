@@ -360,7 +360,7 @@
 </style>
 <style lang="scss">
 .products-table {
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
 .q-table__middle thead th {

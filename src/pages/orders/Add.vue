@@ -161,7 +161,7 @@
                             </transition>
                             <q-item class="detail-field product-field">
                                 <span class="field-label">
-                                    Product Details
+                                    Products
                                 </span>
                                 <div class="product-details q-py-sm">
                                     <q-item
@@ -183,7 +183,6 @@
                                                 </q-badge>
                                             </q-avatar>
                                         </q-item-section>
-
                                         <q-item-section>
                                             <q-item-label class="product-name">
                                                 {{ product.name }}
@@ -226,8 +225,9 @@
                                                 dense
                                                 rounded
                                                 class="ml-auto"
-                                                icon="close"
+                                                icon="clear"
                                                 @click="removeProduct(idx)"
+                                                :disabled="showProductAdd"
                                             >
                                                 <q-tooltip>
                                                     Remove Product
@@ -241,6 +241,7 @@
                                         no-caps
                                         icon="add"
                                         label="Add Product"
+                                        :disabled="showProductAdd"
                                     />
                                 </div>
                             </q-item>
@@ -381,6 +382,7 @@ export default {
     computed: {},
     data() {
         return {
+            showProductAdd: false,
             loading: false,
             hasTyped: false,
             order: {

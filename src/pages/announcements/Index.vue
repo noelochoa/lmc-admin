@@ -232,7 +232,7 @@
 </style>
 <style lang="scss">
 .announcement-table {
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
 </style>

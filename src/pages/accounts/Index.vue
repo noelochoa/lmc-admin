@@ -88,7 +88,7 @@
                                     "
                                     :options="[
                                         { label: 'Active', value: true },
-                                        { label: 'Inactive', value: false },
+                                        { label: 'Inactive', value: false }
                                     ]"
                                 />
                             </q-td>
@@ -174,7 +174,7 @@
 </style>
 <style lang="scss">
 .customer-table {
-    background: rgba(128, 128, 128, 0.25);
+    background: rgba(128, 128, 128, 0.35);
     color: #fff;
 }
 .customer-table th:last-child,
@@ -201,13 +201,13 @@ export default {
         return {
             title: "Customer Accounts",
             meta: {
-                robots: { name: "robots", content: "noindex" },
-            },
+                robots: { name: "robots", content: "noindex" }
+            }
         };
     },
     created() {
         if (this.$route.query.type) {
-            this.filter.forEach((el) => {
+            this.filter.forEach(el => {
                 if (el.match(new RegExp(this.$route.query.type, "i"))) {
                     this.customerFilter = el;
                 }
@@ -220,7 +220,7 @@ export default {
     mounted() {
         this.onRequest({
             pagination: this.pagination,
-            filter: undefined,
+            filter: undefined
         });
     },
     data() {
@@ -237,7 +237,7 @@ export default {
                 descending: true,
                 page: 1,
                 rowsPerPage: 10,
-                rowsNumber: 10,
+                rowsNumber: 10
             },
             columns: [
                 {
@@ -246,41 +246,41 @@ export default {
                     required: true,
                     label: "Name",
                     align: "left",
-                    sortable: true,
+                    sortable: true
                 },
                 {
                     name: "type",
                     field: "type",
                     align: "left",
                     label: "Type",
-                    sortable: true,
+                    sortable: true
                 },
                 {
                     name: "joined",
                     field: "joined",
                     align: "left",
                     label: "Joined",
-                    sortable: true,
+                    sortable: true
                 },
                 {
                     name: "login",
                     field: "login",
                     align: "left",
                     label: "Last Login",
-                    sortable: true,
+                    sortable: true
                 },
                 {
                     name: "active",
                     field: "active",
                     align: "center",
                     label: "Status",
-                    sortable: true,
+                    sortable: true
                 },
                 {
                     name: "action",
                     align: "left",
-                    label: "Action",
-                },
+                    label: "Action"
+                }
             ],
             data: [],
             original: [
@@ -291,7 +291,7 @@ export default {
                     type: "Reseller",
                     joined: "Feb 20, 2020",
                     login: "March 1, 2020",
-                    active: false,
+                    active: false
                 },
                 {
                     id: 2,
@@ -299,7 +299,7 @@ export default {
                     type: "Reseller",
                     joined: "Feb 20, 2020",
                     login: "Feb 28, 2020",
-                    active: true,
+                    active: true
                 },
                 {
                     id: 3,
@@ -307,7 +307,7 @@ export default {
                     type: "Regular",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
-                    active: true,
+                    active: true
                 },
                 {
                     id: 4,
@@ -315,7 +315,7 @@ export default {
                     type: "Regular",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
-                    active: true,
+                    active: true
                 },
                 {
                     id: 5,
@@ -323,7 +323,7 @@ export default {
                     type: "Reseller",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
-                    active: true,
+                    active: true
                 },
                 {
                     id: 6,
@@ -331,7 +331,7 @@ export default {
                     type: "Regular",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
-                    active: true,
+                    active: true
                 },
                 {
                     id: 7,
@@ -339,9 +339,9 @@ export default {
                     type: "Regular",
                     joined: "Jan 18, 2020",
                     login: "March 12, 2020",
-                    active: false,
-                },
-            ],
+                    active: false
+                }
+            ]
         };
     },
     methods: {
@@ -352,9 +352,7 @@ export default {
                 this.filter.includes(val) &&
                 (!typeSel || !val.match(new RegExp(typeSel, "i")))
             ) {
-                this.$router
-                    .replace({ query: { type: val } })
-                    .catch((err) => {});
+                this.$router.replace({ query: { type: val } }).catch(err => {});
                 this.search = "";
             }
         },
@@ -362,18 +360,18 @@ export default {
             /** TODO */
             let query = Object.assign({}, this.$route.query);
             delete query.s;
-            this.$router.replace({ query }).catch((err) => {});
+            this.$router.replace({ query }).catch(err => {});
             this.search = "";
         },
         searchInput(val) {
             /** TODO */
             this.$axios
                 .get("https://api.coindesk.com/v1/bpi/currentprice.json")
-                .then((response) => {
+                .then(response => {
                     console.log(response);
                     this.customerList = response;
                 })
-                .catch((thrown) => {
+                .catch(thrown => {
                     console.log(thrown);
                 });
 
@@ -382,9 +380,9 @@ export default {
             if (!val) delete searchQry.s;
             this.$router
                 .replace({
-                    query: searchQry,
+                    query: searchQry
                 })
-                .catch((err) => {});
+                .catch(err => {});
         },
         /**TODO */
         onRequest(props) {
@@ -434,7 +432,7 @@ export default {
         // emulate ajax call
         fetchFromServer(startRow, count, filter, sortBy, descending) {
             const data = filter
-                ? this.original.filter((row) => row.name.includes(filter))
+                ? this.original.filter(row => row.name.includes(filter))
                 : this.original.slice();
 
             // handle sortBy
@@ -461,13 +459,13 @@ export default {
                 return this.original.length;
             }
             let count = 0;
-            this.original.forEach((item) => {
+            this.original.forEach(item => {
                 if (item.name.includes(filter)) {
                     ++count;
                 }
             });
             return count;
-        },
-    },
+        }
+    }
 };
 </script>
