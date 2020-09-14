@@ -242,18 +242,22 @@
     text-transform: capitalize;
     color: #fff;
 }
-.orders-table td .chip-placed {
-    background: $primary;
-}
-.orders-table td .chip-accepted,
-.orders-table td .chip-processing {
-    background: #ff9800;
-}
-.orders-table td .chip-fulfilled {
-    background: #009688;
-}
-.orders-table td .chip-cancelled {
-    background: #e57373;
+.orders-table td .chip- {
+    &placed {
+        background: $primary;
+    }
+    &accepted {
+        background: #ff9800;
+    }
+    &processing {
+        background: #ff9800;
+    }
+    &fulfilled {
+        background: #009688;
+    }
+    &cancelled {
+        background: #e57373;
+    }
 }
 </style>
 <script>

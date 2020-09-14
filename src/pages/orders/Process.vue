@@ -544,18 +544,22 @@ div[class*="attr-"] {
 .search-field {
     width: 100%;
 }
-.ctext-placed {
-    color: $primary;
-}
-.ctext-accepted,
-.ctext-processing {
-    color: #ff9800;
-}
-.ctext-fulfilled {
-    color: #009688;
-}
-.ctext-cancelled {
-    color: #e57373;
+.ctext- {
+    &placed {
+        color: $primary;
+    }
+    &accepted {
+        color: #ff9800;
+    }
+    &processing {
+        color: #ff9800;
+    }
+    &fulfilled {
+        color: #009688;
+    }
+    &cancelled {
+        color: #e57373;
+    }
 }
 @media (max-width: 580px) {
     .detail-field {
