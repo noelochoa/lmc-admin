@@ -46,7 +46,16 @@
                 </q-input>
                 <br />
                 <div class="q-pa-md">
-                    <q-btn label="Submit" type="submit" color="primary" />
+                    <q-btn
+                        label="Submit"
+                        type="submit"
+                        :loading="loading"
+                        color="primary"
+                    >
+                        <template v-slot:loading>
+                            <q-spinner-gears />
+                        </template>
+                    </q-btn>
                     <q-btn
                         label="Reset"
                         type="reset"
@@ -54,6 +63,10 @@
                         flat
                         class="q-ml-sm"
                     />
+                </div>
+
+                <div class="q-pa-md inline-block text-negative">
+                    {{ error }}
                 </div>
             </q-form>
             <div class="message q-pa-md text-center">
@@ -116,7 +129,8 @@
         display: none;
     }
     .round-fg {
-        grid-template-columns: 0 1fr;
+        grid-template-areas: "form";
+        grid-template-columns: 1fr;
         width: 75%;
     }
 }
@@ -125,17 +139,36 @@
 <script>
 export default {
     name: "LoginIndex",
-    preFetch({ store }) {},
+    preFetch({ store, redirect }) {
+        if (store.getters["auth/isAuthenticated"]) {
+            redirect("/");
+        }
+    },
     created() {},
     data() {
         return {
             email: "",
             password: "",
-            authenthicated: ""
+            error: "",
+            loading: false
         };
     },
     methods: {
-        onSubmit: function() {},
+        async onSubmit() {
+            this.error = "";
+            this.loading = true;
+            const data = {
+                email: this.email,
+                password: this.password
+            };
+            try {
+                await this.$store.dispatch("auth/singin", data);
+                this.$router.push("/").catch(err => {});
+            } catch (err) {
+                this.error = err;
+                this.loading = false;
+            }
+        },
         onReset: function() {
             this.email = this.password = "";
         },

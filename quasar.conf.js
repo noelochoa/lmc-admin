@@ -8,7 +8,7 @@ module.exports = function(ctx) {
         // app boot file (/src/boot)
         // --> boot files are part of "main.js"
         // https://quasar.dev/quasar-cli/cli-documentation/boot-files
-        boot: ["axios"],
+        boot: ["axios", "persist-auth"],
 
         // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
         css: ["app.scss"],
@@ -45,7 +45,7 @@ module.exports = function(ctx) {
             directives: [],
 
             // Quasar plugins
-            plugins: ["Meta", "Notify", "LoadingBar"],
+            plugins: ["Cookies", "Meta", "Notify", "LoadingBar"],
             config: {
                 loadingBar: {
                     color: "secondary",
@@ -87,11 +87,11 @@ module.exports = function(ctx) {
             env: ctx.dev
                 ? {
                       // so on dev we'll have
-                      API: JSON.stringify("http://localhost:3000")
+                      API: JSON.stringify("http://localhost:8080")
                   }
                 : {
                       // and on build (production):
-                      API: JSON.stringify("https://localhost:3000")
+                      API: JSON.stringify("https://localhost:8080")
                   }
         },
 

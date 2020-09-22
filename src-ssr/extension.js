@@ -11,7 +11,9 @@
  * development server, but such updates are costly since the dev-server needs a reboot.
  */
 var request = require("request");
+var cookieParser = require("cookie-parser");
 const API_URL = process.env.API_URL || "http://localhost:3000";
+const prod = process.env.NODE_ENV.trim() === "production";
 
 module.exports.extendApp = function({ app, ssr }) {
     /*
@@ -20,6 +22,30 @@ module.exports.extendApp = function({ app, ssr }) {
 
      Example: app.use(), app.get() etc
   */
+    app.use("/api/users/login", function(req, res) {
+        // console.log(req.cookie);
+        const url = API_URL + "/users/login";
+        let retJWT = "";
+        let resBody = "";
+        req.pipe(request(url))
+            .on("data", function(chunk) {
+                resBody += chunk;
+                let body = JSON.parse(resBody);
+                if (body.token) {
+                    retJWT = body.token;
+                }
+                if (res.statusCode === 200) {
+                    res.cookie("jwt_cmt", retJWT, {
+                        maxAge: 900000,
+                        sameSite: "Strict",
+                        httpOnly: true,
+                        secure: prod
+                    });
+                }
+            })
+            .pipe(res);
+    });
+
     app.use("/api", function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
         // console.log(req.cookie);
