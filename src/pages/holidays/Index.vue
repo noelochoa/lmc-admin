@@ -42,6 +42,7 @@
                 </div>
                 <div class="bg-gray-alpha">
                     <q-date
+                        no-unset
                         class="date"
                         v-model="date"
                         mask="YYYY-MM-DD"

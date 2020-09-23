@@ -29,6 +29,7 @@
                     filled
                     color="black"
                     type="password"
+                    autocomplete="on"
                     label="Your password *"
                     lazy-rules
                     :rules="[
@@ -162,7 +163,7 @@ export default {
                 password: this.password
             };
             try {
-                await this.$store.dispatch("auth/singin", data);
+                await this.$store.dispatch("auth/signin", data);
                 this.$router.push("/").catch(err => {});
             } catch (err) {
                 this.error = err;

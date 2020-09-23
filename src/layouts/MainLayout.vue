@@ -45,7 +45,7 @@
                     </template>
                 </q-input>
 
-                <q-toolbar-title>
+                <q-toolbar-title class="text-subtitle1">
                     Welcome,
                     <b class="alias">{{ name }}</b>
                 </q-toolbar-title>
@@ -105,6 +105,7 @@
                                     color="primary"
                                     label="Logout"
                                     size="md"
+                                    @click="logoutUser"
                                     v-close-popup
                                 />
                             </div>
@@ -185,9 +186,6 @@
 }
 .sm-layout .q-drawer {
     background: #1a1d1a !important;
-}
-.q-toolbar__title {
-    font-size: 16px;
 }
 .q-drawer {
     position: fixed;
@@ -381,6 +379,10 @@ export default {
         },
         drawerLayoutChange(state) {
             this.showNavBtn = !state;
+        },
+        async logoutUser() {
+            await this.$store.dispatch("auth/signout");
+            this.$router.push("/login").catch(err => {});
         }
     }
 };

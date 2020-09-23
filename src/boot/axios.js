@@ -1,10 +1,23 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
-    baseURL: process.env.API
-});
+export default ({ store, Vue, redirect }) => {
+    let instance = axios.create({
+        baseURL: process.env.API
+    });
 
-export default ({ store, Vue }) => {
-    Vue.prototype.$axios = axiosInstance;
-    store.$axios = axiosInstance;
+    instance.interceptors.response.use(
+        response => {
+            return response;
+        },
+        error => {
+            if (error.response.status === 401) {
+                store.dispatch("auth/resetAuth");
+                redirect({ path: "/login" });
+            }
+            throw error;
+        }
+    );
+
+    Vue.prototype.$axios = instance;
+    store.$axios = instance;
 };

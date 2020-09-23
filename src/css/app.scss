@@ -22,6 +22,9 @@ body {
 .q-chip__content {
     padding-top: 3px !important;
 }
+.q-date .q-date__calendar-item button span {
+    padding-top: 0;
+}
 .q-drawer-container,
 .q-drawer,
 .q-toolbar,
@@ -41,7 +44,6 @@ body {
 .hover-underline:hover {
     text-decoration: underline;
 }
-
 .highlighted {
     color: $primary;
 }

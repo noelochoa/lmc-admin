@@ -46,10 +46,16 @@ module.exports.extendApp = function({ app, ssr }) {
             .pipe(res);
     });
 
-    app.use("/api", function(req, res) {
+    app.use("/api", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
-        // console.log(req.cookie);
-        const url = API_URL + req.path;
-        req.pipe(request({ qs: req.query, uri: url })).pipe(res);
+        if (!req.cookies.jwt_cmt) {
+            res.status(401).send({
+                error: "Not authorized to access this resource."
+            });
+        } else {
+            const url = API_URL + req.path;
+            req.headers.authorization = "Bearer " + req.cookies.jwt_cmt;
+            req.pipe(request({ qs: req.query, uri: url })).pipe(res);
+        }
     });
 };

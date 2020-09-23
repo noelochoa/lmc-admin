@@ -127,6 +127,7 @@
                                             >
                                                 <q-date
                                                     dark
+                                                    no-unset
                                                     v-model="order.target"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="

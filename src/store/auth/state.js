@@ -1,7 +1,12 @@
-export default function() {
+export function getInitialState() {
     return {
         authenticated: false,
-        jwt: "",
-        name: "admin"
+        name: ""
     };
+}
+
+const state = getInitialState();
+
+export default function() {
+    return state;
 }

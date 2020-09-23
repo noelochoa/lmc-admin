@@ -45,6 +45,7 @@
                                             >
                                                 <q-date
                                                     dark
+                                                    no-unset
                                                     v-model="discount.start"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
@@ -110,6 +111,7 @@
                                             >
                                                 <q-date
                                                     dark
+                                                    no-unset
                                                     v-model="discount.end"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="

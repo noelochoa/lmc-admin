@@ -45,6 +45,7 @@
                                             >
                                                 <q-date
                                                     dark
+                                                    no-unset
                                                     v-model="announcement.start"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
@@ -110,6 +111,7 @@
                                             >
                                                 <q-date
                                                     dark
+                                                    no-unset
                                                     v-model="announcement.end"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
