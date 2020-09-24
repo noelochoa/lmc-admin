@@ -21,7 +21,10 @@ export async function signin({ commit }, { email, password }) {
             console.log(this.jwt);
             if (this.jwt) {
                 this.jwt.token = resp.data.token;
-                this.jwt.expiry = new Date(Date.now() + 300); // 5min
+                this.jwt.expiry = new Date(Date.now() + 300 * 1000); // 5min
+                this.$axios.defaults.headers.common[
+                    "authorization"
+                ] = `Bearer ${this.jwt.token}`;
             }
             commit("SET_NAME_AUTH", resp.data.cmsuser.name);
             commit("SET_BOOL_AUTH", true);
@@ -34,13 +37,11 @@ export async function signin({ commit }, { email, password }) {
 export async function signout({ commit }) {
     let resp;
     try {
-        resp = await this.$axios.post("/api/users/logout", {
-            headers: { Authorization: `Bearer ${this.jwt.token}` }
-        });
+        console.log("Expired?", this.jwt.isExpired());
+        resp = await this.$axios.post("/api/users/logout");
         if (resp) {
-            console.log(this.jwt);
             commit("RESET_AUTH");
-            this.jwt = {};
+            this.jwt.reset();
         }
     } catch (err) {
         throw err.response.data.error || "Error has occurred.";

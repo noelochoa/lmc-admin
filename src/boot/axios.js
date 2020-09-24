@@ -2,7 +2,8 @@ import axios from "axios";
 
 export default ({ app, store, redirect }) => {
     let instance = axios.create({
-        baseURL: process.env.API
+        baseURL: process.env.API,
+        headers: { common: {} }
     });
 
     instance.interceptors.response.use(

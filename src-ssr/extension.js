@@ -43,13 +43,18 @@ module.exports.extendApp = function({ app, ssr }) {
                     });
                 }
             })
+            .on("error", function(err) {
+                res.status(500).json({
+                    error: "Unexpected error has occurred."
+                });
+            })
             .pipe(res);
     });
 
     app.use("/api/users/refresh", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
         if (!req.cookies.refresh_token) {
-            res.status(401).send({
+            res.status(401).json({
                 error: "Not authorized to access this resource."
             });
         } else {
@@ -62,7 +67,13 @@ module.exports.extendApp = function({ app, ssr }) {
     app.use("/api", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
         const url = API_URL + req.path;
-        req.pipe(request({ qs: req.query, uri: url })).pipe(res);
+        req.pipe(request({ qs: req.query, uri: url }))
+            .on("error", function(err) {
+                res.status(500).json({
+                    error: "Unexpected error has occurred."
+                });
+            })
+            .pipe(res);
         // if (!req.cookies.jwt_cmt) {
         //     res.status(401).send({
         //         error: "Not authorized to access this resource."
