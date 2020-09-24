@@ -25,17 +25,17 @@ module.exports.extendApp = function({ app, ssr }) {
     app.use("/api/users/login", function(req, res) {
         // console.log(req.cookie);
         const url = API_URL + "/users/login";
-        let retJWT = "";
+        let refresh_token = "";
         let resBody = "";
         req.pipe(request(url))
             .on("data", function(chunk) {
                 resBody += chunk;
                 let body = JSON.parse(resBody);
-                if (body.token) {
-                    retJWT = body.token;
+                if (body.refresh_token) {
+                    refresh_token = body.refresh_token;
                 }
                 if (res.statusCode === 200) {
-                    res.cookie("jwt_cmt", retJWT, {
+                    res.cookie("refresh_token", refresh_token, {
                         maxAge: 900000,
                         sameSite: "Strict",
                         httpOnly: true,
@@ -46,16 +46,31 @@ module.exports.extendApp = function({ app, ssr }) {
             .pipe(res);
     });
 
-    app.use("/api", cookieParser(), function(req, res) {
+    app.use("/api/users/refresh", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
-        if (!req.cookies.jwt_cmt) {
+        if (!req.cookies.refresh_token) {
             res.status(401).send({
                 error: "Not authorized to access this resource."
             });
         } else {
-            const url = API_URL + req.path;
-            req.headers.authorization = "Bearer " + req.cookies.jwt_cmt;
+            const url = API_URL + "/users/refresh";
+            req.headers["X-REF-TOKEN"] = req.cookies.refresh_token;
             req.pipe(request({ qs: req.query, uri: url })).pipe(res);
         }
+    });
+
+    app.use("/api", cookieParser(), function(req, res) {
+        console.log(req.originalUrl, req.path, req.query);
+        const url = API_URL + req.path;
+        req.pipe(request({ qs: req.query, uri: url })).pipe(res);
+        // if (!req.cookies.jwt_cmt) {
+        //     res.status(401).send({
+        //         error: "Not authorized to access this resource."
+        //     });
+        // } else {
+        //     const url = API_URL + req.path;
+        //     req.headers.authorization = "Bearer " + req.cookies.jwt_cmt;
+        //     req.pipe(request({ qs: req.query, uri: url })).pipe(res);
+        // }
     });
 };
