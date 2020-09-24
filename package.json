@@ -33,5 +33,8 @@
     },
     "browserslist": [
         "last 1 version, not dead, ie >= 11"
-    ]
+    ],
+    "resolutions": {
+        "node-forge": "^0.10.0"
+    }
 }
