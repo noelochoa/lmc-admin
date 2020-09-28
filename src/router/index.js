@@ -14,7 +14,7 @@ Vue.use(VueRouter);
  * with the Router instance.
  */
 
-export default function(/* { store, ssrContext } */) {
+export default function({ store, ssrContext }) {
     const Router = new VueRouter({
         scrollBehavior: (to, from, savedPosition) => {
             // no scroll if query has been changed
@@ -41,6 +41,12 @@ export default function(/* { store, ssrContext } */) {
         // quasar.conf.js -> build -> publicPath
         mode: process.env.VUE_ROUTER_MODE,
         base: process.env.VUE_ROUTER_BASE
+    });
+
+    Router.beforeEach((to, from, next) => {
+        if (to.path !== "/login" && !store.state.auth.authenticated)
+            next("/login");
+        else next();
     });
 
     return Router;

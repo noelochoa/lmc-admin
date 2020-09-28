@@ -18,7 +18,7 @@ export async function signin({ commit }, { email, password }) {
             password
         });
         if (resp && resp.data) {
-            commit("SET_NAME_AUTH", resp.data.cmsuser.name);
+            commit("SET_NAME_AUTH", resp.data.name);
             commit("SET_BOOL_AUTH", true);
         }
     } catch (err) {

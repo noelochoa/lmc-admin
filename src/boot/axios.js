@@ -12,7 +12,7 @@ export default ({ app, store, redirect }) => {
         error => {
             if (error.response.status === 401) {
                 store.dispatch("auth/resetAuth");
-                redirect({ path: "/login" });
+                redirect("/login");
             }
             return Promise.reject(error);
         }

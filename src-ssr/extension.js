@@ -11,50 +11,66 @@
  * development server, but such updates are costly since the dev-server needs a reboot.
  */
 var request = require("request");
+var rp = require("request-promise");
 var cookieParser = require("cookie-parser");
+var bodyParser = require("body-parser");
+
 const API_URL = process.env.API_URL || "http://localhost:3000";
 const prod = process.env.NODE_ENV.trim() === "production";
 
 module.exports.extendApp = function({ app, ssr }) {
     /*
-     Extend the parts of the express app that you
-     want to use with development server too.
+      API ROUTES
+    */
+    app.use("/api/users/login", bodyParser.json(), function(req, res) {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).send({ error: "Invalid request" });
+        }
 
-     Example: app.use(), app.get() etc
-  */
-    app.use("/api/users/login", function(req, res) {
-        // console.log(req.cookie);
-        const url = API_URL + "/users/login";
-        let retJWT = "";
-        let resBody = "";
-        req.pipe(request(url))
-            .on("data", function(chunk) {
-                resBody += chunk;
-                let body = JSON.parse(resBody);
-                if (body.token) {
-                    retJWT = body.token;
-                }
-                if (res.statusCode === 200) {
-                    res.cookie("jwt_cmt", retJWT, {
-                        maxAge: 900000,
-                        sameSite: "Strict",
-                        httpOnly: true,
-                        secure: prod
+        let options = {
+            method: "POST",
+            uri: API_URL + "/users/login",
+            body: {
+                email,
+                password
+            },
+            json: true
+        };
+
+        rp(options)
+            .then(function(body) {
+                const { token, cmsuser } = body;
+                res.cookie("_JWT_CMS", token, {
+                    maxAge: 900000,
+                    httpOnly: true,
+                    sameSite: "Strict",
+                    secure: prod
+                });
+                return res.status(200).send(cmsuser);
+            })
+            .catch(function(err) {
+                const { response } = err;
+                if (response) {
+                    return res.status(response.statusCode).send(response.body);
+                } else {
+                    return res.status(500).send({
+                        error: "Unexpected error has occurred."
                     });
                 }
-            })
-            .pipe(res);
+            });
     });
 
     app.use("/api", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
-        if (!req.cookies.jwt_cmt) {
+        console.log(req.cookies);
+        if (!req.cookies._JWT_CMS) {
             res.status(401).send({
                 error: "Not authorized to access this resource."
             });
         } else {
             const url = API_URL + req.path;
-            req.headers.authorization = "Bearer " + req.cookies.jwt_cmt;
+            req.headers.authorization = "Bearer " + req.cookies._JWT_CMS;
             req.pipe(request({ qs: req.query, uri: url })).pipe(res);
         }
     });

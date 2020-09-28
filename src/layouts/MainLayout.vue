@@ -224,9 +224,7 @@ import SearchResults from "../components/SearchResults";
 
 export default {
     preFetch({ store, redirect }) {
-        if (!store.state.auth.authenticated) {
-            redirect("/login");
-        }
+        //console.log(store.state);
     },
 
     name: "MainLayout",
@@ -381,8 +379,10 @@ export default {
             this.showNavBtn = !state;
         },
         async logoutUser() {
-            await this.$store.dispatch("auth/signout");
-            this.$router.push("/login").catch(err => {});
+            try {
+                await this.$store.dispatch("auth/signout");
+                this.$router.push("/login").catch(err => {});
+            } catch (err) {}
         }
     }
 };
