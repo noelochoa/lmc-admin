@@ -5,6 +5,18 @@ export default ({ app, store, redirect }) => {
         baseURL: process.env.API
     });
 
+    instance.interceptors.request.use(
+        config => {
+            if (store.state.auth.authenticated) {
+                config.headers["X-CSRF-TOKEN"] = store.state.auth.xsrf;
+            }
+            return config;
+        },
+        error => {
+            return Promise.reject(error);
+        }
+    );
+
     instance.interceptors.response.use(
         response => {
             return response;

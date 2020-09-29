@@ -1,3 +1,4 @@
+/*
 export function setAuthenticated({ commit }, bool) {
     commit("SET_BOOL_AUTH", bool);
 }
@@ -5,7 +6,7 @@ export function setAuthenticated({ commit }, bool) {
 export function setName({ commit }, name) {
     commit("SET_NAME_AUTH", name);
 }
-
+*/
 export function resetAuth({ commit }) {
     commit("RESET_AUTH");
 }
@@ -18,7 +19,8 @@ export async function signin({ commit }, { email, password }) {
             password
         });
         if (resp && resp.data) {
-            commit("SET_NAME_AUTH", resp.data.name);
+            commit("SET_NAME_AUTH", resp.data.cmsuser.name);
+            commit("SET_XSRF_AUTH", resp.data.xsrf);
             commit("SET_BOOL_AUTH", true);
         }
     } catch (err) {

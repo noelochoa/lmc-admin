@@ -1,7 +1,8 @@
 export function getInitialState() {
     return {
         authenticated: false,
-        name: ""
+        name: "",
+        xsrf: ""
     };
 }
 

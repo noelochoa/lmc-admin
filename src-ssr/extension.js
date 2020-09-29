@@ -27,7 +27,6 @@ module.exports.extendApp = function({ app, ssr }) {
         if (!email || !password) {
             return res.status(400).send({ error: "Invalid request" });
         }
-
         let options = {
             method: "POST",
             uri: API_URL + "/users/login",
@@ -37,17 +36,16 @@ module.exports.extendApp = function({ app, ssr }) {
             },
             json: true
         };
-
         rp(options)
             .then(function(body) {
-                const { token, cmsuser } = body;
+                const { token, cmsuser, xsrf } = body;
                 res.cookie("_JWT_CMS", token, {
                     maxAge: 900000,
                     httpOnly: true,
                     sameSite: "Strict",
                     secure: prod
                 });
-                return res.status(200).send(cmsuser);
+                return res.status(200).send({ cmsuser, xsrf });
             })
             .catch(function(err) {
                 const { response } = err;
