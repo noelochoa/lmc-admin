@@ -8,7 +8,10 @@ export default ({ app, store, redirect }) => {
     instance.interceptors.request.use(
         config => {
             if (store.state.auth.authenticated) {
-                config.headers["X-CSRF-TOKEN"] = store.state.auth.xsrf;
+                const xsrf = store.getters["auth/getXSRFToken"];
+                config.headers["X-CSRF-TOKEN"] = xsrf;
+            } else {
+                delete config.headers["X-CSRF-TOKEN"];
             }
             return config;
         },
@@ -24,7 +27,7 @@ export default ({ app, store, redirect }) => {
         error => {
             if (error.response.status === 401) {
                 store.dispatch("auth/resetAuth");
-                redirect("/login");
+                //redirect("/login");
             }
             return Promise.reject(error);
         }

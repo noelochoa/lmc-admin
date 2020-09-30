@@ -148,7 +148,7 @@ export default {
     created() {},
     data() {
         return {
-            email: "",
+            email: "noelochoa@gmail.com",
             password: "",
             error: "",
             loading: false
