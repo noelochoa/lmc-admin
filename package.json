@@ -17,7 +17,8 @@
         "cookie-parser": "^1.4.5",
         "quasar": "^1.9.9",
         "request-promise": "^4.2.6",
-        "vuex-persistedstate": "^3.1.0"
+        "vuex-persistedstate": "^3.1.0",
+        "vuex-shared-mutations": "^1.0.2"
     },
     "devDependencies": {
         "@quasar/app": "^1.0.0",

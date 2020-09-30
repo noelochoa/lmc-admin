@@ -61,7 +61,6 @@ module.exports.extendApp = function({ app, ssr }) {
 
     app.use("/api", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
-        console.log(req.cookies);
         if (!req.cookies._JWT_CMS) {
             res.status(401).send({
                 error: "Not authorized to access this resource."
@@ -69,7 +68,25 @@ module.exports.extendApp = function({ app, ssr }) {
         } else {
             const url = API_URL + req.path;
             req.headers.authorization = "Bearer " + req.cookies._JWT_CMS;
-            req.pipe(request({ qs: req.query, uri: url })).pipe(res);
+            const proxy = request(url);
+            proxy
+                .on("response", response => {
+                    if (
+                        typeof response.headers["x-access-token"] !==
+                        "undefined"
+                    ) {
+                        const new_token = response.headers["x-access-token"];
+                        res.cookie("_JWT_CMS", new_token, {
+                            maxAge: new_token ? 900000 : 0,
+                            httpOnly: true,
+                            sameSite: "Strict",
+                            secure: prod
+                        });
+                    }
+                })
+                .pipe(res);
+
+            req.pipe(proxy);
         }
     });
 };
