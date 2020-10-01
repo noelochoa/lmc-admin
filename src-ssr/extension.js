@@ -40,7 +40,7 @@ module.exports.extendApp = function({ app, ssr }) {
             .then(function(body) {
                 const { token, cmsuser, xsrf } = body;
                 res.cookie("_JWT_CMS", token, {
-                    maxAge: 900000,
+                    maxAge: 15 * 60 * 1000, //15m
                     httpOnly: true,
                     sameSite: "Strict",
                     secure: prod
@@ -59,10 +59,49 @@ module.exports.extendApp = function({ app, ssr }) {
             });
     });
 
+    app.use("/api/users/refresh", cookieParser(), function(req, res) {
+        console.log(req.originalUrl, req.path, req.query);
+        if (!req.cookies._JWT_CMS || !req.headers["x-csrf-token"]) {
+            return res.status(403).send({
+                error: "Not authorized to access this resource."
+            });
+        }
+        let options = {
+            method: "POST",
+            uri: API_URL + "/users/refresh",
+            headers: {
+                Authorization: "Bearer " + req.cookies._JWT_CMS,
+                "x-csrf-token": req.headers["x-csrf-token"]
+            },
+            json: true
+        };
+        rp(options)
+            .then(function(body) {
+                const { token, xsrf } = body;
+                res.cookie("_JWT_CMS", token, {
+                    maxAge: 15 * 60 * 1000, //15m
+                    httpOnly: true,
+                    sameSite: "Strict",
+                    secure: prod
+                });
+                return res.send({ xsrf });
+            })
+            .catch(function(err) {
+                const { response } = err;
+                if (response) {
+                    return res.status(response.statusCode).send(response.body);
+                } else {
+                    return res.status(500).send({
+                        error: "Unexpected error has occurred."
+                    });
+                }
+            });
+    });
+
     app.use("/api", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
         if (!req.cookies._JWT_CMS) {
-            res.status(401).send({
+            res.status(403).send({
                 error: "Not authorized to access this resource."
             });
         } else {
@@ -70,19 +109,11 @@ module.exports.extendApp = function({ app, ssr }) {
             req.headers.authorization = "Bearer " + req.cookies._JWT_CMS;
             const proxy = request(url);
             proxy
-                .on("response", response => {
-                    if (
-                        typeof response.headers["x-access-token"] !==
-                        "undefined"
-                    ) {
-                        const new_token = response.headers["x-access-token"];
-                        res.cookie("_JWT_CMS", new_token, {
-                            maxAge: new_token ? 900000 : 0,
-                            httpOnly: true,
-                            sameSite: "Strict",
-                            secure: prod
-                        });
-                    }
+                .on("response", response => {})
+                .on("error", err => {
+                    res.status(500).send({
+                        error: "Unexpected error has occurred."
+                    });
                 })
                 .pipe(res);
 

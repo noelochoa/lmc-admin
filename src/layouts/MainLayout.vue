@@ -106,7 +106,6 @@
                                     label="Logout"
                                     size="md"
                                     @click="logoutUser"
-                                    v-close-popup
                                 />
                             </div>
                         </div>
@@ -192,13 +191,6 @@
 }
 .scrolled {
     background: #1a1d1a !important;
-}
-.quick-search {
-    font-size: 12px;
-    width: 185px;
-}
-.quick-search .q-placeholder {
-    color: white;
 }
 .adjust-content-left {
     justify-content: left;
@@ -381,8 +373,10 @@ export default {
         async logoutUser() {
             try {
                 await this.$store.dispatch("auth/signout");
+            } catch (err) {
+            } finally {
                 this.$router.push("/login").catch(err => {});
-            } catch (err) {}
+            }
         }
     }
 };

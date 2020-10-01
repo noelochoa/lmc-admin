@@ -10,8 +10,8 @@
                 Accounts
                 <br />
                 <p class="text-subtitle2">
-                    %% Customers
-                    <br />%% Resellers
+                    {{ stats.customers }} Customers <br />{{ stats.resellers }}
+                    Resellers
                 </p>
             </div>
             <div class="heading-stat-2 text-caption">
@@ -312,15 +312,24 @@ import Accounts from "../components/Accounts";
 import Statistic from "../components/Statistic";
 import Comments from "../components/Comments";
 import HelperMixin from "../mixins/helpers";
+import RepositoryFactory from "../services/repository-factory";
+const Stats = RepositoryFactory.get("statistics");
 
 export default {
     name: "DashboardIndex",
 
     components: { Accounts, Statistic, Comments },
     mixins: [HelperMixin],
-
+    created() {
+        this.stats.customers = Stats.getCustomersCount();
+        this.fetchStat();
+    },
     data() {
         return {
+            stats: {
+                customers: 0,
+                resellers: 0
+            },
             accountsList: [
                 {
                     id: "1234",
@@ -389,6 +398,11 @@ export default {
             ],
             holidays: ["2020/03/12", "2020/03/29"]
         };
+    },
+    methods: {
+        fetchStat() {
+            this.stats.resellers = Stats.getResellersCount();
+        }
     }
 };
 </script>

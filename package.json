@@ -14,6 +14,7 @@
     "dependencies": {
         "@quasar/extras": "^1.6.0",
         "axios": "^0.18.1",
+        "axios-auth-refresh": "^3.0.0",
         "cookie-parser": "^1.4.5",
         "quasar": "^1.9.9",
         "request-promise": "^4.2.6",
@@ -35,5 +36,9 @@
     },
     "browserslist": [
         "last 1 version, not dead, ie >= 11"
-    ]
+    ],
+    "resolutions": {
+        "node-forge": "^0.10.0",
+        "serialize-javascript": ">=3.1.0"
+    }
 }

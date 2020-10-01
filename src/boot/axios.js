@@ -1,4 +1,5 @@
 import axios from "axios";
+import createAuthRefreshInterceptor from "axios-auth-refresh";
 
 export default ({ app, store, redirect }) => {
     let instance = axios.create({
@@ -8,10 +9,9 @@ export default ({ app, store, redirect }) => {
     instance.interceptors.request.use(
         config => {
             if (store.state.auth.authenticated) {
-                const xsrf = store.getters["auth/getXSRFToken"];
-                config.headers["X-CSRF-TOKEN"] = xsrf;
+                config.headers["x-csrf-token"] = store.state.auth.xsrf;
             } else {
-                delete config.headers["X-CSRF-TOKEN"];
+                delete config.headers["x-csrf-token"];
             }
             return config;
         },
@@ -25,13 +25,21 @@ export default ({ app, store, redirect }) => {
             return response;
         },
         error => {
-            if (error.response.status === 401) {
+            if (error.config.url == process.env.API + "/api/users/refresh") {
                 store.dispatch("auth/resetAuth");
-                //redirect("/login");
+                redirect("/login");
             }
             return Promise.reject(error);
         }
     );
+    const refreshAuthLogic = fReq =>
+        instance.post("/api/users/refresh").then(resp => {
+            // Renew Access Token & CSRF Token
+            store.dispatch("auth/setXSRFToken", resp.data.xsrf);
+            return Promise.resolve();
+        });
+
+    createAuthRefreshInterceptor(instance, refreshAuthLogic);
 
     app.axios = instance;
     store.$axios = instance;

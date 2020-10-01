@@ -7,6 +7,10 @@ export function setName({ commit }, name) {
     commit("SET_NAME_AUTH", name);
 }
 */
+export function setXSRFToken({ commit }, xsrf) {
+    commit("SET_XSRF_AUTH", xsrf);
+}
+
 export function resetAuth({ commit }) {
     commit("RESET_AUTH");
 }
@@ -32,10 +36,9 @@ export async function signout({ commit }) {
     let resp;
     try {
         resp = await this.$axios.post("/api/users/logout");
-        if (resp) {
-            commit("RESET_AUTH");
-        }
     } catch (err) {
         throw err.response.data.error || "Error has occurred.";
+    } finally {
+        commit("RESET_AUTH");
     }
 }

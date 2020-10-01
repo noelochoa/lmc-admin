@@ -8,7 +8,12 @@ export default async ({ store, ssrContext }) => {
         paths: ["auth"],
         storage: {
             getItem: key => JSON.stringify(cookies.get(key)),
-            setItem: (key, value) => cookies.set(key, value, { path: "/" }),
+            setItem: (key, value) =>
+                cookies.set(key, value, {
+                    path: "/",
+                    sameSite: "Lax",
+                    secure: !process.env.DEV
+                }),
             removeItem: key => cookies.remove(key)
         }
     })(store);

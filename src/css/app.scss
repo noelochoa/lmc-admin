@@ -47,3 +47,10 @@ body {
 .highlighted {
     color: $primary;
 }
+.quick-search {
+    font-size: 12px;
+    width: 185px;
+}
+.quick-search .q-placeholder {
+    color: white;
+}
