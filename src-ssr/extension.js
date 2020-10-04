@@ -12,16 +12,24 @@
  */
 var request = require("request");
 var rp = require("request-promise");
+var cors = require("cors");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
 const prod = process.env.NODE_ENV.trim() === "production";
+const origin = prod ? "http://localhost:8080" : "http://localhost:8080";
 
 module.exports.extendApp = function({ app, ssr }) {
     /*
       API ROUTES
     */
+    app.use(
+        cors({
+            credentials: true,
+            origin
+        })
+    );
     app.use("/api/users/login", bodyParser.json(), function(req, res) {
         const { email, password } = req.body;
         if (!email || !password) {
@@ -59,7 +67,8 @@ module.exports.extendApp = function({ app, ssr }) {
             });
     });
 
-    app.use("/api/users/refresh", cookieParser(), function(req, res) {
+    app.use(cookieParser());
+    app.use("/api/users/refresh", function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
         if (!req.cookies._JWT_CMS || !req.headers["x-csrf-token"]) {
             return res.status(403).send({
@@ -78,13 +87,15 @@ module.exports.extendApp = function({ app, ssr }) {
         rp(options)
             .then(function(body) {
                 const { token, xsrf } = body;
+                // console.log(token, xsrf);
                 res.cookie("_JWT_CMS", token, {
                     maxAge: 15 * 60 * 1000, //15m
                     httpOnly: true,
                     sameSite: "Strict",
                     secure: prod
                 });
-                return res.send({ xsrf });
+
+                return res.send({ token, xsrf });
             })
             .catch(function(err) {
                 const { response } = err;
@@ -98,8 +109,9 @@ module.exports.extendApp = function({ app, ssr }) {
             });
     });
 
-    app.use("/api", cookieParser(), function(req, res) {
+    app.use("/api", function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
+        console.log(req.cookies);
         if (!req.cookies._JWT_CMS) {
             res.status(403).send({
                 error: "Not authorized to access this resource."

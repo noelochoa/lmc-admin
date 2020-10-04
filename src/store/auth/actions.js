@@ -7,6 +7,7 @@ export function setName({ commit }, name) {
     commit("SET_NAME_AUTH", name);
 }
 */
+
 export function setXSRFToken({ commit }, xsrf) {
     commit("SET_XSRF_AUTH", xsrf);
 }

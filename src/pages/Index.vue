@@ -9,21 +9,35 @@
             <div class="heading-stat-1 text-caption">
                 Accounts
                 <br />
-                <p class="text-subtitle2">
-                    {{ stats.customers }} Customers <br />{{ stats.resellers }}
-                    Resellers
+                <p class="text-subtitle2" v-if="stats.loading">
+                    <q-spinner color="white" size="2em" />
+                </p>
+                <p class="text-subtitle2" v-else-if="stats.customers.hasError">
+                    Error retrieving data.
+                </p>
+                <p class="text-subtitle2" v-else>
+                    {{ stats.customers.data.regular }} Customers <br />
+                    {{ stats.customers.data.reseller }} Resellers
                 </p>
             </div>
             <div class="heading-stat-2 text-caption">
                 Products
-                <br />
-                <p class="text-subtitle2">%% / %%</p>
+                <p class="text-subtitle2" v-if="stats.loading">
+                    <q-spinner color="white" size="2em" />
+                </p>
+                <p class="text-subtitle2" v-else>
+                    {{ stats.products.data.active }} Active /
+                    {{ stats.products.data.total }} Total
+                </p>
             </div>
             <div class="heading-stat-3 text-caption">
                 Orders this Month
-                <p class="text-subtitle2">
-                    %% Accepted
-                    <br />%% Placed
+                <p class="text-subtitle2" v-if="stats.loading">
+                    <q-spinner color="white" size="2em" />
+                </p>
+                <p class="text-subtitle2" v-else>
+                    {{ stats.orders.data.accepted }} Accepted <br />
+                    {{ stats.orders.data.placed }} Placed
                 </p>
             </div>
         </div>
@@ -312,23 +326,41 @@ import Accounts from "../components/Accounts";
 import Statistic from "../components/Statistic";
 import Comments from "../components/Comments";
 import HelperMixin from "../mixins/helpers";
-import RepositoryFactory from "../services/repository-factory";
-const Stats = RepositoryFactory.get("statistics");
+let Stats;
 
 export default {
+    preFetch({ store }) {
+        // return store.dispatch("auth/getCustomerStats");
+    },
     name: "DashboardIndex",
 
     components: { Accounts, Statistic, Comments },
     mixins: [HelperMixin],
-    created() {
-        this.stats.customers = Stats.getCustomersCount();
-        this.fetchStat();
+    beforeCreate() {
+        Stats = this.$RepositoryFactory.get("statistics");
+    },
+    async created() {
+        if (process.env.CLIENT) this.getStats();
+        // await Stats.getCustomerStats();
+        // this.stats.customers = Stats.getCustomersCount();
+        //this.stats.customers = await this.$store.dispatch("auth/getAll");
     },
     data() {
         return {
             stats: {
-                customers: 0,
-                resellers: 0
+                loading: true,
+                customers: {
+                    hasError: false,
+                    data: {}
+                },
+                products: {
+                    hasError: false,
+                    data: {}
+                },
+                orders: {
+                    hasError: false,
+                    data: {}
+                }
             },
             accountsList: [
                 {
@@ -400,8 +432,17 @@ export default {
         };
     },
     methods: {
-        fetchStat() {
-            this.stats.resellers = Stats.getResellersCount();
+        async getStats() {
+            [
+                this.stats.customers,
+                this.stats.products,
+                this.stats.orders
+            ] = await Promise.all([
+                Stats.getCustomerStats(),
+                Stats.getProductStats(),
+                Stats.getOrderStats()
+            ]);
+            this.stats.loading = false;
         }
     }
 };
