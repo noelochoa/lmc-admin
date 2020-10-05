@@ -1,4 +1,4 @@
-import { Cookies } from "quasar";
+// import { Cookies } from "quasar";
 import axios from "axios";
 import inject from "./inject";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
@@ -12,7 +12,7 @@ export default inject(async function({ app, store, ssrContext, redirect }) {
         config => {
             if (!!ssrContext) {
                 config.headers = ssrContext.req.headers;
-                config.skipAuthRefresh = true;
+                // config.skipAuthRefresh = true;
             }
             if (store.state.auth.authenticated) {
                 config.headers["x-csrf-token"] = store.state.auth.xsrf;
@@ -49,6 +49,7 @@ export default inject(async function({ app, store, ssrContext, redirect }) {
             return Promise.resolve();
         });
 
+    createAuthRefreshInterceptor(instance, refreshAuthLogic);
     // const refreshAuthLogicSSR = fReq =>
     //     instance.post("/api/users/refresh").then(resp => {
     //         const cookies = Cookies.parseSSR(ssrContext);
@@ -68,8 +69,6 @@ export default inject(async function({ app, store, ssrContext, redirect }) {
     // } else {
     //     createAuthRefreshInterceptor(instance, refreshAuthLogic);
     // }
-
-    createAuthRefreshInterceptor(instance, refreshAuthLogic);
 
     return {
         axios: instance

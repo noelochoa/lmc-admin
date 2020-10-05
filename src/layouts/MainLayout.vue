@@ -99,7 +99,7 @@
                                 <div
                                     class="text-subtitle1 q-mt-sm q-mb-sm alias"
                                 >
-                                    {{ name }}
+                                    Account
                                 </div>
                                 <q-btn
                                     color="primary"
@@ -175,7 +175,7 @@
     position: fixed;
     height: 100%;
     width: 100%;
-    background-image: url("../statics/bg-cms.jpg");
+    background-image: url("/bg-cms.jpg");
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;

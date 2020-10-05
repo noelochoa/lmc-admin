@@ -56,21 +56,30 @@
                     />Resellers for Approval
                 </div>
                 <div>
-                    <q-list separator>
-                        <Accounts
-                            v-for="account in accountsList"
-                            :key="account.id"
-                            v-bind="account"
-                        />
-                    </q-list>
+                    <p v-if="pending.loading" class="flex flex-center">
+                        <q-spinner color="white" class="q-mt-sm" size="2em" />
+                    </p>
                     <p
-                        v-if="accountsList.length < 1"
+                        v-else-if="pending.hasError"
+                        class="flex flex-center q-mt-md"
+                    >
+                        Error retrieving data.
+                    </p>
+                    <p
+                        v-else-if="pending.data.length < 1"
                         class="text-center q-mt-md"
                     >
                         No pending accounts
                     </p>
+                    <q-list separator v-else>
+                        <Accounts
+                            v-for="account in pending.data"
+                            :key="account.id"
+                            v-bind="account"
+                        />
+                    </q-list>
                 </div>
-                <div v-if="accountsList.length > 0">
+                <div v-if="!stats.loading && pending.data.length > 0">
                     <q-item
                         to="/accounts"
                         dense
@@ -261,6 +270,7 @@ div[class*="content-"] > div {
     width: 100%;
 }
 div[class*="content-"] > div:nth-child(2) {
+    min-height: 3.5em;
     background: rgba(128, 128, 128, 0.55);
 }
 
@@ -368,18 +378,11 @@ export default {
                     data: {}
                 }
             },
-            accountsList: [
-                {
-                    id: "1234",
-                    name: "John Dont XXXXAAAAXXXXAAAA",
-                    joined: "2020/03/01 19:00:00+09:00"
-                },
-                {
-                    id: "1235",
-                    name: "Noel Ma Oc.",
-                    joined: "2020/02/22 16:40:00+00:00"
-                }
-            ],
+            pending: {
+                loading: true,
+                hasError: false,
+                data: []
+            },
             productStats: [
                 {
                     label: "Featured Products",
@@ -442,13 +445,16 @@ export default {
             [
                 this.stats.customers,
                 this.stats.products,
-                this.stats.orders
+                this.stats.orders,
+                this.pending
             ] = await Promise.all([
                 Stats.getCustomerStats(),
                 Stats.getProductStats(),
-                Stats.getOrderStats()
+                Stats.getOrderStats(),
+                Stats.getPendingResellers()
             ]);
             this.stats.loading = false;
+            this.pending.loading = false;
         }
     }
 };

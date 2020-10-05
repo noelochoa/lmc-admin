@@ -43,3 +43,15 @@ export async function signout({ commit }) {
         commit("RESET_AUTH");
     }
 }
+
+export async function getCustomerStats({ commit }) {
+    let resp;
+    try {
+        resp = await this.$axios.get("/api/customers/stats");
+        console.log(resp.data);
+        return Promise.resolve(resp.data);
+    } catch (err) {
+        return Promise.resolve(err);
+        //  throw err.response.data.error || "Error has occurred.";
+    }
+}

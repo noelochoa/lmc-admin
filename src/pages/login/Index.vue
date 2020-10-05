@@ -89,7 +89,7 @@
     height: 100%;
     width: 100%;
     /* Center and scale the image nicely */
-    background-image: url("../../statics/bg-cms.jpg");
+    background-image: url("/bg-cms.jpg");
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;

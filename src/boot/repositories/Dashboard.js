@@ -39,4 +39,15 @@ export default class Dashboard {
 
         return ret;
     }
+
+    async getPendingResellers() {
+        const ret = { hasError: false, data: [] };
+        try {
+            const res = await this.axios.get("/api/customers/pending");
+            ret.data = res.data;
+        } catch (err) {
+            ret.hasError = true;
+        }
+        return ret;
+    }
 }
