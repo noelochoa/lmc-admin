@@ -12,7 +12,6 @@
  */
 var request = require("request");
 var rp = require("request-promise");
-var cors = require("cors");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
 
@@ -24,12 +23,6 @@ module.exports.extendApp = function({ app, ssr }) {
     /*
       API ROUTES
     */
-    app.use(
-        cors({
-            credentials: true,
-            origin
-        })
-    );
     app.use("/api/users/login", bodyParser.json(), function(req, res) {
         const { email, password } = req.body;
         if (!email || !password) {

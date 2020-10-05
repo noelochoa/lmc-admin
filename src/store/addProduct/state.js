@@ -14,8 +14,6 @@ export function getInitialState() {
     };
 }
 
-const state = getInitialState();
-
 export default function() {
-    return state;
+    return getInitialState();
 }

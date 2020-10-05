@@ -25,6 +25,9 @@
                 <p class="text-subtitle2" v-if="stats.loading">
                     <q-spinner color="white" size="2em" />
                 </p>
+                <p class="text-subtitle2" v-else-if="stats.products.hasError">
+                    Error retrieving data.
+                </p>
                 <p class="text-subtitle2" v-else>
                     {{ stats.products.data.active }} Active /
                     {{ stats.products.data.total }} Total
@@ -34,6 +37,9 @@
                 Orders this Month
                 <p class="text-subtitle2" v-if="stats.loading">
                     <q-spinner color="white" size="2em" />
+                </p>
+                <p class="text-subtitle2" v-else-if="stats.orders.hasError">
+                    Error retrieving data.
                 </p>
                 <p class="text-subtitle2" v-else>
                     {{ stats.orders.data.accepted }} Accepted <br />
@@ -339,7 +345,7 @@ export default {
     beforeCreate() {
         Stats = this.$RepositoryFactory.get("statistics");
     },
-    async created() {
+    created() {
         if (process.env.CLIENT) this.getStats();
         // await Stats.getCustomerStats();
         // this.stats.customers = Stats.getCustomersCount();
