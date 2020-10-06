@@ -45,7 +45,9 @@ export default inject(async function({ app, store, ssrContext, redirect }) {
     const refreshAuthLogic = fReq =>
         instance.post("/api/users/refresh").then(resp => {
             // Renew Access Token & CSRF Token
-            store.dispatch("auth/setXSRFToken", resp.data.xsrf);
+            if (resp.data && resp.data.xsrf)
+                store.dispatch("auth/setXSRFToken", resp.data.xsrf);
+
             return Promise.resolve();
         });
 
