@@ -145,21 +145,30 @@
                     Comments
                 </div>
                 <div>
-                    <q-list separator>
-                        <Comments
-                            v-for="comment in recentComments"
-                            :key="comment.id"
-                            v-bind="comment"
-                        />
-                    </q-list>
+                    <p v-if="recent.loading" class="flex flex-center">
+                        <q-spinner color="white" class="q-mt-sm" size="2em" />
+                    </p>
                     <p
-                        v-if="recentComments.length < 1"
+                        v-else-if="recent.hasError"
+                        class="flex flex-center q-mt-md"
+                    >
+                        Error retrieving data.
+                    </p>
+                    <p
+                        v-else-if="recent.data.length < 1"
                         class="text-center q-mt-md"
                     >
                         No recent comments
                     </p>
+                    <q-list separator v-else>
+                        <Comments
+                            v-for="comment in recent.data"
+                            :key="comment.id"
+                            v-bind="comment"
+                        />
+                    </q-list>
                 </div>
-                <div v-if="recentComments.length > 0">
+                <div v-if="!recent.loading && recent.data.length > 0">
                     <q-item
                         to="/comments"
                         dense
@@ -422,21 +431,11 @@ export default {
                     link: "/orders/fulfilled"
                 }
             ],
-            recentComments: [
-                {
-                    id: "12344",
-                    author: "Noel O.",
-                    text: "This is a short comment",
-                    posted: "2020/02/24 15:00"
-                },
-                {
-                    id: "12346",
-                    author: "Noel O.",
-                    text:
-                        "This is a long comment lorem ipsum ipsumipsumipsum lorem ipsumlorem ipsumlorem ipsumlorem ipsum lorem ipsum",
-                    posted: "2020/03/22 9:00"
-                }
-            ],
+            recent: {
+                loading: true,
+                hasError: false,
+                data: []
+            },
             holidays: ["2020/03/12", "2020/03/29"]
         };
     },
@@ -446,15 +445,18 @@ export default {
                 this.stats.customers,
                 this.stats.products,
                 this.stats.orders,
-                this.pending
+                this.pending,
+                this.recent
             ] = await Promise.all([
                 Stats.getCustomerStats(),
                 Stats.getProductStats(),
                 Stats.getOrderStats(),
-                Stats.getPendingResellers()
+                Stats.getPendingResellers(),
+                Stats.getRecentComments()
             ]);
             this.stats.loading = false;
             this.pending.loading = false;
+            this.recent.loading = false;
         }
     }
 };

@@ -364,6 +364,7 @@ export default {
                 window.clearTimeout(this.eventTimer);
             }
             this.eventTimer = window.setTimeout(() => {
+                this.eventTimer = null;
                 this.scrolled = window.scrollY >= 50 ? true : false;
             }, 100);
         },
