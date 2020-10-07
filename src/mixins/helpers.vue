@@ -35,6 +35,14 @@ export default {
                         .padStart(2, "0")
             };
             return today;
+        },
+        startDayOfMonth() {
+            const d = new Date();
+            return new Date(d.getFullYear(), d.getMonth(), 1);
+        },
+        lastDayOfMonth() {
+            const d = new Date();
+            return new Date(d.getFullYear(), d.getMonth() + 1, 0);
         }
     },
     methods: {
@@ -60,6 +68,14 @@ export default {
             } else {
                 this.$router.push(path).catch(err => {});
             }
+        },
+
+        findMaxDt: function(dt1, dt2) {
+            return new Date(Math.max(new Date(dt1), new Date(dt2)));
+        },
+
+        findMinDt: function(dt1, dt2) {
+            return new Date(Math.min(new Date(dt1), new Date(dt2)));
         },
 
         toQDateFormat: function(d) {

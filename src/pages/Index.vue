@@ -91,11 +91,20 @@
             </div>
             <div class="content-2">
                 <div class="text-subtitle2 flex flex-center">
-                    <q-icon name="cake" class="caption-icon q-mx-md" />Products
-                    Statistics
+                    <q-icon name="cake" class="caption-icon q-mx-md" />
+                    Products Statistics
                 </div>
                 <div>
-                    <q-list separator>
+                    <p v-if="stats.loading" class="flex flex-center">
+                        <q-spinner color="white" class="q-mt-sm" size="2em" />
+                    </p>
+                    <p
+                        v-else-if="stats.products.hasError"
+                        class="flex flex-center q-mt-md"
+                    >
+                        Error retrieving data.
+                    </p>
+                    <q-list separator v-else>
                         <Statistic
                             v-for="stat in productStats"
                             :key="stat.label"
@@ -103,7 +112,7 @@
                         />
                     </q-list>
                 </div>
-                <div>
+                <div v-if="!stats.loading && !stats.products.hasError">
                     <q-item
                         to="/products"
                         dense
@@ -121,7 +130,16 @@
                     />Orders Statistics
                 </div>
                 <div>
-                    <q-list separator>
+                    <p v-if="stats.loading" class="flex flex-center">
+                        <q-spinner color="white" class="q-mt-sm" size="2em" />
+                    </p>
+                    <p
+                        v-else-if="stats.orders.hasError"
+                        class="flex flex-center q-mt-md"
+                    >
+                        Error retrieving data.
+                    </p>
+                    <q-list separator v-else>
                         <Statistic
                             v-for="stat in orderStats"
                             :key="stat.label"
@@ -129,7 +147,7 @@
                         />
                     </q-list>
                 </div>
-                <div>
+                <div v-if="!stats.loading && !stats.orders.hasError">
                     <q-item
                         to="/orders"
                         dense
@@ -199,8 +217,8 @@
                     <q-date
                         class="date"
                         :value="today.yyyymmdd"
+                        :events="holidaysEvt"
                         mask="YYYY-MM-DD"
-                        :events="holidays"
                         event-color="orange"
                         flat
                         minimal
@@ -351,7 +369,7 @@ import Accounts from "../components/Accounts";
 import Statistic from "../components/Statistic";
 import Comments from "../components/Comments";
 import HelperMixin from "../mixins/helpers";
-let Stats;
+let Stats = null;
 
 export default {
     preFetch({ store }) {
@@ -366,9 +384,25 @@ export default {
     },
     created() {
         if (process.env.CLIENT) this.getStats();
-        // await Stats.getCustomerStats();
-        // this.stats.customers = Stats.getCustomersCount();
-        //this.stats.customers = await this.$store.dispatch("auth/getAll");
+    },
+    computed: {
+        holidaysEvt() {
+            const dayList = new Set();
+            this.holidays.data.map(item => {
+                const start = this.findMaxDt(item.start, this.startDayOfMonth);
+                const end = this.findMinDt(item.end, this.lastDayOfMonth);
+                // console.log(start, end);
+                for (
+                    let dt = start;
+                    dt.getTime() <= end.getTime();
+                    dt.setDate(dt.getDate() + 1)
+                ) {
+                    dayList.add(this.toQDateFormat(dt));
+                }
+            });
+            // console.log(dayList);
+            return [...dayList];
+        }
     },
     data() {
         return {
@@ -395,40 +429,47 @@ export default {
             productStats: [
                 {
                     label: "Featured Products",
-                    value: 6,
-                    link: "/products/featured"
+                    value: 0,
+                    link: "/products/?st=featured",
+                    key: "featured"
                 },
                 {
                     label: "Active Products",
-                    value: 92,
-                    link: "/products/active"
+                    value: 0,
+                    link: "/products/?st=active",
+                    key: "active"
                 },
                 {
                     label: "Total Products",
-                    value: 1222,
-                    link: "/products/#"
+                    value: 0,
+                    link: "/products",
+                    key: "total"
                 }
             ],
             orderStats: [
                 {
                     label: "Orders Placed",
-                    value: 6,
-                    link: "/orders/placed"
+                    value: 0,
+                    link: "/orders/placed",
+                    key: "placed"
                 },
                 {
                     label: "Orders Accepted",
-                    value: 5,
-                    link: "/orders/accepted"
+                    value: 0,
+                    link: "/orders/accepted",
+                    key: "accepted"
                 },
                 {
                     label: "Orders Processed",
-                    value: 5,
-                    link: "/orders/processed"
+                    value: 0,
+                    link: "/orders/processed",
+                    key: "processed"
                 },
                 {
                     label: "Orders Fulfilled",
-                    value: 6,
-                    link: "/orders/fulfilled"
+                    value: 0,
+                    link: "/orders/fulfilled",
+                    key: "fulfilled"
                 }
             ],
             recent: {
@@ -436,7 +477,11 @@ export default {
                 hasError: false,
                 data: []
             },
-            holidays: ["2020/03/12", "2020/03/29"]
+            holidays: {
+                loading: true,
+                hasError: false,
+                data: []
+            }
         };
     },
     methods: {
@@ -446,17 +491,28 @@ export default {
                 this.stats.products,
                 this.stats.orders,
                 this.pending,
-                this.recent
+                this.recent,
+                this.holidays
             ] = await Promise.all([
                 Stats.getCustomerStats(),
                 Stats.getProductStats(),
                 Stats.getOrderStats(),
                 Stats.getPendingResellers(),
-                Stats.getRecentComments()
+                Stats.getRecentComments(),
+                Stats.getBusinessHolidays()
             ]);
+            this.productStats.map(item => {
+                item.value = this.stats.products.data[item.key];
+                return item;
+            });
+            this.orderStats.map(item => {
+                item.value = this.stats.orders.data[item.key];
+                return item;
+            });
             this.stats.loading = false;
             this.pending.loading = false;
             this.recent.loading = false;
+            this.holidays.loading = false;
         }
     }
 };
