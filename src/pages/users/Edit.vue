@@ -134,12 +134,14 @@ export default {
             title: "Edit Account Details"
         };
     },
-
+    created() {
+        this.user.name = this.$store.state.auth.name;
+    },
     data() {
         return {
             loading: false,
             user: {
-                name: "Admin"
+                name: ""
             }
         };
     },
@@ -148,14 +150,20 @@ export default {
             const emailPattern = /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
             return emailPattern.test(val) || "Invalid email format";
         },
-        onSubmit: function(evt) {
+        onSubmit: async function(evt) {
             /**TODO */
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully updated.");
+            try {
+                await this.$store.dispatch("auth/setName", {
+                    name: this.user.name
+                });
+                this.showNotif(true, "Updated account name.");
+                this.$router.push("/dashboard").catch(err => {});
+            } catch (err) {
+                this.showNotif(false, "Failed to update account name.");
+            } finally {
                 this.loading = false;
-                this.returnToPageIndex("/dashboard");
-            }, 2500);
+            }
         }
     }
 };

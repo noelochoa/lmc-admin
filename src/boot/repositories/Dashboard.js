@@ -24,7 +24,6 @@ export default class Dashboard {
         } catch (err) {
             ret.hasError = true;
         }
-
         return ret;
     }
 
@@ -36,7 +35,6 @@ export default class Dashboard {
         } catch (err) {
             ret.hasError = true;
         }
-
         return ret;
     }
 

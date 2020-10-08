@@ -9,41 +9,41 @@
             <div class="heading-stat-1 text-caption">
                 Accounts
                 <br />
-                <p class="text-subtitle2" v-if="stats.loading">
+                <p class="text-subtitle2" v-if="customers.loading">
                     <q-spinner color="white" size="2em" />
                 </p>
-                <p class="text-subtitle2" v-else-if="stats.customers.hasError">
+                <p class="text-subtitle2" v-else-if="customers.hasError">
                     Error retrieving data.
                 </p>
                 <p class="text-subtitle2" v-else>
-                    {{ stats.customers.data.regular }} Customers <br />
-                    {{ stats.customers.data.reseller }} Resellers
+                    {{ customers.data.regular }} Customers <br />
+                    {{ customers.data.reseller }} Resellers
                 </p>
             </div>
             <div class="heading-stat-2 text-caption">
                 Products
-                <p class="text-subtitle2" v-if="stats.loading">
+                <p class="text-subtitle2" v-if="products.loading">
                     <q-spinner color="white" size="2em" />
                 </p>
-                <p class="text-subtitle2" v-else-if="stats.products.hasError">
+                <p class="text-subtitle2" v-else-if="products.hasError">
                     Error retrieving data.
                 </p>
                 <p class="text-subtitle2" v-else>
-                    {{ stats.products.data.active }} Active /
-                    {{ stats.products.data.total }} Total
+                    {{ products.data.active }} Active /
+                    {{ products.data.total }} Total
                 </p>
             </div>
             <div class="heading-stat-3 text-caption">
                 Orders this Month
-                <p class="text-subtitle2" v-if="stats.loading">
+                <p class="text-subtitle2" v-if="orders.loading">
                     <q-spinner color="white" size="2em" />
                 </p>
-                <p class="text-subtitle2" v-else-if="stats.orders.hasError">
+                <p class="text-subtitle2" v-else-if="orders.hasError">
                     Error retrieving data.
                 </p>
                 <p class="text-subtitle2" v-else>
-                    {{ stats.orders.data.accepted }} Accepted <br />
-                    {{ stats.orders.data.placed }} Placed
+                    {{ orders.data.accepted }} Accepted <br />
+                    {{ orders.data.placed }} Placed
                 </p>
             </div>
         </div>
@@ -79,7 +79,7 @@
                         />
                     </q-list>
                 </div>
-                <div v-if="!stats.loading && pending.data.length > 0">
+                <div v-if="!pending.loading && pending.data.length > 0">
                     <q-item
                         to="/accounts"
                         dense
@@ -95,11 +95,11 @@
                     Products Statistics
                 </div>
                 <div>
-                    <p v-if="stats.loading" class="flex flex-center">
+                    <p v-if="products.loading" class="flex flex-center">
                         <q-spinner color="white" class="q-mt-sm" size="2em" />
                     </p>
                     <p
-                        v-else-if="stats.products.hasError"
+                        v-else-if="products.hasError"
                         class="flex flex-center q-mt-md"
                     >
                         Error retrieving data.
@@ -112,7 +112,7 @@
                         />
                     </q-list>
                 </div>
-                <div v-if="!stats.loading && !stats.products.hasError">
+                <div v-if="!products.loading && !products.hasError">
                     <q-item
                         to="/products"
                         dense
@@ -130,11 +130,11 @@
                     />Orders Statistics
                 </div>
                 <div>
-                    <p v-if="stats.loading" class="flex flex-center">
+                    <p v-if="orders.loading" class="flex flex-center">
                         <q-spinner color="white" class="q-mt-sm" size="2em" />
                     </p>
                     <p
-                        v-else-if="stats.orders.hasError"
+                        v-else-if="orders.hasError"
                         class="flex flex-center q-mt-md"
                     >
                         Error retrieving data.
@@ -147,7 +147,7 @@
                         />
                     </q-list>
                 </div>
-                <div v-if="!stats.loading && !stats.orders.hasError">
+                <div v-if="!orders.loading && !orders.hasError">
                     <q-item
                         to="/orders"
                         dense
@@ -406,22 +406,32 @@ export default {
     },
     data() {
         return {
-            stats: {
+            customers: {
                 loading: true,
-                customers: {
-                    hasError: false,
-                    data: {}
-                },
-                products: {
-                    hasError: false,
-                    data: {}
-                },
-                orders: {
-                    hasError: false,
-                    data: {}
-                }
+                hasError: false,
+                data: {}
+            },
+            products: {
+                loading: true,
+                hasError: false,
+                data: {}
+            },
+            orders: {
+                loading: true,
+                hasError: false,
+                data: {}
             },
             pending: {
+                loading: true,
+                hasError: false,
+                data: []
+            },
+            recent: {
+                loading: true,
+                hasError: false,
+                data: []
+            },
+            holidays: {
                 loading: true,
                 hasError: false,
                 data: []
@@ -471,48 +481,84 @@ export default {
                     link: "/orders/fulfilled",
                     key: "fulfilled"
                 }
-            ],
-            recent: {
-                loading: true,
-                hasError: false,
-                data: []
-            },
-            holidays: {
-                loading: true,
-                hasError: false,
-                data: []
-            }
+            ]
         };
     },
     methods: {
         async getStats() {
-            [
-                this.stats.customers,
-                this.stats.products,
-                this.stats.orders,
-                this.pending,
-                this.recent,
-                this.holidays
-            ] = await Promise.all([
-                Stats.getCustomerStats(),
-                Stats.getProductStats(),
-                Stats.getOrderStats(),
-                Stats.getPendingResellers(),
-                Stats.getRecentComments(),
-                Stats.getBusinessHolidays()
-            ]);
-            this.productStats.map(item => {
-                item.value = this.stats.products.data[item.key];
-                return item;
-            });
-            this.orderStats.map(item => {
-                item.value = this.stats.orders.data[item.key];
-                return item;
-            });
-            this.stats.loading = false;
-            this.pending.loading = false;
-            this.recent.loading = false;
-            this.holidays.loading = false;
+            Stats.getCustomerStats()
+                .then(dat => {
+                    this.customers = dat;
+                })
+                .catch(err => {
+                    this.customers = err;
+                })
+                .finally(() => {
+                    this.customers.loading = false;
+                });
+
+            Stats.getProductStats()
+                .then(dat => {
+                    this.products = dat;
+                    this.productStats.map(item => {
+                        item.value = this.products.data[item.key];
+                        return item;
+                    });
+                })
+                .catch(err => {
+                    this.products = err;
+                })
+                .finally(() => {
+                    this.products.loading = false;
+                });
+
+            Stats.getOrderStats()
+                .then(dat => {
+                    this.orders = dat;
+                    this.orderStats.map(item => {
+                        item.value = this.orders.data[item.key];
+                        return item;
+                    });
+                })
+                .catch(err => {
+                    this.orders = err;
+                })
+                .finally(() => {
+                    this.orders.loading = false;
+                });
+
+            Stats.getPendingResellers()
+                .then(dat => {
+                    this.pending = dat;
+                })
+                .catch(err => {
+                    this.pending = err;
+                })
+                .finally(() => {
+                    this.pending.loading = false;
+                });
+
+            Stats.getRecentComments()
+                .then(dat => {
+                    this.recent = dat;
+                })
+                .catch(err => {
+                    this.recent = err;
+                })
+                .finally(() => {
+                    this.recent.loading = false;
+                });
+
+            Stats.getBusinessHolidays()
+                .then(dat => {
+                    this.holidays = dat;
+                })
+                .catch(err => {
+                    this.holidays = err;
+                })
+                .finally(() => {
+                    this.holidays.loading = false;
+                });
         }
     }
 };

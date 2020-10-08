@@ -63,6 +63,7 @@
                                     hide-bottom-space
                                     placeholder="Minimum of 6 or more characters."
                                     class="field-value"
+                                    ref="adminpw"
                                     v-model="user.password"
                                     lazy-rules
                                     :rules="[
@@ -186,14 +187,19 @@ export default {
             const emailPattern = /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
             return emailPattern.test(val) || "Invalid email format";
         },
-        onSubmit: function(evt) {
+        onSubmit: async function(evt) {
             /**TODO */
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Created new Admin account.");
+            try {
+                await this.$store.dispatch("auth/createUser", this.user);
+                this.showNotif(true, "New Admin account created.");
+                this.$router.push("/dashboard").catch(err => {});
+            } catch (err) {
+                this.$refs["adminpw"].focus();
+                this.showNotif(false, err);
+            } finally {
                 this.loading = false;
-                this.returnToPageIndex("/dashboard");
-            }, 2500);
+            }
         }
     }
 };
