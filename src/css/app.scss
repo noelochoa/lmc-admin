@@ -17,7 +17,11 @@ body {
     min-width: 320px;
 }
 
-// global fix
+form[disabled="disabled"] * {
+    pointer-events: none;
+}
+
+// global custom styles
 .q-btn__content span,
 .q-chip__content {
     padding-top: 3px !important;

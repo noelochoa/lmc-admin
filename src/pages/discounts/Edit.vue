@@ -16,8 +16,14 @@
                     />Discount Details
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmit"
+                        :disabled="discount.hasError || discount.loading"
+                    >
+                        <q-item class="q-mt-sm" v-if="discount.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
                             <q-item class="detail-field">
                                 <span class="field-label">Starts from</span>
                                 <q-input
@@ -26,7 +32,7 @@
                                     hide-bottom-space
                                     dark
                                     class="field-value"
-                                    v-model="discount.start"
+                                    v-model="discount.data.start"
                                     :rules="[
                                         val =>
                                             val !== null && val.trim() !== '',
@@ -46,7 +52,9 @@
                                                 <q-date
                                                     dark
                                                     no-unset
-                                                    v-model="discount.start"
+                                                    v-model="
+                                                        discount.data.start
+                                                    "
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
                                                         () =>
@@ -69,7 +77,9 @@
                                             >
                                                 <q-time
                                                     dark
-                                                    v-model="discount.start"
+                                                    v-model="
+                                                        discount.data.start
+                                                    "
                                                     mask="YYYY-MM-DD HH:mm"
                                                     format24h
                                                     @input="
@@ -90,7 +100,7 @@
                                     hide-bottom-space
                                     dark
                                     class="field-value"
-                                    v-model="discount.end"
+                                    v-model="discount.data.end"
                                     lazy-rules
                                     :rules="[
                                         val =>
@@ -112,7 +122,7 @@
                                                 <q-date
                                                     dark
                                                     no-unset
-                                                    v-model="discount.end"
+                                                    v-model="discount.data.end"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
                                                         () =>
@@ -135,7 +145,7 @@
                                             >
                                                 <q-time
                                                     dark
-                                                    v-model="discount.end"
+                                                    v-model="discount.data.end"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     format24h
                                                     @input="
@@ -152,7 +162,7 @@
                                 <span class="field-label">Target Customer</span>
                                 <q-select
                                     class="field-value"
-                                    v-model="discount.target"
+                                    v-model="discount.data.target"
                                     :options="targets"
                                     @input="hasSelect = true"
                                     dark
@@ -176,7 +186,7 @@
                                 <span class="field-label">Discount (%)</span>
                                 <q-slider
                                     class="field-value q-mx-xs"
-                                    v-model="discount.value"
+                                    v-model="discount.data.value"
                                     :min="1"
                                     :max="99"
                                     label
@@ -187,7 +197,7 @@
                                 <span class="field-label">Apply to</span>
                                 <q-select
                                     class="products-select field-value"
-                                    v-model="discount.products"
+                                    v-model="discount.data.products"
                                     :options="options"
                                     label="Products"
                                     hide-dropdown-icon
@@ -317,6 +327,8 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Discount = null,
+    Product = null;
 
 export default {
     name: "DiscountEdit",
@@ -327,8 +339,15 @@ export default {
         };
     },
     created() {
-        /**TODO */
-        this.options = this.productsList;
+        // this.options = this.productsList;
+        if (process.env.CLIENT) {
+            this.getProducts();
+            this.getDiscount();
+        }
+    },
+    beforeCreate() {
+        Discount = this.$RepositoryFactory.get("discounts");
+        Product = this.$RepositoryFactory.get("products");
     },
     data() {
         return {
@@ -336,46 +355,17 @@ export default {
             hasSelect: true,
             targets: ["All", "Regular", "Reseller", "Partner"],
             options: null,
-            productsList: [
-                {
-                    label:
-                        "GoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogle",
-                    value: 1,
-                    description: "Search engine",
-                    icon: "mail"
-                },
-                {
-                    label:
-                        "FacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebook",
-                    value: 2,
-                    description: "Social media",
-                    icon: "bluetooth"
-                },
-                {
-                    label: "Twitter",
-                    value: 3,
-                    description: "Quick updates",
-                    icon: "map"
-                },
-                {
-                    label: "Apple",
-                    value: 4,
-                    description: "iStuff",
-                    icon: "golf_course"
-                },
-                {
-                    label: "Oracle",
-                    value: 5,
-                    description: "Databases",
-                    icon: "casino"
-                }
-            ],
+            productsList: [],
             discount: {
-                value: 10,
-                target: "Partner",
-                products: [1, 4, 3],
-                start: "2020-04-01 12:00",
-                end: "2020-04-02 12:00"
+                loading: true,
+                hasError: false,
+                data: {
+                    value: 0,
+                    name: "",
+                    products: [],
+                    start: "",
+                    end: ""
+                }
             }
         };
     },
@@ -386,7 +376,7 @@ export default {
         },
         _isValidEndDt(val) {
             const end = new Date(val);
-            const start = new Date(this.discount.start);
+            const start = new Date(this.discount.data.start);
             return (
                 end.getTime() > start.getTime() ||
                 "End date needs to be greater"
@@ -406,14 +396,46 @@ export default {
                 );
             });
         },
-        onSubmit: function(evt) {
-            /**TODO */
+
+        async getProducts() {
+            Product.getProductSelection()
+                .then(dat => {
+                    this.productsList = dat;
+                    this.options = this.productsList.slice();
+                })
+                .catch(err => {
+                    this.productsList = [];
+                    this.options = [];
+                });
+        },
+
+        async getDiscount() {
+            try {
+                const resp = await Discount.getDiscount(this.$route.params.id);
+                this.discount = resp;
+            } catch (err) {
+                this.showNotif(false, "Could retrieve discount details. ");
+                this.discount.hasError = true;
+            } finally {
+                this.discount.loading = false;
+            }
+        },
+
+        onSubmit: async function(evt) {
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully edited discount info. ");
+            try {
+                await Discount.editDiscount(
+                    this.$route.params.id,
+                    this.discount.data
+                );
+                this.showNotif(true, "Successfully updated discount info.");
                 this.loading = false;
                 this.returnToPageIndex("/discounts");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not edit discount info. ");
+            }
+
+            this.loading = false;
         }
     }
 };

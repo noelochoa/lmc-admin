@@ -230,7 +230,7 @@
                                     <q-spinner-gears />
                                 </template>
                             </q-btn>
-                            {{ discount.products }}
+                            <!-- {{ discount.products }} -->
                         </div>
                     </q-form>
                 </div>
@@ -316,6 +316,8 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Discount = null,
+    Product = null;
 
 export default {
     name: "DiscountAdd",
@@ -325,9 +327,14 @@ export default {
             title: "Add Discount Rule"
         };
     },
+    beforeCreate() {
+        Discount = this.$RepositoryFactory.get("discounts");
+        Product = this.$RepositoryFactory.get("products");
+    },
     created() {
         this.discount.start = this.today.yyyymmdd + " 00:00";
         this.discount.end = this.today.yyyymmdd + " 23:59";
+        if (process.env.CLIENT) this.getProducts();
     },
     data() {
         return {
@@ -335,40 +342,7 @@ export default {
             hasSelect: true,
             targets: ["All", "Regular", "Reseller", "Partner"],
             options: null,
-            productsList: [
-                {
-                    label:
-                        "GoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogleGoogle",
-                    value: 1,
-                    description: "Search engine",
-                    icon: "mail"
-                },
-                {
-                    label:
-                        "FacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebookFacebook",
-                    value: 2,
-                    description: "Social media",
-                    icon: "bluetooth"
-                },
-                {
-                    label: "Twitter",
-                    value: 3,
-                    description: "Quick updates",
-                    icon: "map"
-                },
-                {
-                    label: "Apple",
-                    value: 4,
-                    description: "iStuff",
-                    icon: "golf_course"
-                },
-                {
-                    label: "Oracle",
-                    value: 5,
-                    description: "Databases",
-                    icon: "casino"
-                }
-            ],
+            productsList: [],
             discount: {
                 value: 10,
                 target: "All",
@@ -405,14 +379,29 @@ export default {
                 );
             });
         },
-        onSubmit: function(evt) {
-            /**TODO */
+
+        async getProducts() {
+            Product.getProductSelection()
+                .then(dat => {
+                    this.productsList = dat;
+                })
+                .catch(err => {
+                    this.productsList = [];
+                });
+        },
+
+        onSubmit: async function(evt) {
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully added new discount. ");
+            try {
+                await Discount.addDiscount(this.discount);
+                this.showNotif(true, "Added new discount entry.");
                 this.loading = false;
                 this.returnToPageIndex("/discounts");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not create discount entry. ");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 };

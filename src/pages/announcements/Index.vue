@@ -6,8 +6,8 @@
                 <br />
                 <p>
                     The following is a list web store announcements. <br />
-                    Note that only the latest entry will be visible at a time
-                    for overlapping dates.
+                    Note: Only the latest entry will be visible on the Store if
+                    there are overlapping dates.
                 </p>
             </div>
             <div class="heading-stat-1 text-caption">
@@ -69,9 +69,10 @@
                     :columns="columns"
                     :rows-per-page-options="[0]"
                     :pagination.sync="pagination"
-                    :filter="nameFilter"
+                    :filter="search"
                     :loading="loading"
                     @request="onRequest"
+                    @update:pagination="onChgPage"
                 >
                     <template v-slot:item="props">
                         <div
@@ -79,13 +80,13 @@
                         >
                             <q-card class="bg-gray-alpha-2">
                                 <q-card-section>
-                                    {{ props.row.text }}
+                                    {{ props.row.message }}
                                 </q-card-section>
                                 <q-separator />
                                 <q-list dense>
                                     <q-item
                                         v-for="col in props.cols.filter(
-                                            col => col.name !== 'text'
+                                            col => col.name !== 'message'
                                         )"
                                         :key="col.name"
                                     >
@@ -239,23 +240,27 @@
 <script>
 import ConfirmDialog from "../../components/ConfirmDialog";
 import HelperMixin from "../../mixins/helpers";
+let Psa = null;
 
 export default {
     name: "AnnoucementIndex",
     components: { ConfirmDialog },
     mixins: [HelperMixin],
 
-    preFetch({ store }) {
-        console.log("prefetch called");
-    },
     meta() {
         return {
             title: "Store Announcements"
         };
     },
+    beforeCreate() {
+        Psa = this.$RepositoryFactory.get("announcements");
+    },
     created() {
         if (this.$route.query.s) {
             this.search = this.$route.query.s;
+        }
+        if (this.$route.query.p && !isNaN(this.$route.query.p)) {
+            this.pagination.page = this.$route.query.p;
         }
     },
     mounted() {
@@ -269,7 +274,6 @@ export default {
             announcementList: [],
             search: "",
             searchReq: null,
-            nameFilter: "",
             loading: false,
             showDlg: false,
             toDelID: -1,
@@ -277,87 +281,39 @@ export default {
                 sortBy: "start",
                 descending: true,
                 page: 1,
-                rowsPerPage: 3
+                rowsPerPage: 9
             },
             columns: [
                 {
-                    name: "text",
-                    required: true,
-                    label: "Text",
-                    align: "left",
-                    sortable: true
+                    name: "message",
+                    field: "message",
+                    label: "Message",
+                    sortable: true,
+                    required: true
                 },
                 {
                     name: "start",
                     field: "start",
-                    align: "left",
                     label: "Start",
                     sortable: true
                 },
                 {
                     name: "end",
                     field: "end",
-                    align: "left",
                     label: "End",
                     sortable: true
                 }
             ],
             data: [],
-            original: [
-                {
-                    id: 1,
-                    text: "Announcement Announcement ",
-                    start: "Feb 20, 2020",
-                    end: "Mar 4, 2020"
-                },
-                {
-                    id: 2,
-                    text:
-                        "LoremLoremLoremLoremLoremLoremLoremLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                    start: "March 20, 2020",
-                    end: "March 25, 2020"
-                },
-                {
-                    id: 3,
-                    text: "Announcement 3",
-                    start: "March 20, 2020",
-                    end: "March 25, 2020"
-                },
-                {
-                    id: 4,
-                    text: "Announcement 4",
-                    start: "March 20, 2020",
-                    end: "March 25, 2020"
-                },
-                {
-                    id: 5,
-                    text: "Announcement 5",
-                    start: "March 20, 2020",
-                    end: "March 25, 2020"
-                },
-                {
-                    id: 6,
-                    text: "Announcement 6",
-                    start: "March 20, 2020",
-                    end: "March 25, 2020"
-                },
-                {
-                    id: 7,
-                    text: "Announcement 7",
-                    start: "March 20, 2020",
-                    end: "March 25, 2020"
-                }
-            ]
+            original: []
         };
     },
     methods: {
         searchClear(evt) {
             this.search = "";
-            /** TODO */
             this.$router.replace("/announcements").catch(err => {});
         },
         searchInput(val) {
-            /** TODO */
             let searchQry = Object.assign({}, this.$route.query, { s: val });
             if (!val) delete searchQry.s;
 
@@ -367,28 +323,54 @@ export default {
                 })
                 .catch(err => {});
         },
-        /**TODO */
-        onRequest(props) {
-            this.loading = true;
 
-            // emulate server
-            setTimeout(() => {
-                // clear out existing data and add new
-                this.data = this.original;
-                this.loading = false;
-            }, 500);
+        onChgPage(newPg) {
+            let pageQry = Object.assign({}, this.$route.query, {
+                p: newPg.page
+            });
+            if (!newPg) delete pageQry.p;
+
+            this.$router
+                .replace({
+                    query: pageQry
+                })
+                .catch(err => {});
         },
+
+        async onRequest(props) {
+            this.loading = true;
+            try {
+                const resp = await Psa.getAllAnnouncements();
+                this.original = resp;
+                this.data = this.original.slice();
+            } catch (err) {
+                this.showNotif(false, "Could retrieve announcement details. ");
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async onRemove() {
+            if (this.toDelID !== -1) {
+                try {
+                    const resp = await Psa.deleteAnnouncement(this.toDelID);
+                    this.showNotif(true, "Successfully removed announcement.");
+
+                    // Remove from list and Reset
+                    this.$delete(
+                        this.data,
+                        this.data.findIndex(el => el.id == this.toDelID)
+                    );
+                    this.toDelID = -1;
+                } catch (err) {
+                    this.showNotif(false, "Could not delete item. ");
+                }
+            }
+        },
+
         confirmDel(psaID) {
             this.showDlg = true;
             this.toDelID = psaID;
-        },
-        onRemove() {
-            if (this.toDelID !== -1) {
-                /**TODO */
-                this.showNotif(true, "Successfully removed announcement.");
-            }
-            // Reset
-            this.toDelID = -1;
         }
     }
 };

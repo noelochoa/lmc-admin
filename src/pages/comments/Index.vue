@@ -44,9 +44,10 @@
                     :columns="columns"
                     :rows-per-page-options="[0]"
                     :pagination.sync="pagination"
-                    :filter="nameFilter"
+                    :filter="search"
                     :loading="loading"
                     @request="onRequest"
+                    @update:pagination="onChgPage"
                 >
                     <template v-slot:item="props">
                         <div
@@ -97,13 +98,28 @@
                                         dense
                                         flat
                                         round
-                                        icon="report_problem"
-                                        @click="confirmAction(props.row.id)"
+                                        :icon="
+                                            props.row.flagged
+                                                ? 'flag'
+                                                : 'outlined_flag'
+                                        "
+                                        @click="
+                                            confirmAction(
+                                                props.row.id,
+                                                !props.row.flagged
+                                            )
+                                        "
                                         ><q-tooltip
                                             anchor="bottom right"
                                             self="top middle"
                                             :offset="[10, 10]"
-                                            >Flag comment
+                                        >
+                                            {{
+                                                props.row.flagged
+                                                    ? "Unflag"
+                                                    : "Flag"
+                                            }}
+                                            comment
                                         </q-tooltip>
                                     </q-btn>
                                 </q-card-actions>
@@ -119,9 +135,14 @@
                             text-color="white"
                         />
                     </template>
-                    <template v-slot:message>
-                        This action will mark this comment as flagged. <br />
+                    <template v-slot:message v-if="targetFlagVal">
+                        This action will mark this comment as <u>FLAGGED</u>.
+                        <br />
                         Comment will no longer be visible in the product page.
+                    </template>
+                    <template v-slot:message v-else>
+                        This action will <u>UNFLAG</u> this comment. <br />
+                        Comment will be visible again in the product page.
                     </template>
                     <template v-slot:actions>
                         <q-btn flat label="Cancel" v-close-popup />
@@ -205,23 +226,27 @@
 <script>
 import ConfirmDialog from "../../components/ConfirmDialog";
 import HelperMixin from "../../mixins/helpers";
+let Comment = null;
 
 export default {
     name: "CommentIndex",
     components: { ConfirmDialog },
     mixins: [HelperMixin],
 
-    preFetch({ store }) {
-        console.log("prefetch called");
-    },
     meta() {
         return {
             title: "Product Comments"
         };
     },
+    beforeCreate() {
+        Comment = this.$RepositoryFactory.get("comments");
+    },
     created() {
         if (this.$route.query.s) {
             this.search = this.$route.query.s;
+        }
+        if (this.$route.query.p && !isNaN(this.$route.query.p)) {
+            this.pagination.page = this.$route.query.p;
         }
     },
     mounted() {
@@ -235,22 +260,23 @@ export default {
             announcementList: [],
             search: "",
             searchReq: null,
-            nameFilter: "",
             loading: false,
             showDlg: false,
             toFlagID: -1,
+            targetFlagVal: false,
             pagination: {
                 sortBy: "posted",
                 descending: true,
                 page: 1,
-                rowsPerPage: 10
+                rowsPerPage: 9
             },
             columns: [
                 {
                     name: "text",
-                    required: true,
+                    field: "text",
                     label: "Text",
                     align: "left",
+                    required: true,
                     sortable: true
                 },
                 {
@@ -276,47 +302,15 @@ export default {
                 }
             ],
             data: [],
-            original: [
-                {
-                    id: 1,
-                    text:
-                        "This is a long comment. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                    author: "User 1234 567",
-                    product: "Product Name 123",
-                    posted: "April 4, 2020"
-                },
-                {
-                    id: 2,
-                    text: "This is a short comment",
-                    author: "User 1234 567",
-                    product: "Product Name 123",
-                    posted: "Mar 4, 2020"
-                },
-                {
-                    id: 3,
-                    text: "This is a short comment 2",
-                    author: "User 1234 567",
-                    product: "Product Name 123",
-                    posted: "Feb 4, 2020"
-                },
-                {
-                    id: 4,
-                    text: "This is a short comment 3",
-                    author: "User 1234 567",
-                    product: "Product Name 123",
-                    posted: "April 4, 2020"
-                }
-            ]
+            original: []
         };
     },
     methods: {
         searchClear(evt) {
             this.search = "";
-            /** TODO */
             this.$router.replace("/comments").catch(err => {});
         },
         searchInput(val) {
-            /** TODO */
             let searchQry = Object.assign({}, this.$route.query, { s: val });
             if (!val) delete searchQry.s;
 
@@ -326,28 +320,64 @@ export default {
                 })
                 .catch(err => {});
         },
-        /**TODO */
-        onRequest(props) {
-            this.loading = true;
+        onChgPage(newPg) {
+            let pageQry = Object.assign({}, this.$route.query, {
+                p: newPg.page
+            });
+            if (!newPg) delete pageQry.p;
 
-            // emulate server
-            setTimeout(() => {
-                // clear out existing data and add new
-                this.data = this.original;
-                this.loading = false;
-            }, 500);
+            this.$router
+                .replace({
+                    query: pageQry
+                })
+                .catch(err => {});
         },
-        confirmAction(commentID) {
+        async onRequest(props) {
+            this.loading = true;
+            try {
+                const resp = await Comment.getComments();
+                this.original = resp;
+                this.data = this.original.slice();
+            } catch (err) {
+                this.showNotif(false, "Could retrieve comments. " + err);
+            } finally {
+                this.loading = false;
+            }
+        },
+        confirmAction(commentID, bool) {
             this.showDlg = true;
             this.toFlagID = commentID;
+            this.targetFlagVal = bool;
         },
-        onProceed() {
+
+        async onProceed() {
             if (this.toFlagID !== -1) {
-                /**TODO */
-                this.showNotif(true, "Successfully flagged comment.");
+                try {
+                    // Toggle flag comment
+                    const resp = await Comment.flagComment(
+                        this.toFlagID,
+                        this.targetFlagVal
+                    );
+
+                    this.showNotif(
+                        true,
+                        this.targetFlagVal
+                            ? "Comment has been FLAGGED."
+                            : "Comment has been UNFLAGGED."
+                    );
+                    // Update
+                    this.data.forEach(el => {
+                        if (el.id === this.toFlagID) {
+                            el.flagged = this.targetFlagVal;
+                        }
+                    });
+                    // Reset
+                    this.toFlagID = -1;
+                    this.targetFlagVal = false;
+                } catch (err) {
+                    this.showNotif(false, "Could not edit item. ");
+                }
             }
-            // Reset
-            this.toFlagID = -1;
         }
     }
 };

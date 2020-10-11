@@ -30,7 +30,7 @@
                                     hide-bottom-space
                                     placeholder="Field required. "
                                     class="field-value"
-                                    v-model="category"
+                                    v-model="category.name"
                                     lazy-rules
                                     :rules="[
                                         val => val !== null && val.trim() !== ''
@@ -128,6 +128,7 @@ div[class*="content-"] > div {
 
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Category = null;
 
 export default {
     preFetch({ previousRoute }) {},
@@ -138,21 +139,30 @@ export default {
             title: "Add Category"
         };
     },
+    beforeCreate() {
+        Category = this.$RepositoryFactory.get("categories");
+    },
     data() {
         return {
             loading: false,
-            category: ""
+            category: {
+                name: ""
+            }
         };
     },
     methods: {
-        onSubmit: function(evt) {
-            /**TODO */
+        onSubmit: async function(evt) {
             this.loading = true;
-            setTimeout(() => {
+            try {
+                await Category.addCategory(this.category);
                 this.showNotif(true, "Created new product category.");
                 this.loading = false;
                 this.returnToPageIndex("/categories");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not create product category. ");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 };

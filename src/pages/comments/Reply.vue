@@ -15,30 +15,33 @@
                         class="caption-icon q-mx-md"
                     />Comment Details
                 </div>
-                <div>
+                <q-item class="q-mt-sm" v-if="comment.loading">
+                    <q-spinner color="white" size="2em" />
+                </q-item>
+                <div v-else>
                     <q-list class="detail-list" separator>
                         <q-item class="detail-field">
                             <span class="field-label">Content</span>
                             <span class="field-value">
-                                {{ comment.text }}
+                                {{ comment.data.text }}
                             </span>
                         </q-item>
                         <q-item class="detail-field">
                             <span class="field-label">Posted</span>
                             <span class="field-value">
-                                {{ comment.posted }}
+                                {{ comment.data.posted }}
                             </span>
                         </q-item>
                         <q-item class="detail-field">
                             <span class="field-label">Author</span>
                             <span class="field-value">
-                                {{ comment.author }}
+                                {{ comment.data.author }}
                             </span>
                         </q-item>
                         <q-item class="detail-field">
                             <span class="field-label">Product</span>
                             <span class="field-value">
-                                {{ comment.product }}
+                                {{ comment.data.product }}
                             </span>
                         </q-item>
                     </q-list>
@@ -52,15 +55,39 @@
                     />Reply
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmit"
+                        :disabled="comment.hasError || comment.loading"
+                    >
+                        <q-item class="q-mt-sm" v-if="comment.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
+                            <q-item class="detail-field">
+                                <span class="field-label">Reply as</span>
+                                <q-input
+                                    type="text"
+                                    dense
+                                    outlined
+                                    dark
+                                    hide-bottom-space
+                                    placeholder="Field required. "
+                                    class="field-value"
+                                    v-model="comment.data.replyAuthor"
+                                    lazy-rules
+                                    :rules="[
+                                        val => val !== null && val.trim() !== ''
+                                    ]"
+                                    @input="hasTyped = true"
+                                />
+                            </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Content</span>
                                 <q-editor
                                     ref="qTxtEditor"
                                     class="field-value qtext-editor"
                                     :class="{ 'has-error': contentEmpty }"
-                                    v-model="reply.text"
+                                    v-model="comment.data.reply"
                                     flat
                                     content-class="text-black bg-grey-3"
                                     toolbar-text-color="black"
@@ -170,6 +197,7 @@ div[class*="content-"] > div {
 
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Comment = null;
 
 export default {
     preFetch({ previousRoute }) {},
@@ -180,12 +208,20 @@ export default {
             title: "Reply"
         };
     },
+    beforeCreate() {
+        Comment = this.$RepositoryFactory.get("comments");
+    },
+    created() {
+        if (process.env.CLIENT) this.getComment();
+    },
     mounted() {
-        this.$refs.qTxtEditor.focus();
+        // this.$refs.qTxtEditor.focus();
     },
     computed: {
         contentEmpty() {
-            return this.hasTyped && this._isContentEmpty(this.reply.text);
+            return (
+                this.hasTyped && this._isContentEmpty(this.comment.data.reply)
+            );
         }
     },
     data() {
@@ -193,14 +229,16 @@ export default {
             loading: false,
             hasTyped: false,
             comment: {
-                text:
-                    "Sample Comment Lorem ipsum ipsum ipsumipsumipsumipsumipsum ipsumipsum ipsum",
-                author: "Noel O.",
-                product: "Sample Product 1234",
-                posted: "May 5, 2019"
-            },
-            reply: {
-                text: ""
+                loading: true,
+                hasError: false,
+                data: {
+                    text: "",
+                    author: "",
+                    product: "",
+                    posted: "",
+                    replyAuthor: "",
+                    reply: ""
+                }
             }
         };
     },
@@ -212,14 +250,37 @@ export default {
 
             return val.length == 0 ? true : false;
         },
-        onSubmit: function(evt) {
-            /**TODO */
+
+        async getComment() {
+            try {
+                const resp = await Comment.getComment(this.$route.params.id);
+                resp.data.replyAuthor = resp.data.replyAuthor
+                    ? resp.data.replyAuthor
+                    : this.$store.state.auth.name;
+                this.comment = resp;
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve comment details. ");
+                this.comment.hasError = true;
+            } finally {
+                this.comment.loading = false;
+            }
+        },
+
+        onSubmit: async function(evt) {
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully posted your reply.");
+            try {
+                await Comment.replyToComment(
+                    this.$route.params.id,
+                    this.comment.data
+                );
+                this.showNotif(true, "Successfully posted reply to comment.");
                 this.loading = false;
                 this.returnToPageIndex("/comments");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not post reply. ");
+            }
+
+            this.loading = false;
         }
     }
 };

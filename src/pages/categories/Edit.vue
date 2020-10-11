@@ -16,8 +16,14 @@
                     />Category Info
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmit"
+                        :disabled="category.hasError || category.loading"
+                    >
+                        <q-item class="q-mt-sm" v-if="category.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
                             <q-item class="detail-field">
                                 <span class="field-label">Category Name</span>
                                 <q-input
@@ -28,7 +34,7 @@
                                     hide-bottom-space
                                     placeholder="Field required. "
                                     class="field-value"
-                                    v-model="category"
+                                    v-model="category.data.name"
                                     lazy-rules
                                     :rules="[
                                         val => val !== null && val.trim() !== ''
@@ -126,6 +132,7 @@ div[class*="content-"] > div {
 
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Category = null;
 
 export default {
     preFetch({ previousRoute }) {},
@@ -136,21 +143,52 @@ export default {
             title: "Edit Category"
         };
     },
+    beforeCreate() {
+        Category = this.$RepositoryFactory.get("categories");
+    },
+    created() {
+        if (process.env.CLIENT) this.getCategory();
+    },
     data() {
         return {
             loading: false,
-            category: "Cakes"
+            category: {
+                loading: true,
+                hasError: false,
+                data: {
+                    name: ""
+                }
+            }
         };
     },
     methods: {
-        onSubmit: function(evt) {
-            /**TODO */
+        async getCategory() {
+            try {
+                const resp = await Category.getCategory(this.$route.params.id);
+                this.category = resp;
+            } catch (err) {
+                this.showNotif(false, "Could retrieve category details. ");
+                this.category.hasError = true;
+            } finally {
+                this.category.loading = false;
+            }
+        },
+
+        onSubmit: async function(evt) {
             this.loading = true;
-            setTimeout(() => {
+            try {
+                await Category.editCategory(
+                    this.$route.params.id,
+                    this.category.data
+                );
                 this.showNotif(true, "Successfully updated category name.");
                 this.loading = false;
                 this.returnToPageIndex("/categories");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not edit category info. ");
+            }
+
+            this.loading = false;
         }
     }
 };

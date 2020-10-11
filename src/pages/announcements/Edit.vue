@@ -16,8 +16,16 @@
                     />Announcement Info
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmit"
+                        :disabled="
+                            announcement.hasError || announcement.loading
+                        "
+                    >
+                        <q-item class="q-mt-sm" v-if="announcement.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
                             <q-item class="detail-field">
                                 <span class="field-label">Starts from</span>
                                 <q-input
@@ -26,7 +34,7 @@
                                     hide-bottom-space
                                     dark
                                     class="field-value"
-                                    v-model="announcement.start"
+                                    v-model="announcement.data.start"
                                     :rules="[
                                         val =>
                                             val !== null && val.trim() !== '',
@@ -46,7 +54,9 @@
                                                 <q-date
                                                     dark
                                                     no-unset
-                                                    v-model="announcement.start"
+                                                    v-model="
+                                                        announcement.data.start
+                                                    "
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
                                                         () =>
@@ -69,7 +79,9 @@
                                             >
                                                 <q-time
                                                     dark
-                                                    v-model="announcement.start"
+                                                    v-model="
+                                                        announcement.data.start
+                                                    "
                                                     mask="YYYY-MM-DD HH:mm"
                                                     format24h
                                                     @input="
@@ -90,7 +102,7 @@
                                     hide-bottom-space
                                     dark
                                     class="field-value"
-                                    v-model="announcement.end"
+                                    v-model="announcement.data.end"
                                     lazy-rules
                                     :rules="[
                                         val =>
@@ -112,7 +124,9 @@
                                                 <q-date
                                                     dark
                                                     no-unset
-                                                    v-model="announcement.end"
+                                                    v-model="
+                                                        announcement.data.end
+                                                    "
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
                                                         () =>
@@ -135,7 +149,9 @@
                                             >
                                                 <q-time
                                                     dark
-                                                    v-model="announcement.end"
+                                                    v-model="
+                                                        announcement.data.end
+                                                    "
                                                     mask="YYYY-MM-DD HH:mm"
                                                     format24h
                                                     @input="
@@ -155,7 +171,7 @@
                                     ref="qTxtEditor"
                                     class="field-value qtext-editor"
                                     :class="{ 'has-error': contentEmpty }"
-                                    v-model="announcement.text"
+                                    v-model="announcement.data.message"
                                     flat
                                     content-class="text-black bg-grey-3"
                                     toolbar-text-color="black"
@@ -176,7 +192,7 @@
                                     hide-bottom-space
                                     placeholder="Optional URL"
                                     class="field-value"
-                                    v-model="announcement.link"
+                                    v-model="announcement.data.targetLink"
                                     lazy-rules
                                     :rules="[_isValidLink]"
                                 />
@@ -278,6 +294,7 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Psa = null;
 
 export default {
     name: "AnnouncementEdit",
@@ -288,12 +305,19 @@ export default {
         };
     },
     mounted() {
-        this.$refs.qTxtEditor.focus();
+        // this.$refs.qTxtEditor.focus();
+    },
+    beforeCreate() {
+        Psa = this.$RepositoryFactory.get("announcements");
+    },
+    created() {
+        if (process.env.CLIENT) this.getAnnouncement();
     },
     computed: {
         contentEmpty() {
             return (
-                this.hasTyped && this._isContentEmpty(this.announcement.text)
+                this.hasTyped &&
+                this._isContentEmpty(this.announcement.data.message)
             );
         }
     },
@@ -302,10 +326,14 @@ export default {
             loading: false,
             hasTyped: false,
             announcement: {
-                text: "Announcement Lorem Ipsum",
-                link: "https://test.com/foobar?q=foo123",
-                start: "2020-03-20 12:40",
-                end: "2020-03-25 13:40"
+                loading: true,
+                hasError: false,
+                data: {
+                    message: "",
+                    targetLink: "",
+                    start: "",
+                    end: ""
+                }
             }
         };
     },
@@ -316,7 +344,9 @@ export default {
         },
         _isValidEndDt(val) {
             const end = new Date(val);
-            const start = new Date(this.announcement.start);
+            const start = new Date(this.announcement.data.start);
+
+            console.log(end, start);
             return (
                 end.getTime() > start.getTime() ||
                 "End date needs to be greater"
@@ -325,11 +355,13 @@ export default {
         _isValidLink(val) {
             if (!val || val == "") return true;
 
-            const urlpattern = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
+            const urlpattern = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+            //const urlpattern = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
             return urlpattern.test(val) || "Invalid URL format";
         },
 
         _isContentEmpty(val) {
+            if (!val) return true;
             val = this.replaceAll(val, "&nbsp;", "");
             val = this.replaceAll(val, " ", "");
             val = val.replace(/(<([^>]+)>)/gi, "").trim();
@@ -337,23 +369,40 @@ export default {
             return val.length == 0 ? true : false;
         },
 
-        onSubmit: function(evt) {
-            /**TODO */
+        async getAnnouncement() {
+            try {
+                const resp = await Psa.getAnnouncement(this.$route.params.id);
+                this.announcement = resp;
+            } catch (err) {
+                this.showNotif(false, "Could retrieve announcement details. ");
+                this.announcement.hasError = true;
+            } finally {
+                this.announcement.loading = false;
+            }
+        },
+
+        onSubmit: async function(evt) {
             this.loading = true;
-            if (!this._isContentEmpty(this.announcement.text)) {
-                setTimeout(() => {
+            if (!this._isContentEmpty(this.announcement.data.message)) {
+                try {
+                    await Psa.editAnnouncement(
+                        this.$route.params.id,
+                        this.announcement.data
+                    );
                     this.showNotif(
                         true,
-                        "Successfully updated announcement details. " +
-                            this.announcement.text
+                        "Successfully edited the announcement. "
                     );
                     this.loading = false;
                     this.returnToPageIndex("/announcements");
-                }, 2500);
+                } catch (err) {
+                    this.showNotif(false, "Could not edit the announcement. ");
+                }
             } else {
                 this.$refs.qTxtEditor.focus();
-                this.loading = false;
             }
+
+            this.loading = false;
         }
     }
 };

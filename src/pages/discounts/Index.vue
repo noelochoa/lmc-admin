@@ -68,26 +68,30 @@
                     :pagination.sync="pagination"
                     :rows-per-page-options="[0]"
                     :loading="loading"
-                    :filter="nameFilter"
+                    :filter="search"
                     @request="onRequest"
+                    @update:pagination="onChgPage"
                     binary-state-sort
                 >
                     <template v-slot:body="props">
                         <q-tr :props="props">
-                            <q-td key="discount" :props="props">{{
-                                props.row.discount
+                            <q-td key="percent" :props="props">{{
+                                props.row.percent
                             }}</q-td>
-                            <q-td key="target" :props="props">{{
-                                props.row.target
-                            }}</q-td>
+                            <q-td
+                                key="target"
+                                :props="props"
+                                class="capitalize"
+                                >{{ props.row.target }}</q-td
+                            >
                             <q-td key="start" :props="props">{{
                                 props.row.start
                             }}</q-td>
                             <q-td key="end" :props="props">{{
                                 props.row.end
                             }}</q-td>
-                            <q-td key="products" :props="props">{{
-                                props.row.products
+                            <q-td key="count" :props="props">{{
+                                props.row.count
                             }}</q-td>
                             <q-td>
                                 <q-btn
@@ -235,22 +239,27 @@
 <script>
 import ConfirmDialog from "../../components/ConfirmDialog";
 import HelperMixin from "../../mixins/helpers";
+let Discount = null;
+
 export default {
     name: "DiscountsIndex",
     components: { ConfirmDialog },
     mixins: [HelperMixin],
 
-    preFetch({ store }) {
-        console.log("prefetch called");
-    },
     meta() {
         return {
             title: "Product Discounts"
         };
     },
+    beforeCreate() {
+        Discount = this.$RepositoryFactory.get("discounts");
+    },
     created() {
         if (this.$route.query.s) {
             this.search = this.$route.query.s;
+        }
+        if (this.$route.query.p && !isNaN(this.$route.query.p)) {
+            this.pagination.page = this.$route.query.p;
         }
     },
     mounted() {
@@ -264,21 +273,22 @@ export default {
             discountList: [],
             search: "",
             searchReq: null,
-            nameFilter: "",
             loading: false,
             showDlg: false,
             toDelID: -1,
             pagination: {
                 sortBy: "start",
+                descending: true,
                 page: 1,
-                rowsPerPage: 10
+                rowsPerPage: 9
             },
             columns: [
                 {
-                    name: "discount",
-                    required: true,
-                    label: "Discount",
+                    name: "percent",
+                    field: "percent",
+                    label: "Discount %",
                     align: "left",
+                    required: true,
                     sortable: true
                 },
                 {
@@ -303,8 +313,8 @@ export default {
                     sortable: true
                 },
                 {
-                    name: "products",
-                    field: "products",
+                    name: "count",
+                    field: "count",
                     align: "left",
                     label: "No. of Products",
                     sortable: true
@@ -316,50 +326,15 @@ export default {
                 }
             ],
             data: [],
-            original: [
-                {
-                    id: 1,
-                    target: "All",
-                    discount: "5 %",
-                    start: "Feb 20, 2020",
-                    end: "Feb 20, 2020",
-                    products: 10
-                },
-                {
-                    id: 4,
-                    target: "Regular",
-                    discount: "15 %",
-                    start: "Feb 20, 2020",
-                    end: "Feb 20, 2020",
-                    products: 10
-                },
-                {
-                    id: 2,
-                    target: "Reseller",
-                    discount: "10 %",
-                    start: "Feb 20, 2020",
-                    end: "Feb 20, 2020",
-                    products: 10
-                },
-                {
-                    id: 3,
-                    target: "All",
-                    discount: "10 %",
-                    start: "Feb 20, 2020",
-                    end: "Feb 20, 2020",
-                    products: 10
-                }
-            ]
+            original: []
         };
     },
     methods: {
         searchClear(evt) {
             this.search = "";
-            /** TODO */
             this.$router.replace("/discounts").catch(err => {});
         },
         searchInput(val) {
-            /** TODO */
             let searchQry = Object.assign({}, this.$route.query, { s: val });
             if (!val) delete searchQry.s;
 
@@ -369,28 +344,54 @@ export default {
                 })
                 .catch(err => {});
         },
-        /**TODO */
-        onRequest(props) {
-            this.loading = true;
+        onChgPage(newPg) {
+            let pageQry = Object.assign({}, this.$route.query, {
+                p: newPg.page
+            });
+            if (!newPg) delete pageQry.p;
 
-            // emulate server
-            setTimeout(() => {
-                // clear out existing data and add new
-                this.data = this.original;
-                this.loading = false;
-            }, 500);
+            this.$router
+                .replace({
+                    query: pageQry
+                })
+                .catch(err => {});
         },
+        async onRequest(props) {
+            this.loading = true;
+            try {
+                const resp = await Discount.getAllDiscounts();
+                this.original = resp;
+                this.data = this.original.slice();
+            } catch (err) {
+                this.showNotif(false, "Could retrieve discounts. ");
+            } finally {
+                this.loading = false;
+            }
+        },
+        async onRemove() {
+            if (this.toDelID !== -1) {
+                try {
+                    const resp = await Discount.deleteDiscount(this.toDelID);
+                    this.showNotif(
+                        true,
+                        "Successfully removed discount entry."
+                    );
+
+                    // Remove from list and Reset
+                    this.$delete(
+                        this.data,
+                        this.data.findIndex(el => el.id == this.toDelID)
+                    );
+                    this.toDelID = -1;
+                } catch (err) {
+                    this.showNotif(false, "Could not delete item. ");
+                }
+            }
+        },
+
         confirmDel(psaID) {
             this.showDlg = true;
             this.toDelID = psaID;
-        },
-        onRemove() {
-            if (this.toDelID !== -1) {
-                /**TODO */
-                this.showNotif(true, "Successfully removed discount.");
-            }
-            // Reset
-            this.toDelID = -1;
         }
     }
 };

@@ -157,7 +157,7 @@
                                     ref="qTxtEditor"
                                     class="field-value qtext-editor"
                                     :class="{ 'has-error': contentEmpty }"
-                                    v-model="announcement.text"
+                                    v-model="announcement.message"
                                     flat
                                     content-class="text-black bg-grey-3"
                                     toolbar-text-color="black"
@@ -178,7 +178,7 @@
                                     hide-bottom-space
                                     placeholder="Optional URL"
                                     class="field-value"
-                                    v-model="announcement.link"
+                                    v-model="announcement.targetLink"
                                     lazy-rules
                                     :rules="[_isValidLink]"
                                 />
@@ -280,6 +280,7 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Psa = null;
 
 export default {
     name: "AnnouncementAdd",
@@ -288,6 +289,9 @@ export default {
         return {
             title: "Add Announcement"
         };
+    },
+    beforeCreate() {
+        Psa = this.$RepositoryFactory.get("announcements");
     },
     created() {
         this.announcement.start = this.today.yyyymmdd + " 00:00";
@@ -299,7 +303,7 @@ export default {
     computed: {
         contentEmpty() {
             return (
-                this.hasTyped && this._isContentEmpty(this.announcement.text)
+                this.hasTyped && this._isContentEmpty(this.announcement.message)
             );
         }
     },
@@ -308,8 +312,8 @@ export default {
             loading: false,
             hasTyped: false,
             announcement: {
-                text: "",
-                link: "",
+                message: "",
+                targetLink: "",
                 start: "",
                 end: ""
             }
@@ -331,8 +335,8 @@ export default {
 
         _isValidLink(val) {
             if (!val || val == "") return true;
-
-            const urlpattern = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
+            const urlpattern = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+            //const urlpattern = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
             return urlpattern.test(val) || "Invalid URL format";
         },
 
@@ -344,24 +348,28 @@ export default {
             return val.length == 0 ? true : false;
         },
 
-        onSubmit: function(evt) {
-            /**TODO */
+        onSubmit: async function(evt) {
             this.loading = true;
-            if (!this._isContentEmpty(this.announcement.text)) {
-                console.log(this.announcement);
-                setTimeout(() => {
+            if (!this._isContentEmpty(this.announcement.message)) {
+                try {
+                    await Psa.addAnnouncement(this.announcement);
                     this.showNotif(
                         true,
-                        "Successfully added new announcement. " +
-                            this.announcement.text
+                        "Successfully added new announcement. "
                     );
                     this.loading = false;
                     this.returnToPageIndex("/announcements");
-                }, 2500);
+                } catch (err) {
+                    this.showNotif(
+                        false,
+                        "Could not create the announcement. "
+                    );
+                }
             } else {
                 this.$refs.qTxtEditor.focus();
-                this.loading = false;
             }
+
+            this.loading = false;
         }
     }
 };

@@ -41,7 +41,7 @@ module.exports.extendApp = function({ app, ssr }) {
             .then(function(body) {
                 const { token, cmsuser, xsrf } = body;
                 res.cookie("_JWT_CMS", token, {
-                    maxAge: 15 * 60 * 1000, //15m
+                    maxAge: 60 * 60 * 1000, //1hr
                     httpOnly: true,
                     sameSite: "Strict",
                     secure: prod
@@ -83,7 +83,7 @@ module.exports.extendApp = function({ app, ssr }) {
                 const { token, xsrf } = body;
                 // console.log(token, xsrf);
                 res.cookie("_JWT_CMS", token, {
-                    maxAge: 15 * 60 * 1000, //15m
+                    maxAge: 60 * 60 * 1000, //1hr
                     httpOnly: true,
                     sameSite: "Strict",
                     secure: prod
@@ -114,7 +114,10 @@ module.exports.extendApp = function({ app, ssr }) {
         } else {
             const url = API_URL + req.path;
             req.headers.authorization = "Bearer " + req.cookies._JWT_CMS;
-            const proxy = request(url);
+            const proxy = request({
+                url: url,
+                qs: req.query
+            });
             proxy
                 .on("response", response => {})
                 .on("error", err => {
