@@ -6,68 +6,56 @@ export default class Dashboard {
     }
 
     async getCustomerStats() {
-        const ret = { hasError: false, data: {} };
         try {
             const res = await this.axios.get("/api/customers/stats");
-            ret.data = res.data;
+            return res.data;
         } catch (err) {
-            ret.hasError = true;
+            throw err.response.data.error || "Error has occurred.";
         }
-        return ret;
     }
 
     async getProductStats() {
-        const ret = { hasError: false, data: {} };
         try {
             const res = await this.axios.get("/api/products/stats");
-            ret.data = res.data;
+            return res.data;
         } catch (err) {
-            ret.hasError = true;
+            throw err.response.data.error || "Error has occurred.";
         }
-        return ret;
     }
 
     async getOrderStats() {
-        const ret = { hasError: false, data: {} };
         try {
             const res = await this.axios.get("/api/orders/stats");
-            ret.data = res.data;
+            return res.data;
         } catch (err) {
-            ret.hasError = true;
+            throw err.response.data.error || "Error has occurred.";
         }
-        return ret;
     }
 
     async getPendingResellers() {
-        const ret = { hasError: false, data: [] };
         try {
             const res = await this.axios.get("/api/customers/pending");
-            ret.data = res.data;
+            return res.data;
         } catch (err) {
-            ret.hasError = true;
+            throw err.response.data.error || "Error has occurred.";
         }
-        return ret;
     }
 
     async getRecentComments() {
-        const ret = { hasError: false, data: [] };
         try {
             const res = await this.axios.get("/api/comments/recent");
-            ret.data = res.data;
+            return res.data;
         } catch (err) {
-            ret.hasError = true;
+            throw err.response.data.error || "Error has occurred.";
         }
-        return ret;
     }
 
     async getBusinessHolidays() {
-        const ret = { hasError: false, data: [] };
         try {
             const res = await this.axios.get("/api/invaliddates");
-            ret.data = res.data;
+            return res.data;
         } catch (err) {
-            ret.hasError = true;
+            throw err.response.data.error || "Error has occurred.";
         }
-        return ret;
     }
 }

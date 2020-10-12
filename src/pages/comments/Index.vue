@@ -375,7 +375,7 @@ export default {
                     this.toFlagID = -1;
                     this.targetFlagVal = false;
                 } catch (err) {
-                    this.showNotif(false, "Could not edit item. ");
+                    this.showNotif(false, "Could not update item. ");
                 }
             }
         }

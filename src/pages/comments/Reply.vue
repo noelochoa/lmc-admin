@@ -254,10 +254,10 @@ export default {
         async getComment() {
             try {
                 const resp = await Comment.getComment(this.$route.params.id);
-                resp.data.replyAuthor = resp.data.replyAuthor
-                    ? resp.data.replyAuthor
+                resp.replyAuthor = resp.replyAuthor
+                    ? resp.replyAuthor
                     : this.$store.state.auth.name;
-                this.comment = resp;
+                this.comment.data = resp;
             } catch (err) {
                 this.showNotif(false, "Could not retrieve comment details. ");
                 this.comment.hasError = true;
@@ -268,19 +268,25 @@ export default {
 
         onSubmit: async function(evt) {
             this.loading = true;
-            try {
-                await Comment.replyToComment(
-                    this.$route.params.id,
-                    this.comment.data
-                );
-                this.showNotif(true, "Successfully posted reply to comment.");
+            if (!this._isContentEmpty(this.comment.data.reply)) {
+                try {
+                    await Comment.replyToComment(
+                        this.$route.params.id,
+                        this.comment.data
+                    );
+                    this.showNotif(
+                        true,
+                        "Successfully posted reply to comment."
+                    );
+                    this.loading = false;
+                    this.returnToPageIndex("/comments");
+                } catch (err) {
+                    this.showNotif(false, "Could not post reply. ");
+                }
+            } else {
+                this.$refs.qTxtEditor.focus();
                 this.loading = false;
-                this.returnToPageIndex("/comments");
-            } catch (err) {
-                this.showNotif(false, "Could not post reply. ");
             }
-
-            this.loading = false;
         }
     }
 };

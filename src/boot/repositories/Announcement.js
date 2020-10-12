@@ -22,13 +22,11 @@ export default class Announcement {
     }
 
     async getAnnouncement(paramID) {
-        const ret = { hasError: false, data: {} };
         try {
             const res = await this.axios.get(`api/psa/${paramID}`);
             res.data.start = moment(res.data.start).format("YYYY-MM-DD HH:mm");
             res.data.end = moment(res.data.end).format("YYYY-MM-DD HH:mm");
-            ret.data = res.data;
-            return ret;
+            return res.data;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";
         }
@@ -36,7 +34,7 @@ export default class Announcement {
 
     async addAnnouncement({ start, end, message, targetLink }) {
         try {
-            const res = await this.axios.post("/api/psa", {
+            await this.axios.post("/api/psa", {
                 start,
                 end,
                 message,
@@ -50,7 +48,7 @@ export default class Announcement {
 
     async editAnnouncement(paramID, { start, end, message, targetLink }) {
         try {
-            const res = await this.axios.patch(`api/psa/${paramID}`, [
+            await this.axios.patch(`api/psa/${paramID}`, [
                 { property: "start", value: start },
                 { property: "end", value: end },
                 { property: "message", value: message },
@@ -64,7 +62,7 @@ export default class Announcement {
 
     async deleteAnnouncement(paramID) {
         try {
-            const res = await this.axios.delete(`api/psa/${paramID}`);
+            await this.axios.delete(`api/psa/${paramID}`);
             return true;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";

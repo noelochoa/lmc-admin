@@ -165,7 +165,7 @@ export default {
         async getCategory() {
             try {
                 const resp = await Category.getCategory(this.$route.params.id);
-                this.category = resp;
+                this.category.data = resp;
             } catch (err) {
                 this.showNotif(false, "Could retrieve category details. ");
                 this.category.hasError = true;
@@ -186,9 +186,8 @@ export default {
                 this.returnToPageIndex("/categories");
             } catch (err) {
                 this.showNotif(false, "Could not edit category info. ");
+                this.loading = false;
             }
-
-            this.loading = false;
         }
     }
 };

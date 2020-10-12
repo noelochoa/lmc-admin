@@ -287,7 +287,6 @@ export default {
         searchInput(val) {
             let searchQry = Object.assign({}, this.$route.query, { s: val });
             if (!val) delete searchQry.s;
-
             this.$router
                 .replace({
                     query: searchQry
@@ -306,6 +305,7 @@ export default {
                 })
                 .catch(err => {});
         },
+
         async onRequest(props) {
             this.loading = true;
             try {

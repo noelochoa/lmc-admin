@@ -34,7 +34,7 @@
                 </p>
             </div>
             <div class="heading-stat-3 text-caption">
-                Orders this Month
+                Orders for this Month
                 <p class="text-subtitle2" v-if="orders.loading">
                     <q-spinner color="white" size="2em" />
                 </p>
@@ -470,10 +470,10 @@ export default {
                     key: "accepted"
                 },
                 {
-                    label: "Orders Processed",
+                    label: "Orders being Prepared",
                     value: 0,
-                    link: "/orders/processed",
-                    key: "processed"
+                    link: "/orders/preparing",
+                    key: "preparing"
                 },
                 {
                     label: "Orders Fulfilled",
@@ -488,10 +488,10 @@ export default {
         async getStats() {
             Stats.getCustomerStats()
                 .then(dat => {
-                    this.customers = dat;
+                    this.customers.data = dat;
                 })
                 .catch(err => {
-                    this.customers = err;
+                    this.customers.hasError = true;
                 })
                 .finally(() => {
                     this.customers.loading = false;
@@ -499,14 +499,15 @@ export default {
 
             Stats.getProductStats()
                 .then(dat => {
-                    this.products = dat;
+                    this.products.data = dat;
                     this.productStats.map(item => {
-                        item.value = this.products.data[item.key];
+                        if (this.products.data.hasOwnProperty(item.key))
+                            item.value = this.products.data[item.key];
                         return item;
                     });
                 })
                 .catch(err => {
-                    this.products = err;
+                    this.products.hasError = true;
                 })
                 .finally(() => {
                     this.products.loading = false;
@@ -514,14 +515,15 @@ export default {
 
             Stats.getOrderStats()
                 .then(dat => {
-                    this.orders = dat;
+                    this.orders.data = dat;
                     this.orderStats.map(item => {
-                        item.value = this.orders.data[item.key];
+                        if (this.orders.data.hasOwnProperty(item.key))
+                            item.value = this.orders.data[item.key];
                         return item;
                     });
                 })
                 .catch(err => {
-                    this.orders = err;
+                    this.orders.hasError = true;
                 })
                 .finally(() => {
                     this.orders.loading = false;
@@ -529,10 +531,10 @@ export default {
 
             Stats.getPendingResellers()
                 .then(dat => {
-                    this.pending = dat;
+                    this.pending.data = dat;
                 })
                 .catch(err => {
-                    this.pending = err;
+                    this.pending.hasError = true;
                 })
                 .finally(() => {
                     this.pending.loading = false;
@@ -540,10 +542,10 @@ export default {
 
             Stats.getRecentComments()
                 .then(dat => {
-                    this.recent = dat;
+                    this.recent.data = dat;
                 })
                 .catch(err => {
-                    this.recent = err;
+                    this.recent.hasError = true;
                 })
                 .finally(() => {
                     this.recent.loading = false;
@@ -551,10 +553,10 @@ export default {
 
             Stats.getBusinessHolidays()
                 .then(dat => {
-                    this.holidays = dat;
+                    this.holidays.data = dat;
                 })
                 .catch(err => {
-                    this.holidays = err;
+                    this.holidays.hasError = true;
                 })
                 .finally(() => {
                     this.holidays.loading = false;

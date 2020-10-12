@@ -372,7 +372,7 @@ export default {
         async getAnnouncement() {
             try {
                 const resp = await Psa.getAnnouncement(this.$route.params.id);
-                this.announcement = resp;
+                this.announcement.data = resp;
             } catch (err) {
                 this.showNotif(false, "Could retrieve announcement details. ");
                 this.announcement.hasError = true;
@@ -400,9 +400,8 @@ export default {
                 }
             } else {
                 this.$refs.qTxtEditor.focus();
+                this.loading = false;
             }
-
-            this.loading = false;
         }
     }
 };

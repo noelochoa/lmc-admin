@@ -30,17 +30,15 @@ export default class Comment {
     }
 
     async getComment(paramID) {
-        const ret = { hasError: false, data: {} };
         try {
             const res = await this.axios.get(`api/comments/${paramID}`);
-            ret.data.text = res.data.comment;
-            ret.data.posted = res.data.created;
-            ret.data.author = res.data.author ? res.data.author.name : "-";
-            ret.data.product = res.data.product ? res.data.product.name : "-";
-            ret.data.reply = res.data.reply ? res.data.reply : "";
-            ret.data.replyAuthor = res.data.replyAuthor;
-
-            return ret;
+            res.data.text = res.data.comment;
+            res.data.posted = res.data.created;
+            res.data.author = res.data.author ? res.data.author.name : "-";
+            res.data.product = res.data.product ? res.data.product.name : "-";
+            res.data.reply = res.data.reply ? res.data.reply : "";
+            res.data.replyAuthor = res.data.replyAuthor;
+            return res.data;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";
         }
@@ -48,7 +46,7 @@ export default class Comment {
 
     async flagComment(paramID, bool) {
         try {
-            const res = await this.axios.patch(`api/comments/${paramID}`, [
+            await this.axios.patch(`api/comments/${paramID}`, [
                 { property: "isFlagged", value: bool }
             ]);
             return true;
@@ -59,7 +57,7 @@ export default class Comment {
 
     async replyToComment(paramID, { reply, replyAuthor }) {
         try {
-            const res = await this.axios.patch(`api/comments/${paramID}`, [
+            await this.axios.patch(`api/comments/${paramID}`, [
                 { property: "replyAuthor", value: replyAuthor },
                 { property: "reply", value: reply }
             ]);

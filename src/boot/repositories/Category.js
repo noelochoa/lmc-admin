@@ -22,11 +22,9 @@ export default class Category {
     }
 
     async getCategory(paramID) {
-        const ret = { hasError: false, data: {} };
         try {
             const res = await this.axios.get(`api/categories/${paramID}`);
-            ret.data = res.data;
-            return ret;
+            return res.data;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";
         }
@@ -34,7 +32,7 @@ export default class Category {
 
     async addCategory({ name }) {
         try {
-            const res = await this.axios.post("/api/categories", {
+            await this.axios.post("/api/categories", {
                 name
             });
             return true;
@@ -45,7 +43,7 @@ export default class Category {
 
     async editCategory(paramID, { name }) {
         try {
-            const res = await this.axios.patch(`api/categories/${paramID}`, [
+            await this.axios.patch(`api/categories/${paramID}`, [
                 { property: "name", value: name }
             ]);
             return true;
@@ -56,7 +54,7 @@ export default class Category {
 
     async deleteCategory(paramID) {
         try {
-            const res = await this.axios.delete(`api/categories/${paramID}`);
+            await this.axios.delete(`api/categories/${paramID}`);
             return true;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";

@@ -412,7 +412,7 @@ export default {
         async getDiscount() {
             try {
                 const resp = await Discount.getDiscount(this.$route.params.id);
-                this.discount = resp;
+                this.discount.data = resp;
             } catch (err) {
                 this.showNotif(false, "Could retrieve discount details. ");
                 this.discount.hasError = true;
@@ -433,9 +433,8 @@ export default {
                 this.returnToPageIndex("/discounts");
             } catch (err) {
                 this.showNotif(false, "Could not edit discount info. ");
+                this.loading = false;
             }
-
-            this.loading = false;
         }
     }
 };
