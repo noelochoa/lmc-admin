@@ -262,6 +262,7 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Holiday = null;
 
 export default {
     name: "BusinessHolidayAdd",
@@ -270,6 +271,9 @@ export default {
         return {
             title: "Add Business Holiday"
         };
+    },
+    beforeCreate() {
+        Holiday = this.$RepositoryFactory.get("holidays");
     },
     created() {
         this.holiday.start = this.today.yyyymmdd + " 00:00";
@@ -300,17 +304,18 @@ export default {
             );
         },
 
-        onSubmit: function(evt) {
-            /**TODO */
+        onSubmit: async function(evt) {
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(
-                    true,
-                    "Successfully added new holiday. " + this.holiday.reason
-                );
+            try {
+                await Holiday.addHoliday(this.holiday);
+                this.showNotif(true, "Added new holiday entry.");
                 this.loading = false;
                 this.returnToPageIndex("/holidays");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not create holiday entry. ");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 };

@@ -5,6 +5,7 @@ import Category from "./repositories/Category";
 import Discount from "./repositories/Discount";
 import Product from "./repositories/Product";
 import Comment from "./repositories/Comment";
+import Holiday from "./repositories/Holiday";
 
 export default inject(async function({ app, ssrContext, Vue }) {
     const repositories = {
@@ -13,7 +14,8 @@ export default inject(async function({ app, ssrContext, Vue }) {
         categories: new Category(app.axios),
         discounts: new Discount(app.axios),
         products: new Product(app.axios),
-        comments: new Comment(app.axios)
+        comments: new Comment(app.axios),
+        holidays: new Holiday(app.axios)
     };
 
     const RepositoryFactory = {

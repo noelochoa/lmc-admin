@@ -16,8 +16,14 @@
                     />Business Holiday Info
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmit"
+                        :disabled="holiday.hasError || holiday.loading"
+                    >
+                        <q-item class="q-mt-sm" v-if="holiday.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
                             <q-item class="detail-field">
                                 <span class="field-label">Starts from</span>
                                 <q-input
@@ -26,7 +32,7 @@
                                     hide-bottom-space
                                     dark
                                     class="field-value"
-                                    v-model="holiday.start"
+                                    v-model="holiday.data.start"
                                     :rules="[
                                         val =>
                                             val !== null && val.trim() !== '',
@@ -46,7 +52,7 @@
                                                 <q-date
                                                     dark
                                                     no-unset
-                                                    v-model="holiday.start"
+                                                    v-model="holiday.data.start"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
                                                         () =>
@@ -69,7 +75,7 @@
                                             >
                                                 <q-time
                                                     dark
-                                                    v-model="holiday.start"
+                                                    v-model="holiday.data.start"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     format24h
                                                     @input="
@@ -90,7 +96,7 @@
                                     hide-bottom-space
                                     dark
                                     class="field-value"
-                                    v-model="holiday.end"
+                                    v-model="holiday.data.end"
                                     lazy-rules
                                     :rules="[
                                         val =>
@@ -112,7 +118,7 @@
                                                 <q-date
                                                     dark
                                                     no-unset
-                                                    v-model="holiday.end"
+                                                    v-model="holiday.data.end"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
                                                         () =>
@@ -135,7 +141,7 @@
                                             >
                                                 <q-time
                                                     dark
-                                                    v-model="holiday.end"
+                                                    v-model="holiday.data.end"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     format24h
                                                     @input="
@@ -157,7 +163,7 @@
                                     hide-bottom-space
                                     placeholder="Business Holiday, Emergency, etc."
                                     class="field-value"
-                                    v-model="holiday.reason"
+                                    v-model="holiday.data.reason"
                                     lazy-rules
                                     :rules="[
                                         val => val !== null && val.trim() !== ''
@@ -261,6 +267,7 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Holiday = null;
 
 export default {
     name: "BusinessHolidayEdit",
@@ -270,14 +277,26 @@ export default {
             title: "Edit Business Holiday"
         };
     },
+    beforeCreate() {
+        Holiday = this.$RepositoryFactory.get("holidays");
+    },
+    created() {
+        if (process.env.CLIENT) {
+            this.getHolidayInfo();
+        }
+    },
     data() {
         return {
             loading: false,
             hasTyped: false,
             holiday: {
-                reason: "Covid-19 Forced Quarantine",
-                start: "2020-03-21 15:00",
-                end: "2020-03-25 15:00"
+                loading: true,
+                hasError: false,
+                data: {
+                    reason: "Covid-19 Forced Quarantine",
+                    start: "2020-03-21 15:00",
+                    end: "2020-03-25 15:00"
+                }
             }
         };
     },
@@ -288,21 +307,41 @@ export default {
         },
         _isValidEndDt(val) {
             const end = new Date(val);
-            const start = new Date(this.holiday.start);
+            const start = new Date(this.holiday.data.start);
             return (
                 end.getTime() > start.getTime() ||
                 "End date needs to be greater"
             );
         },
 
-        onSubmit: function(evt) {
-            /**TODO */
+        async getHolidayInfo() {
+            try {
+                const resp = await Holiday.getBusinessHoliday(
+                    this.$route.params.id
+                );
+                this.holiday.data = resp;
+            } catch (err) {
+                this.showNotif(false, "Could retrieve holiday details. ");
+                this.holiday.hasError = true;
+            } finally {
+                this.holiday.loading = false;
+            }
+        },
+
+        onSubmit: async function(evt) {
             this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully updated entry details. ");
+            try {
+                await Holiday.editHoliday(
+                    this.$route.params.id,
+                    this.holiday.data
+                );
+                this.showNotif(true, "Successfully updated holiday info.");
                 this.loading = false;
                 this.returnToPageIndex("/holidays");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not edit holiday info. ");
+                this.loading = false;
+            }
         }
     }
 };

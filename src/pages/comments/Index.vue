@@ -339,7 +339,7 @@ export default {
                 this.original = resp;
                 this.data = this.original.slice();
             } catch (err) {
-                this.showNotif(false, "Could retrieve comments. " + err);
+                this.showNotif(false, "Could retrieve comments. ");
             } finally {
                 this.loading = false;
             }

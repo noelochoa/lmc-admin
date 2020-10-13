@@ -171,18 +171,6 @@
 .no-select {
     user-select: none;
 }
-.blur-bg {
-    position: fixed;
-    height: 100%;
-    width: 100%;
-    background-image: url("/bg-cms.jpg");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    filter: blur(10px);
-    -webkit-filter: blur(10px);
-    transform: scale(1.1);
-}
 .sm-layout .q-drawer {
     background: #1a1d1a !important;
 }

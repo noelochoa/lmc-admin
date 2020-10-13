@@ -84,22 +84,6 @@
 </template>
 
 <style lang="scss" scoped>
-.blur-bg {
-    position: fixed;
-    height: 100%;
-    width: 100%;
-    /* Center and scale the image nicely */
-    background-image: url("/bg-cms.jpg");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    /* Add the blur effect */
-    filter: blur(10px);
-    -webkit-filter: blur(10px);
-    transform: scale(1.1);
-    overflow: hidden;
-}
-
 .round-fg {
     height: 50vh;
     max-width: 800px;

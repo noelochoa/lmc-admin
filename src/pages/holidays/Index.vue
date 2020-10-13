@@ -40,7 +40,7 @@
                         </q-tooltip>
                     </q-btn>
                 </div>
-                <div class="bg-gray-alpha">
+                <div class="bg-gray-alpha relative-position">
                     <q-date
                         no-unset
                         class="date"
@@ -54,6 +54,9 @@
                         minimal
                         @input="getHolidaysList"
                     />
+                    <q-inner-loading :showing="loading">
+                        <q-spinner color="white" size="2em" />
+                    </q-inner-loading>
                 </div>
             </div>
             <div class="content-2">
@@ -181,35 +184,41 @@ div[class*="content-"] > div:nth-child(2) {
 import ConfirmDialog from "../../components/ConfirmDialog";
 import Holidays from "../../components/Holidays";
 import HelperMixin from "../../mixins/helpers";
+let Holiday = null;
 
 export default {
     name: "HolidayIndex",
     components: { ConfirmDialog, Holidays },
     mixins: [HelperMixin],
 
-    preFetch({ store }) {
-        console.log("prefetch called");
-    },
     meta() {
         return {
             title: "Business Holidays"
         };
     },
-    created() {
-        this.data.splice(
-            0,
-            this.data.length,
-            ...this.selectInclusive(this.date)
-        );
+    beforeCreate() {
+        Holiday = this.$RepositoryFactory.get("holidays");
+    },
+    async created() {
+        this.date = this.today.yyyymmdd;
+        this.startOfMonth = this.startDayOfMonth;
+        this.endOfMonth = this.lastDayOfMonth;
+
+        if (process.env.CLIENT) {
+            await this.getHolidays();
+            this.data.splice(
+                0,
+                this.data.length,
+                ...this.selectInclusive(this.date)
+            );
+        }
     },
     computed: {
         holidayList() {
             const dayList = new Set();
             this.holidayItems.map(item => {
-                const start = new Date(item.start),
-                    end = new Date(item.end);
-
-                // console.log(start, end);
+                const start = this.findMaxDt(item.start, this.startOfMonth);
+                const end = this.findMinDt(item.end, this.endOfMonth);
                 for (
                     let dt = start;
                     dt.getTime() <= end.getTime();
@@ -224,66 +233,87 @@ export default {
     },
     data() {
         return {
-            date: "2020-03-19",
-            // holidayList: ["2020/03/21", "2020/03/25", "2020/03/27"],
+            date: "",
+            startOfMonth: "",
+            endOfMonth: "",
             data: [],
-            holidayItems: [
-                {
-                    id: "111",
-                    reason: "Business Holiday",
-                    start: "2020-03-18 16:00:00+00:00",
-                    end: "2020/03/22 19:00:00"
-                },
-                {
-                    id: "112",
-                    reason: "Emergency Store Renovation",
-                    start: "2020-03-20 15:00:00+00:00",
-                    end: "2020/03/25 19:00:00"
-                },
-                {
-                    id: "113",
-                    reason: "Covid 19 Holiday 3",
-                    start: "2020-03-30 15:00:00+00:00",
-                    end: "2020/04/03 19:00:00"
-                }
-            ],
-            loading: false,
+            holidayItems: [],
+            loading: true,
             showDlg: false,
             toDelID: -1
         };
     },
     methods: {
-        confirmDel(psaID) {
-            this.toDelID = psaID;
-            this.showDlg = true;
-        },
-        onRemove() {
-            if (this.toDelID !== -1) {
-                /**TODO */
-                this.showNotif(
-                    true,
-                    "Successfully removed holiday entry." + this.toDelID
-                );
-            }
-            // Reset
-            this.toDelID = -1;
-        },
         selectInclusive(val) {
-            const dt = new Date(val);
+            const dt = new Date(val).setHours(0, 0, 0, 0);
             return this.holidayItems.filter(function(item) {
-                const start = new Date(item.start),
-                    end = new Date(item.end);
-                return start <= dt && end >= dt;
+                const start = new Date(item.start).setHours(0, 0, 0, 0),
+                    end = new Date(item.end).setHours(0, 0, 0, 0);
+                return !(dt < start || dt > end);
             });
         },
-        getHolidaysList(value, reason, details) {
+
+        async getHolidaysList(value, reason, details) {
+            if (reason == "month" || reason == "year") {
+                // Has changed month/year, refresh
+                const d = new Date(value);
+                this.startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+                this.endOfMonth = new Date(
+                    d.getFullYear(),
+                    d.getMonth() + 1,
+                    0
+                );
+                // Retrieve new list
+                await this.getHolidays(details);
+            }
+
             this.data.splice(
                 0,
                 this.data.length,
                 ...this.selectInclusive(value)
             );
-            /**TODO */
-            console.log(reason);
+        },
+
+        async getHolidays(details) {
+            this.loading = true;
+            try {
+                const resp = await Holiday.getBusinessHolidays(details);
+                this.holidayItems = resp.slice();
+            } catch (err) {
+                this.showNotif(
+                    false,
+                    "Could retrieve business holidays for selected month. "
+                );
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async onRemove() {
+            if (this.toDelID !== -1) {
+                try {
+                    const resp = await Holiday.deleteHoliday(this.toDelID);
+                    this.showNotif(true, "Successfully removed holiday entry.");
+
+                    // Remove from list and Reset
+                    this.$delete(
+                        this.data,
+                        this.data.findIndex(el => el.id == this.toDelID)
+                    );
+                    this.$delete(
+                        this.holidayItems,
+                        this.holidayItems.findIndex(el => el.id == this.toDelID)
+                    );
+                    this.toDelID = -1;
+                } catch (err) {
+                    this.showNotif(false, "Could not delete item. ");
+                }
+            }
+        },
+
+        confirmDel(holidayID) {
+            this.toDelID = holidayID;
+            this.showDlg = true;
         }
     }
 };
