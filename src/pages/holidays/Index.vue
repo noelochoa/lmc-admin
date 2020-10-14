@@ -282,7 +282,7 @@ export default {
             } catch (err) {
                 this.showNotif(
                     false,
-                    "Could retrieve business holidays for selected month. "
+                    "Could not retrieve holiday entries for selected month. "
                 );
             } finally {
                 this.loading = false;

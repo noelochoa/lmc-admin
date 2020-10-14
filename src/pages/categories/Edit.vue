@@ -167,7 +167,7 @@ export default {
                 const resp = await Category.getCategory(this.$route.params.id);
                 this.category.data = resp;
             } catch (err) {
-                this.showNotif(false, "Could retrieve category details. ");
+                this.showNotif(false, "Could not retrieve category details. ");
                 this.category.hasError = true;
             } finally {
                 this.category.loading = false;

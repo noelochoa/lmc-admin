@@ -374,7 +374,7 @@ export default {
                 const resp = await Psa.getAnnouncement(this.$route.params.id);
                 this.announcement.data = resp;
             } catch (err) {
-                this.showNotif(false, "Could retrieve announcement details. ");
+                this.showNotif(false, "Could not retrieve announcement details. ");
                 this.announcement.hasError = true;
             } finally {
                 this.announcement.loading = false;

@@ -363,7 +363,7 @@ export default {
                 this.original = resp;
                 this.data = this.original.slice();
             } catch (err) {
-                this.showNotif(false, "Could retrieve discounts. ");
+                this.showNotif(false, "Could not retrieve discounts. ");
             } finally {
                 this.loading = false;
             }

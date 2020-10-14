@@ -414,7 +414,7 @@ export default {
                 const resp = await Discount.getDiscount(this.$route.params.id);
                 this.discount.data = resp;
             } catch (err) {
-                this.showNotif(false, "Could retrieve discount details. ");
+                this.showNotif(false, "Could not retrieve discount details. ");
                 this.discount.hasError = true;
             } finally {
                 this.discount.loading = false;

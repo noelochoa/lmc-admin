@@ -313,7 +313,7 @@ export default {
                 this.original = resp;
                 this.data = this.original.slice();
             } catch (err) {
-                this.showNotif(false, "Could retrieve categories. ");
+                this.showNotif(false, "Could not retrieve categories. ");
             } finally {
                 this.loading = false;
             }

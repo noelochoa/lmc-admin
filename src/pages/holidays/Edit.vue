@@ -321,7 +321,7 @@ export default {
                 );
                 this.holiday.data = resp;
             } catch (err) {
-                this.showNotif(false, "Could retrieve holiday details. ");
+                this.showNotif(false, "Could not retrieve holiday details. ");
                 this.holiday.hasError = true;
             } finally {
                 this.holiday.loading = false;
