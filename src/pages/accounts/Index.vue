@@ -52,6 +52,7 @@
             </div>
             <div class="content-3">
                 <q-table
+                    ref="accntsTbl"
                     square
                     class="customer-table"
                     row-key="id"
@@ -60,16 +61,16 @@
                     :pagination.sync="pagination"
                     :rows-per-page-options="[0]"
                     :loading="loading"
-                    :filter="nameFilter"
+                    :filter="search"
                     @request="onRequest"
-                    binary-state-sort
+                    @update:pagination="onChgPage"
                 >
                     <template v-slot:body="props">
                         <q-tr :props="props">
                             <q-td key="name" :props="props">
                                 {{ props.row.name }}
                             </q-td>
-                            <q-td key="type" :props="props">
+                            <q-td key="type" :props="props" class="capitalize">
                                 {{ props.row.type }}
                             </q-td>
                             <q-td key="joined" :props="props">
@@ -82,6 +83,7 @@
                                 <q-btn-toggle
                                     size="sm"
                                     readonly
+                                    class="no-pointer-events"
                                     v-model="props.row.active"
                                     :toggle-color="
                                         props.row.active ? 'green-4' : 'red-4'
@@ -192,11 +194,12 @@
 }
 </style>
 <script>
+import HelperMixin from "../../mixins/helpers";
+let Account = null;
+
 export default {
-    preFetch({ store }) {
-        console.log("prefetch called!");
-    },
     name: "AccountsIndex",
+    mixins: [HelperMixin],
     meta() {
         return {
             title: "Customer Accounts",
@@ -204,6 +207,9 @@ export default {
                 robots: { name: "robots", content: "noindex" }
             }
         };
+    },
+    beforeCreate() {
+        Account = this.$RepositoryFactory.get("accounts");
     },
     created() {
         if (this.$route.query.type) {
@@ -215,6 +221,9 @@ export default {
         }
         if (this.$route.query.s) {
             this.search = this.$route.query.s;
+        }
+        if (this.$route.query.p && !isNaN(this.$route.query.p)) {
+            this.pagination.page = Number.parseInt(this.$route.query.p);
         }
     },
     mounted() {
@@ -230,22 +239,20 @@ export default {
             searchReq: null,
             customerFilter: "All",
             filter: ["All", "Regular", "Reseller", "Partner"],
-            nameFilter: "",
             loading: false,
             pagination: {
                 sortBy: "joined",
                 descending: true,
                 page: 1,
-                rowsPerPage: 10,
-                rowsNumber: 10
+                rowsPerPage: 9
             },
             columns: [
                 {
                     name: "name",
                     field: "name",
-                    required: true,
                     label: "Name",
                     align: "left",
+                    required: true,
                     sortable: true
                 },
                 {
@@ -283,99 +290,34 @@ export default {
                 }
             ],
             data: [],
-            original: [
-                {
-                    id: 444,
-                    name:
-                        "Frozen Frozen Frozen FrozenFrozenFrozenFrozenFrozenFrozenFrozenFrozenYogurt",
-                    type: "Reseller",
-                    joined: "Feb 20, 2020",
-                    login: "March 1, 2020",
-                    active: false
-                },
-                {
-                    id: 2,
-                    name: "Eclair",
-                    type: "Reseller",
-                    joined: "Feb 20, 2020",
-                    login: "Feb 28, 2020",
-                    active: true
-                },
-                {
-                    id: 3,
-                    name: "Oreo",
-                    type: "Regular",
-                    joined: "Jan 18, 2020",
-                    login: "March 12, 2020",
-                    active: true
-                },
-                {
-                    id: 4,
-                    name: "SSSSRRRRR ",
-                    type: "Regular",
-                    joined: "Jan 18, 2020",
-                    login: "March 12, 2020",
-                    active: true
-                },
-                {
-                    id: 5,
-                    name: "AABBCC 444",
-                    type: "Reseller",
-                    joined: "Jan 18, 2020",
-                    login: "March 12, 2020",
-                    active: true
-                },
-                {
-                    id: 6,
-                    name: "TQWERTY sadda 123",
-                    type: "Regular",
-                    joined: "Jan 18, 2020",
-                    login: "March 12, 2020",
-                    active: true
-                },
-                {
-                    id: 7,
-                    name: "ASD BCC 55555555",
-                    type: "Regular",
-                    joined: "Jan 18, 2020",
-                    login: "March 12, 2020",
-                    active: false
-                }
-            ]
+            original: []
         };
     },
     methods: {
         filterChanged(val) {
             const typeSel = this.$route.query.type;
-
             if (
-                this.filter.includes(val) &&
-                (!typeSel || !val.match(new RegExp(typeSel, "i")))
+                this.filter.includes(val) ||
+                !typeSel ||
+                !val.match(new RegExp(typeSel, "i"))
             ) {
                 this.$router.replace({ query: { type: val } }).catch(err => {});
                 this.search = "";
             }
+
+            this.$refs["accntsTbl"].requestServerInteraction({
+                pagination: { ...this.pagination, page: 1 }
+            });
         },
+
         searchClear(evt) {
-            /** TODO */
             let query = Object.assign({}, this.$route.query);
             delete query.s;
             this.$router.replace({ query }).catch(err => {});
             this.search = "";
         },
-        searchInput(val) {
-            /** TODO */
-            this.$axios
-                .get("https://api.coindesk.com/v1/bpi/currentprice.json")
-                .then(response => {
-                    console.log(response);
-                    this.customerList = response;
-                })
-                .catch(thrown => {
-                    console.log(thrown);
-                });
 
-            /** TODO */
+        searchInput(val) {
             let searchQry = Object.assign({}, this.$route.query, { s: val });
             if (!val) delete searchQry.s;
             this.$router
@@ -384,87 +326,32 @@ export default {
                 })
                 .catch(err => {});
         },
-        /**TODO */
-        onRequest(props) {
-            const { page, rowsPerPage, sortBy, descending } = props.pagination;
-            console.log(page, rowsPerPage, sortBy, descending);
-            const filter = props.filter;
 
-            this.loading = true;
-
-            // emulate server
-            setTimeout(() => {
-                // update rowsCount with appropriate value
-                this.pagination.rowsNumber = this.getRowsNumberCount(filter);
-
-                // get all rows if "All" (0) is selected
-                const fetchCount =
-                    rowsPerPage === 0
-                        ? this.pagination.rowsNumber
-                        : rowsPerPage;
-
-                // calculate starting row of data
-                const startRow = (page - 1) * rowsPerPage;
-
-                // fetch data from "server"
-                const returnedData = this.fetchFromServer(
-                    startRow,
-                    fetchCount,
-                    filter,
-                    sortBy,
-                    descending
-                );
-
-                // clear out existing data and add new
-                this.data.splice(0, this.data.length, ...returnedData);
-
-                // don't forget to update local pagination object
-                this.pagination.page = page;
-                this.pagination.rowsPerPage = rowsPerPage;
-                this.pagination.sortBy = sortBy;
-                this.pagination.descending = descending;
-
-                // ...and turn of loading indicator
-                this.loading = false;
-            }, 500);
-        },
-
-        // emulate ajax call
-        fetchFromServer(startRow, count, filter, sortBy, descending) {
-            const data = filter
-                ? this.original.filter(row => row.name.includes(filter))
-                : this.original.slice();
-
-            // handle sortBy
-            if (sortBy) {
-                const sortFn = () => {
-                    if (sortBy === "name") {
-                        if (descending) {
-                            (a, b) =>
-                                a.name > b.name ? -1 : a.name < b.name ? 1 : 0;
-                        } else {
-                            (a, b) =>
-                                a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
-                        }
-                    }
-                };
-                data.sort(sortFn);
-            }
-
-            return data.slice(startRow, startRow + count);
-        },
-
-        getRowsNumberCount(filter) {
-            if (!filter) {
-                return this.original.length;
-            }
-            let count = 0;
-            this.original.forEach(item => {
-                if (item.name.includes(filter)) {
-                    ++count;
-                }
+        onChgPage(newPg) {
+            let pageQry = Object.assign({}, this.$route.query, {
+                p: newPg.page
             });
-            return count;
+            if (!newPg) delete pageQry.p;
+
+            this.$router
+                .replace({
+                    query: pageQry
+                })
+                .catch(err => {});
+        },
+
+        async onRequest(props) {
+            this.loading = true;
+            try {
+                const resp = await Account.getAllAccounts(this.customerFilter);
+                this.original = resp;
+                this.data = this.original.slice();
+                this.pagination.page = props.pagination.page;
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve account details. ");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 };

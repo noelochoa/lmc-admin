@@ -260,7 +260,7 @@ export default {
             this.search = this.$route.query.s;
         }
         if (this.$route.query.p && !isNaN(this.$route.query.p)) {
-            this.pagination.page = this.$route.query.p;
+            this.pagination.page = Number.parseInt(this.$route.query.p);
         }
     },
     mounted() {
@@ -310,8 +310,10 @@ export default {
     },
     methods: {
         searchClear(evt) {
+            let query = Object.assign({}, this.$route.query);
+            delete query.s;
+            this.$router.replace({ query }).catch(err => {});
             this.search = "";
-            this.$router.replace("/announcements").catch(err => {});
         },
         searchInput(val) {
             let searchQry = Object.assign({}, this.$route.query, { s: val });
@@ -344,7 +346,10 @@ export default {
                 this.original = resp;
                 this.data = this.original.slice();
             } catch (err) {
-                this.showNotif(false, "Could not retrieve announcement details. ");
+                this.showNotif(
+                    false,
+                    "Could not retrieve announcement details. "
+                );
             } finally {
                 this.loading = false;
             }

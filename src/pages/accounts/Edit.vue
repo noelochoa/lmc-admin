@@ -18,13 +18,19 @@
                     />Profile Info
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmit"
+                        :disabled="profile.hasError || profile.loading"
+                    >
+                        <q-item class="q-mt-sm" v-if="profile.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
                             <q-item class="detail-field">
                                 <span class="field-label">First Name</span>
                                 <q-input
                                     class="field-value"
-                                    v-model="profile.fname"
+                                    v-model="profile.data.fname"
                                     type="text"
                                     dense
                                     outlined
@@ -43,7 +49,7 @@
                                 <span class="field-label">Last Name</span>
                                 <q-input
                                     class="field-value"
-                                    v-model="profile.lname"
+                                    v-model="profile.data.lname"
                                     type="text"
                                     dense
                                     outlined
@@ -61,32 +67,34 @@
                             <q-item class="detail-field">
                                 <span class="field-label">Status</span>
                                 <q-toggle
-                                    v-model="profile.active"
+                                    v-model="profile.data.active"
                                     checked-icon="check"
                                     color="green-4"
                                     unchecked-icon="clear"
                                     :label="
-                                        profile.active ? 'Active' : 'Inactive'
+                                        profile.data.active
+                                            ? 'Active'
+                                            : 'Inactive'
                                     "
                                 />
                             </q-item>
 
-                            <q-item class="detail-field">
+                            <q-item class="detail-field capitalize">
                                 <span class="field-label">Account Type</span>
-                                {{ profile.type }}
+                                {{ profile.data.type }}
                             </q-item>
                             <q-item
                                 class="detail-field"
-                                v-show="profile.type === 'Reseller'"
+                                v-show="profile.data.type === 'reseller'"
                             >
                                 <span class="field-label">Approval Status</span>
                                 <q-toggle
-                                    v-model="profile.approved"
+                                    v-model="profile.data.approved"
                                     checked-icon="check"
                                     color="green-4"
                                     unchecked-icon="clear"
                                     :label="
-                                        profile.approved
+                                        profile.data.approved
                                             ? 'Approved'
                                             : 'For Approval'
                                     "
@@ -119,33 +127,32 @@
                     />Contact Info and Delivery Address
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmitC">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmitContact"
+                        :disabled="profile.hasError || profile.loading"
+                    >
+                        <q-item class="q-mt-sm" v-if="profile.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
                             <q-item class="detail-field">
                                 <span class="field-label">Email</span>
                                 <q-input
                                     class="field-value"
-                                    v-model="profile.email"
+                                    v-model="profile.data.email"
                                     type="email"
                                     dense
                                     outlined
                                     dark
+                                    readonly
                                     hide-bottom-space
-                                    placeholder="Valid email required. "
-                                    lazy-rules
-                                    :rules="[
-                                        val =>
-                                            (val && val.length > 0) ||
-                                            'Please type your email',
-                                        _isValidEmail
-                                    ]"
                                 />
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Address</span>
                                 <q-input
                                     class="field-value"
-                                    v-model="profile.address"
+                                    v-model="profile.data.address"
                                     type="text"
                                     dense
                                     outlined
@@ -153,7 +160,9 @@
                                     hide-bottom-space
                                     lazy-rules
                                     :rules="[
-                                        val => val !== null && val.length <= 512
+                                        val =>
+                                            !val ||
+                                            (val !== null && val.length) <= 512
                                     ]"
                                 />
                             </q-item>
@@ -162,7 +171,7 @@
                                 <span class="field-label">Phone</span>
                                 <q-input
                                     class="field-value"
-                                    v-model="profile.phone"
+                                    v-model="profile.data.phone"
                                     type="tel"
                                     dense
                                     outlined
@@ -171,18 +180,19 @@
                                     placeholder="Ex. (+63) 000-000-0000"
                                     mask="(+##) ###-###-####"
                                     lazy-rules
+                                    @input="syncVerifiedStatus"
                                     :rules="[_isValidPhoneNum]"
                                 />
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Phone Verified</span>
                                 <q-toggle
-                                    v-model="profile.smsVerified"
+                                    v-model="profile.data.smsVerified"
                                     checked-icon="check"
                                     color="green-4"
                                     unchecked-icon="clear"
                                     :label="
-                                        profile.smsVerified
+                                        profile.data.smsVerified
                                             ? 'Confirmed'
                                             : 'Unconfirmed'
                                     "
@@ -276,12 +286,9 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
+let Account = null;
 
 export default {
-    preFetch({ store, currentRoute, previousRoute }) {
-        console.log("prefetch!");
-    },
-
     name: "AccountsEdit",
     mixins: [HelperMixin],
     meta() {
@@ -292,10 +299,16 @@ export default {
             }
         };
     },
+    beforeCreate() {
+        Account = this.$RepositoryFactory.get("accounts");
+    },
+    created() {
+        if (process.env.CLIENT) this.getAccount();
+    },
     computed: {
         resolvedPhone() {
-            const val = this.profile.phone;
-            if (val !== "") {
+            const val = this.profile.data.phone;
+            if (val && val !== "") {
                 // +63 1234567890 E.164 Mobile Number format
                 return val.replace(new RegExp(/[-()]/g), "");
             }
@@ -307,15 +320,19 @@ export default {
             loading_p: false,
             loading_c: false,
             profile: {
-                active: true,
-                fname: "Noel",
-                lname: "Ochoa",
-                type: "Reseller",
-                approved: false,
-                address: "",
-                email: "email1234@pop.com",
-                phone: "+99 8098880001",
-                smsVerified: true
+                loading: true,
+                hasError: false,
+                data: {
+                    active: false,
+                    fname: "",
+                    lname: "",
+                    type: "",
+                    approved: false,
+                    address: "",
+                    email: "",
+                    phone: "",
+                    smsVerified: false
+                }
             }
         };
     },
@@ -333,21 +350,55 @@ export default {
                 "Invalid mobile phone format"
             );
         },
-        onSubmit: function(evt) {
-            /**TODO */
-            this.loading_p = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully updated account details.");
-                this.loading_p = false;
-            }, 2500);
+        syncVerifiedStatus(val) {
+            if (!val) {
+                this.profile.data.smsVerified = false;
+            }
         },
-        onSubmitC: function(evt) {
-            /**TODO */
+        async getAccount() {
+            try {
+                const resp = await Account.getAccount(this.$route.params.id);
+                this.profile.data = resp;
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve profile details. ");
+                this.profile.hasError = true;
+            } finally {
+                this.profile.loading = false;
+            }
+        },
+
+        onSubmit: async function(evt) {
+            this.loading_p = true;
+            try {
+                await Account.editAccount(
+                    this.$route.params.id,
+                    this.profile.data
+                );
+
+                this.showNotif(true, "Successfully updated account info.");
+                this.loading_p = false;
+                this.returnToPageIndex("/accounts");
+            } catch (err) {
+                this.showNotif(false, "Could not update the account info. ");
+                this.loading_p = false;
+            }
+        },
+
+        onSubmitContact: async function(evt) {
             this.loading_c = true;
-            setTimeout(() => {
+            try {
+                await Account.editAccountContact(
+                    this.$route.params.id,
+                    this.profile.data
+                );
+
                 this.showNotif(true, "Successfully updated contact info.");
                 this.loading_c = false;
-            }, 2500);
+                this.returnToPageIndex("/accounts");
+            } catch (err) {
+                this.showNotif(false, "Could not update the contact info. ");
+                this.loading_c = false;
+            }
         }
     }
 };

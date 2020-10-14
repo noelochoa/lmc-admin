@@ -501,9 +501,10 @@ export default {
             }
         },
         searchClear(evt) {
+            let query = Object.assign({}, this.$route.query);
+            delete query.s;
+            this.$router.replace({ query }).catch(err => {});
             this.search = "";
-            /** TODO */
-            this.$router.replace("/products").catch(err => {});
         },
         searchInput(val) {
             /** TODO */
