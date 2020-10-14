@@ -293,9 +293,9 @@ export default {
                 loading: true,
                 hasError: false,
                 data: {
-                    reason: "Covid-19 Forced Quarantine",
-                    start: "2020-03-21 15:00",
-                    end: "2020-03-25 15:00"
+                    reason: "",
+                    start: "",
+                    end: ""
                 }
             }
         };
