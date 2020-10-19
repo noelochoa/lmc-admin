@@ -370,6 +370,7 @@ export default {
                 this.loading = false;
             }
         },
+
         async onRemove() {
             if (this.toDelID !== -1) {
                 try {

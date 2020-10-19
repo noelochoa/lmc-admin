@@ -21,6 +21,41 @@ export default class Category {
         }
     }
 
+    async getCategoriesSelection() {
+        try {
+            let ret = [];
+            const res = await this.axios.get("/api/categories/all");
+            res.data.forEach(item => {
+                // Ucfirst
+                ret.push(
+                    item.category.charAt(0).toUpperCase() +
+                        item.category.slice(1)
+                );
+            });
+            return ret;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
+    async getProductCategorySelection() {
+        try {
+            let ret = [];
+            const res = await this.axios.get("/api/categories/all");
+            res.data.forEach(item => {
+                ret.push({
+                    value: item._id,
+                    label:
+                        item.category.charAt(0).toUpperCase() +
+                        item.category.slice(1)
+                });
+            });
+            return ret;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
     async getCategory(paramID) {
         try {
             const res = await this.axios.get(`api/categories/${paramID}`);

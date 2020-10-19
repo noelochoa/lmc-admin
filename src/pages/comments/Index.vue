@@ -54,7 +54,7 @@
                             class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-4"
                         >
                             <q-card class="bg-gray-alpha-2">
-                                <q-card-section>
+                                <q-card-section class="comment-text">
                                     {{ props.row.text }}
                                 </q-card-section>
                                 <q-separator />
@@ -193,6 +193,11 @@
     overflow-wrap: break-word;
     word-wrap: break-word;
     hyphens: auto;
+}
+.comment-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .filter-search-box {
     min-width: 237px;
@@ -347,9 +352,9 @@ export default {
             }
         },
         confirmAction(commentID, bool) {
+            this.targetFlagVal = bool;
             this.showDlg = true;
             this.toFlagID = commentID;
-            this.targetFlagVal = bool;
         },
 
         async onProceed() {

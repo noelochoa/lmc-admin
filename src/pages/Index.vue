@@ -440,19 +440,19 @@ export default {
                 {
                     label: "Featured Products",
                     value: 0,
-                    link: "/products/?st=featured",
+                    // link: "/products/?st=featured",
                     key: "featured"
                 },
                 {
                     label: "Active Products",
                     value: 0,
-                    link: "/products/?st=active",
+                    // link: "/products/?st=active",
                     key: "active"
                 },
                 {
                     label: "Total Products",
                     value: 0,
-                    link: "/products",
+                    // link: "/products",
                     key: "total"
                 }
             ],

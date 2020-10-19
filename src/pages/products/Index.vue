@@ -27,6 +27,7 @@
                     class="filter-select"
                     v-model="category"
                     :options="filter"
+                    :disable="loading"
                     @input="filterChanged"
                     dark
                     dense
@@ -36,13 +37,27 @@
                     <template v-slot:prepend>
                         <q-icon name="category" />
                     </template>
-                    <template v-slot:after-options>
+                    <!-- <template v-slot:after-options>
                         <q-item dense to="/categories/add" class="q-pt-xs">
                             <q-icon name="add" color="white" class="q-mr-sm" />
                             Add category
                         </q-item>
-                    </template>
+                    </template> -->
                 </q-select>
+                <q-btn
+                    flat
+                    round
+                    icon="add"
+                    class="q-ml-sm"
+                    to="/categories/add"
+                >
+                    <q-tooltip
+                        anchor="bottom right"
+                        self="top middle"
+                        :offset="[10, 10]"
+                        >Add Category</q-tooltip
+                    >
+                </q-btn>
             </div>
             <div class="content-2">
                 <q-input
@@ -73,6 +88,7 @@
             </div>
             <div class="content-3">
                 <q-table
+                    ref="prodsTbl"
                     grid
                     grid-header
                     title="Store Products"
@@ -84,9 +100,10 @@
                     :pagination.sync="pagination"
                     :selected.sync="selected"
                     selection="multiple"
-                    :filter="nameFilter"
+                    :filter="search"
                     :loading="loading"
                     @request="onRequest"
+                    @update:pagination="onChgPage"
                 >
                     <template v-slot:top-right>
                         <q-btn
@@ -111,19 +128,21 @@
                                     <q-item
                                         dense
                                         clickable
+                                        @click="confirmBulkAction(true)"
                                         class="text-caption"
                                     >
                                         <q-item-section>
-                                            Show selected
+                                            Reactivate selected
                                         </q-item-section>
                                     </q-item>
                                     <q-item
                                         dense
                                         clickable
                                         class="text-caption"
+                                        @click="confirmBulkAction(false)"
                                     >
                                         <q-item-section>
-                                            Hide selected
+                                            Archive selected
                                         </q-item-section>
                                     </q-item>
                                 </q-list>
@@ -223,7 +242,11 @@
                                         dense
                                         flat
                                         round
-                                        icon="star_outline"
+                                        :icon="
+                                            props.row.isFeatured
+                                                ? 'star'
+                                                : 'star_outline'
+                                        "
                                         :to="
                                             '/products/feature/' + props.row.id
                                         "
@@ -232,20 +255,43 @@
                                             anchor="bottom right"
                                             self="top middle"
                                             :offset="[10, 10]"
-                                            >Feature this product
+                                            >Feature product config
                                         </q-tooltip>
                                     </q-btn>
                                     <q-btn
                                         dense
                                         flat
                                         round
-                                        icon="visibility_off"
-                                        @click="confirmAction(props.row.id)"
-                                        ><q-tooltip
+                                        :icon="
+                                            props.row.toggleFlg
+                                                ? 'visibility'
+                                                : 'visibility_off'
+                                        "
+                                        @mouseenter="
+                                            props.row.toggleFlg = !props.row
+                                                .toggleFlg
+                                        "
+                                        @mouseleave="
+                                            props.row.toggleFlg = !props.row
+                                                .toggleFlg
+                                        "
+                                        @click="
+                                            confirmAction(
+                                                props.row.id,
+                                                !props.row.isActive
+                                            )
+                                        "
+                                    >
+                                        <q-tooltip
                                             anchor="bottom right"
                                             self="top middle"
                                             :offset="[10, 10]"
-                                            >Hide this category
+                                        >
+                                            {{
+                                                props.row.isActive
+                                                    ? "Archive this product"
+                                                    : "Reactivate product"
+                                            }}
                                         </q-tooltip>
                                     </q-btn>
                                 </q-card-actions>
@@ -261,9 +307,13 @@
                             text-color="white"
                         />
                     </template>
-                    <template v-slot:message>
-                        This action will archive this category. <br />
-                        Product will no longer be visible in the category page.
+                    <template v-slot:message v-if="targetVal">
+                        This action will <u>REACTIVATE</u> the product. <br />
+                        Product will be visible again on the webstore.
+                    </template>
+                    <template v-slot:message v-else>
+                        This action will <u>ARCHIVE</u> the product. <br />
+                        Product will be hidden in the webstore.
                     </template>
                     <template v-slot:actions>
                         <q-btn flat label="Cancel" v-close-popup />
@@ -272,6 +322,35 @@
                             label="Proceed"
                             color="red-5"
                             @click="onProceed"
+                            v-close-popup
+                        />
+                    </template>
+                </ConfirmDialog>
+                <ConfirmDialog :showDlg.sync="showDlgBulk">
+                    <template v-slot:avatar>
+                        <q-avatar
+                            icon="report_problem"
+                            color="red-5"
+                            text-color="white"
+                        />
+                    </template>
+                    <template v-slot:message v-if="targetValBulk">
+                        This action will <u>REACTIVATE</u> the selected
+                        products. <br />
+                        Products will be visible again on the webstore.
+                    </template>
+                    <template v-slot:message v-else>
+                        This action will <u>ARCHIVE</u> the selected products.
+                        <br />
+                        Products will be hidden in the webstore.
+                    </template>
+                    <template v-slot:actions>
+                        <q-btn flat label="Cancel" v-close-popup />
+                        <q-btn
+                            flat
+                            label="Proceed"
+                            color="red-5"
+                            @click="onProceedAll"
                             v-close-popup
                         />
                     </template>
@@ -296,7 +375,7 @@
 .page-contents {
     grid-template-columns: repeat(4, 1fr);
     grid-template-areas:
-        "content-1 . . content-2"
+        "content-1 content-1 . content-2"
         "content-3 content-3 content-3 content-3";
     grid-column-gap: 1rem;
     grid-row-gap: 2rem;
@@ -375,30 +454,35 @@
 <script>
 import ConfirmDialog from "../../components/ConfirmDialog";
 import HelperMixin from "../../mixins/helpers";
+let Product = null,
+    Category = null;
 
 export default {
     name: "ProductIndex",
     components: { ConfirmDialog },
     mixins: [HelperMixin],
 
-    preFetch({ store }) {
-        console.log("prefetch called");
-    },
     meta() {
         return {
             title: "Products"
         };
     },
+    beforeCreate() {
+        Category = this.$RepositoryFactory.get("categories");
+        Product = this.$RepositoryFactory.get("products");
+    },
     created() {
         if (this.$route.query.type) {
-            this.filter.forEach(el => {
-                if (el.match(new RegExp(this.$route.query.type, "i"))) {
-                    this.customerFilter = el;
-                }
-            });
+            this.category = this.$route.query.type;
         }
         if (this.$route.query.s) {
             this.search = this.$route.query.s;
+        }
+        if (this.$route.query.p && !isNaN(this.$route.query.p)) {
+            this.pagination.page = Number.parseInt(this.$route.query.p);
+        }
+        if (process.env.CLIENT) {
+            this.fetchCategories();
         }
     },
     mounted() {
@@ -412,25 +496,27 @@ export default {
             productsList: [],
             selected: [],
             search: "",
-            searchReq: null,
-            nameFilter: "",
             category: "All",
-            filter: ["All", "Cakes", "Cookies", "Others"],
-            loading: false,
+            filter: ["All"],
+            loading: true,
             showDlg: false,
-            toFlagID: -1,
+            showDlgBulk: false,
+            toToggleID: -1,
+            targetVal: false,
+            targetValBulk: false,
             pagination: {
                 sortBy: "created",
                 descending: true,
                 page: 1,
-                rowsPerPage: 10
+                rowsPerPage: 9
             },
             columns: [
                 {
                     name: "name",
-                    required: true,
+                    field: "name",
                     label: "Name",
                     align: "left",
+                    required: true,
                     sortable: true
                 },
                 {
@@ -448,50 +534,20 @@ export default {
                     sortable: true
                 },
                 {
-                    name: "price",
-                    field: "price",
+                    name: "basePrice",
+                    field: "basePrice",
                     align: "left",
                     label: "Base price",
                     sortable: true
                 }
             ],
             data: [],
-            original: [
-                {
-                    id: 1,
-                    name: "Product name1",
-                    price: "2500",
-                    category: "Product Name 123",
-                    created: "April 4, 2020"
-                },
-                {
-                    id: 2,
-                    name: "Product name2",
-                    price: "1200",
-                    category: "Product Name 123",
-                    created: "Mar 4, 2020"
-                },
-                {
-                    id: 3,
-                    name: "Product name3",
-                    price: "1200",
-                    category: "Product Name 123",
-                    created: "Feb 4, 2020"
-                },
-                {
-                    id: 4,
-                    name: "Product name4",
-                    price: "1200",
-                    category: "Product Name 123",
-                    created: "April 4, 2020"
-                }
-            ]
+            original: []
         };
     },
     methods: {
         filterChanged(val) {
             const typeSel = this.$route.query.type;
-
             if (
                 this.filter.includes(val) &&
                 (!typeSel || !val.match(new RegExp(typeSel, "i")))
@@ -499,42 +555,144 @@ export default {
                 this.$router.replace({ query: { type: val } }).catch(err => {});
                 this.search = "";
             }
+
+            this.$refs["prodsTbl"].requestServerInteraction({
+                pagination: { ...this.pagination, page: 1 }
+            });
         },
+
         searchClear(evt) {
             let query = Object.assign({}, this.$route.query);
             delete query.s;
             this.$router.replace({ query }).catch(err => {});
             this.search = "";
         },
+
         searchInput(val) {
-            /** TODO */
             let searchQry = Object.assign({}, this.$route.query, { s: val });
             if (!val) delete searchQry.s;
 
             this.$router.replace({ query: searchQry }).catch(err => {});
         },
-        /**TODO */
-        onRequest(props) {
-            this.loading = true;
 
-            // emulate server
-            setTimeout(() => {
-                // clear out existing data and add new
-                this.data = this.original;
-                this.loading = false;
-            }, 500);
+        onChgPage(newPg) {
+            let pageQry = Object.assign({}, this.$route.query, {
+                p: newPg.page
+            });
+            if (!newPg) delete pageQry.p;
+
+            this.$router
+                .replace({
+                    query: pageQry
+                })
+                .catch(err => {});
         },
-        confirmAction(productID) {
-            this.showDlg = true;
-            this.toFlagID = productID;
-        },
-        onProceed() {
-            if (this.toFlagID !== -1) {
-                /**TODO */
-                this.showNotif(true, "Successfully hidden product.");
+
+        async fetchCategories() {
+            try {
+                const resp = await Category.getCategoriesSelection();
+                this.filter = [...this.filter, ...resp.slice()];
+
+                // Update select value
+                const itype = new RegExp(this.$route.query.type, "i");
+                const found = this.filter.find(item => {
+                    return item.match(itype);
+                });
+                this.category = found ? found : "";
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve product categories.");
             }
-            // Reset
-            this.toFlagID = -1;
+        },
+
+        async onRequest(props) {
+            this.loading = true;
+            try {
+                const prodResp = await Product.getProducts(this.category);
+                this.original = prodResp.products;
+                this.data = this.original.slice();
+                this.pagination.page = props.pagination.page;
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve products.");
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        confirmAction(productID, bool) {
+            this.targetVal = bool;
+            this.showDlg = true;
+            this.toToggleID = productID;
+        },
+
+        confirmBulkAction(bool) {
+            this.targetValBulk = bool;
+            this.showDlgBulk = true;
+        },
+
+        async onProceed() {
+            if (this.toToggleID !== -1) {
+                try {
+                    const resp = await Product.toggleActiveProduct(
+                        this.toToggleID,
+                        this.targetVal
+                    );
+                    this.showNotif(
+                        true,
+                        this.targetVal
+                            ? "Product has been reactivated."
+                            : "Product has been archived."
+                    );
+
+                    // Update list
+                    this.data.forEach(el => {
+                        if (el.id === this.toToggleID) {
+                            el.isActive = this.targetVal;
+                            el.toggleFlg = this.targetVal;
+                        }
+                    });
+
+                    // Reset
+                    this.toToggleID = -1;
+                    this.targetVal = false;
+                } catch (err) {
+                    this.showNotif(false, "Could not update this item. ");
+                }
+            }
+        },
+
+        async onProceedAll() {
+            if (this.selected && this.selected.length > 0) {
+                try {
+                    // Extract ID
+                    const selectIDs = this.selected.map(item => {
+                        return item.id;
+                    });
+                    const resp = await Product.toggleAll(
+                        selectIDs,
+                        this.targetValBulk
+                    );
+                    this.showNotif(
+                        true,
+                        this.targetValBulk
+                            ? "Products have been reactivated."
+                            : "Products have been archived."
+                    );
+
+                    // Update list
+                    this.data.forEach(el => {
+                        if (selectIDs.includes(el.id)) {
+                            el.isActive = this.targetValBulk;
+                            el.toggleFlg = this.targetValBulk;
+                        }
+                    });
+
+                    // Clear selection & Reset
+                    this.selected.splice(0, this.selected.length);
+                    this.targetValBulk = false;
+                } catch (err) {
+                    this.showNotif(false, "Could not update items. " + err);
+                }
+            }
         }
     }
 };

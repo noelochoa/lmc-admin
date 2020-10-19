@@ -98,6 +98,7 @@
                                     dense
                                     flat
                                     round
+                                    :disabled="props.row.count > 0"
                                     icon="delete"
                                     @click="confirmDel(props.row.id)"
                                     ><q-tooltip

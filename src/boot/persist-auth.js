@@ -5,6 +5,7 @@ export default async ({ store, ssrContext }) => {
     const cookies = process.env.SERVER ? Cookies.parseSSR(ssrContext) : Cookies;
 
     createPersistedState({
+        key: "_VUEX_AUTH",
         paths: ["auth"],
         storage: {
             getItem: key => JSON.stringify(cookies.get(key)),
@@ -19,4 +20,11 @@ export default async ({ store, ssrContext }) => {
             removeItem: key => cookies.remove(key)
         }
     })(store);
+
+    if (!process.env.SERVER) {
+        createPersistedState({
+            key: "_VUEX_PRODUCT",
+            paths: ["addProduct"]
+        })(store);
+    }
 };

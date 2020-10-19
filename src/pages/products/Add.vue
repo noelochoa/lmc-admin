@@ -47,8 +47,8 @@
                                             dark
                                             dense
                                             outlined
-                                            hide-bottom-space
                                             options-dense
+                                            hide-bottom-space
                                             emit-value
                                             map-options
                                             lazy-rules
@@ -370,6 +370,8 @@
                                         color="primary"
                                         type="submit"
                                         label="Continue"
+                                        :loading="loadingStep1"
+                                        :disable="loadingStep1"
                                     />
                                 </q-stepper-navigation>
                             </q-form>
@@ -381,17 +383,47 @@
                             icon="add_photo_alternate"
                             :done="step > 2"
                         >
-                            <p>Upload product images.</p>
-                            <q-form
-                                ref="step2Form"
-                                @submit.prevent.stop="saveStep2"
-                            >
+                            <p>
+                                Click the + icon or drag the product images
+                                (.jpg/.png and Max 2MB) for upload.
+                            </p>
+                            <q-form ref="step2Form">
+                                <q-list class="detail-list" separator>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Gallery
+                                        </span>
+                                        <div class="field-value">
+                                            <q-uploader
+                                                ref="pimgUploader"
+                                                class="img-uploader"
+                                                multiple
+                                                square
+                                                hide-upload-btn
+                                                accept="image/jpeg,image/png"
+                                                label="Image Upload"
+                                                :filter="_validImage"
+                                                @added="imgsAdded"
+                                                @removed="imgsRemoved"
+                                                @failed="onImgUploadFailed"
+                                            />
+                                        </div>
+                                    </q-item>
+                                </q-list>
+
                                 <q-stepper-navigation>
                                     <q-btn
-                                        type="submit"
+                                        type="button"
                                         color="primary"
                                         label="Continue"
-                                    />
+                                        :loading="loadingStep2"
+                                        :disable="loadingStep2"
+                                        @click="startUpload"
+                                    >
+                                        <template v-slot:loading>
+                                            <q-spinner-gears />
+                                        </template>
+                                    </q-btn>
                                     <q-btn
                                         flat
                                         @click="goBack(1)"
@@ -632,6 +664,8 @@
                                         type="submit"
                                         color="primary"
                                         label="Continue"
+                                        :loading="loadingStep3"
+                                        :disable="loadingStep3"
                                     />
                                     <q-btn
                                         flat
@@ -653,20 +687,20 @@
                                 ref="step4Form"
                                 @submit.prevent.stop="saveStep4"
                             >
-                                Try out different ad text to see what brings in
-                                the most customers, and learn how to enhance
-                                your ads using features like ad extensions. If
-                                you run into any problems with your ads, find
-                                out how to tell if they're running and how to
-                                resolve approval issues.
-
+                                <p>
+                                    Great! Your new product is almost ready.
+                                </p>
+                                <p>
+                                    Click Publish to finalize and enable this
+                                    product in the webstore.
+                                </p>
                                 <q-stepper-navigation>
                                     <q-btn
                                         color="primary"
                                         label="Finish"
                                         type="submit"
-                                        :loading="loading"
-                                        :disable="loading"
+                                        :loading="loadingStep4"
+                                        :disable="loadingStep4"
                                     />
                                     <q-btn
                                         flat
@@ -735,6 +769,9 @@ div[class*="content-"] > div {
     flex: 1;
     max-width: 388px;
 }
+.img-uploader {
+    width: 100%;
+}
 .group-list .q-item {
     padding: 4px 0;
     display: flex;
@@ -789,13 +826,10 @@ div[class*="content-"] > div {
 <script>
 import HelperMixin from "../../mixins/helpers";
 import ProductMixin from "../../mixins/product";
+let Product = null,
+    Category = null;
 
 export default {
-    preFetch({ store, currentRoute }) {
-        // console.log(store.state);
-        console.log("PREFETCH CALL");
-    },
-
     name: "ProductAdd",
     mixins: [HelperMixin, ProductMixin],
     meta() {
@@ -803,54 +837,57 @@ export default {
             title: "Add Product"
         };
     },
+    beforeCreate() {
+        Category = this.$RepositoryFactory.get("categories");
+        Product = this.$RepositoryFactory.get("products");
+    },
     created() {
         if (this.$route.params.step) {
             this.step = !isNaN(this.$route.params.step)
                 ? parseInt(this.$route.params.step)
                 : 1;
         }
-        if (!this.product.category && this.categories) {
-            // this.product.category = this.categories[0].value;
-        }
         // this.details = [...this.toReactiveDataFormat(this.newProduct.details)];
         // this.options = [
         //     ...this.toReactiveOptionsDataFormat(this.newProduct.options)
         // ];
+        if (process.env.CLIENT) {
+            this.fetchCategories();
+        }
     },
     destroyed() {
         this.clearState();
     },
+    mounted() {
+        this.fetchNewProdSess();
+    },
     data() {
         return {
-            loading: false,
+            loadingStep1: false,
+            loadingStep2: false,
+            loadingStep3: false,
+            loadingStep4: false,
             step: 1,
-            selcolor: "#FFFFFF",
-            categories: [
-                {
-                    label: "Cakes",
-                    value: 1
-                },
-                {
-                    label: "Cupcakes",
-                    value: 2
-                }
-            ],
+            selimgs: [],
+            selcolor: "",
+            categories: [],
+            colors: [],
             details: [
-                {
-                    group: "General",
-                    items: [
-                        { label: "Ingredients", value: "2 eggs, 1 cup flour" }
-                    ],
-                    edit: true
-                },
-                {
-                    group: "Shipping",
-                    items: [
-                        { label: "Weight", value: "1.5 kg" },
-                        { label: "Dimensions", value: "20cm x 15cm x 60cm" }
-                    ],
-                    edit: true
-                }
+                // {
+                //     group: "General",
+                //     items: [
+                //         { label: "Ingredients", value: "2 eggs, 1 cup flour" }
+                //     ],
+                //     edit: true
+                // },
+                // {
+                //     group: "Shipping",
+                //     items: [
+                //         { label: "Weight", value: "1.5 kg" },
+                //         { label: "Dimensions", value: "20cm x 15cm x 60cm" }
+                //     ],
+                //     edit: true
+                // }
             ],
             options: [
                 {
@@ -874,8 +911,9 @@ export default {
                 }
             ],
             newProduct: {
+                id: 0,
                 name: "",
-                category: 2,
+                category: null,
                 basePrice: 100,
                 minOrderQuantity: 1,
                 description: "",
@@ -951,12 +989,60 @@ export default {
 
             return true;
         },
+
+        _validImage(files) {
+            const filtered = files.filter(
+                file =>
+                    file.size < 1024 * 1024 * 2 && // 2MB
+                    ["image/png", "image/jpeg"].includes(file.type)
+            );
+
+            if (
+                !filtered ||
+                filtered.length < 1 ||
+                filtered.length < files.length
+            ) {
+                this.showNotif(false, "Selected image is not valid.");
+            }
+
+            return filtered;
+        },
+
+        async fetchCategories() {
+            try {
+                const resp = await Category.getProductCategorySelection();
+                this.categories = resp.slice();
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve product categories.");
+            }
+        },
+
+        async fetchNewProdSess() {
+            try {
+                if (this.isOngoing()) {
+                    // Fetch product details (Ongoing)
+                    this.newProduct = JSON.parse(
+                        JSON.stringify(this.getProduct())
+                    );
+                    if (this.newProduct.options) {
+                        this.details = [
+                            ...this.toReactiveDataFormat(
+                                this.newProduct.details
+                            )
+                        ];
+                    }
+                }
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve product details.");
+            }
+        },
+
         onSubmit: function(evt) {
             /**TODO */
-            this.loading = true;
+            this.loadingStep4 = true;
             setTimeout(() => {
                 this.showNotif(true, "Successfully added new product. ");
-                this.loading = false;
+                this.loadingStep4 = false;
                 this.returnToPageIndex("/products");
             }, 2500);
         },
@@ -1074,33 +1160,71 @@ export default {
         },
         saveStep1: function(evt) {
             /** TODO */
-            this.$refs.step1Form.validate().then(success => {
-                if (success) {
-                    this.newProduct.details = [
-                        ...this.toJSONFormatDetails(this.details)
-                    ];
-
-                    this.setProductInfo(this.newProduct);
-                    console.log(this.getProduct());
-                    this.step = 2;
-                    this.$router.replace("/products/add/2").catch(err => {});
-                }
-            });
+            this.loadingStep1 = true;
+            this.$refs.step1Form
+                .validate()
+                .then(async success => {
+                    if (success) {
+                        let res = {};
+                        this.newProduct.details = [
+                            ...this.toJSONFormatDetails(this.details)
+                        ];
+                        if (this.isOngoing()) {
+                            // Update product and return id (inactive)
+                            res = await Product.updateProduct(
+                                this.newProduct.id,
+                                this.newProduct
+                            );
+                        } else {
+                            // Create product and return id (inactive)
+                            res = await Product.createProduct(this.newProduct);
+                            this.newProduct.id = res.id;
+                        }
+                        // Save to localstorage
+                        this.setProductInfo(
+                            JSON.parse(JSON.stringify(this.newProduct))
+                        );
+                        console.log(this.getProduct());
+                        this.loadingStep1 = false;
+                        this.step = 2;
+                        this.$router
+                            .replace("/products/add/2")
+                            .catch(err => {});
+                    }
+                })
+                .catch(err => {
+                    this.showNotif(false, "Could not create product." + err);
+                    this.loadingStep1 = false;
+                });
         },
-        saveStep2: function(evt) {
+        saveStep2: function(imgs) {
             /** TODO */
-            this.$refs.step2Form.validate().then(success => {
-                if (success) {
-                    const imgs = [
-                        { imageType: "gallery", image: "123.jpg" },
-                        { imageType: "gallery", image: "456.jpg" }
-                    ];
-                    this.setProductImages(imgs);
-                    console.log(this.getProduct());
-                    this.step = 3;
-                    this.$router.replace("/products/add/3").catch(err => {});
-                }
-            });
+            this.loadingStep2 = true;
+            this.$refs.step2Form
+                .validate()
+                .then(async success => {
+                    if (success) {
+                        if (imgs) {
+                            const imgsList = imgs.map(item => {
+                                return { imageType: "gallery", image: item };
+                            });
+                            this.setProductImages(imgsList);
+                            console.log(this.getProduct());
+                        }
+                        this.loadingStep2 = false;
+                        this.step = 3;
+                        this.$router
+                            .replace("/products/add/3")
+                            .catch(err => {});
+                    }
+                })
+                .catch(err => {
+                    this.showNotif(
+                        false,
+                        "Could not upload product images." + err
+                    );
+                    this.loadingStep2 = false;
+                });
         },
         saveStep3: function(evt) {
             /** TODO */
@@ -1202,6 +1326,35 @@ export default {
                     this.options[grp].choices.shift();
                 }
             }
+        },
+        async startUpload() {
+            try {
+                let fd = new FormData();
+                this.selimgs.forEach(file => {
+                    fd.append("image", file);
+                });
+                fd.append("imageType", "gallery");
+                const res = await Product.uploadImgs(this.newProduct.id, fd);
+                this.saveStep2(res);
+            } catch (err) {
+                this.showNotif(
+                    false,
+                    "Error occurred while uploading images." + err
+                );
+            }
+        },
+        imgsRemoved(file) {
+            //console.log(files);
+            this.selimgs = this.selimgs.filter(item => item !== file[0]);
+            console.log(this.selimgs);
+        },
+        imgsAdded(file) {
+            // Append to list
+            this.selimgs.push(...file);
+            console.log(this.selimgs);
+        },
+        onImgUploadFailed: function(info) {
+            this.showNotif(false, "Failed to add your selected image. ");
         }
     }
 };

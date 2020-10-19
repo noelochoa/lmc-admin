@@ -13,7 +13,7 @@ export default {
             "setProductOptions",
             "clearState"
         ]),
-        ...mapGetters(moduleName, ["getProduct"])
+        ...mapGetters(moduleName, ["getProduct", "isOngoing"])
     }
 };
 </script>

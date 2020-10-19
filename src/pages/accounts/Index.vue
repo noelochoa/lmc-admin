@@ -213,8 +213,9 @@ export default {
     },
     created() {
         if (this.$route.query.type) {
+            const itype = new RegExp(this.$route.query.type, "i");
             this.filter.forEach(el => {
-                if (el.match(new RegExp(this.$route.query.type, "i"))) {
+                if (el.match(itype)) {
                     this.customerFilter = el;
                 }
             });

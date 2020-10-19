@@ -167,9 +167,9 @@ div[class*="content-"] > div {
 }
 .detail-field .field-value {
     flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    // white-space: nowrap;
+    // overflow: hidden;
+    // text-overflow: ellipsis;
 }
 .qtext-editor {
     border: 2px solid white;

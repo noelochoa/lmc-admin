@@ -12,6 +12,10 @@ export function SET_PRODUCT_OPTIONS(state, options) {
     state.product.options = options;
 }
 
+export function SET_ONGOING(state, bool) {
+    state.ongoing = bool;
+}
+
 export function RESET_PRODUCT(state) {
     Object.assign(state, getInitialState());
 }
