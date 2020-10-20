@@ -415,7 +415,7 @@
                                     <q-btn
                                         type="button"
                                         color="primary"
-                                        label="Continue"
+                                        :label="hasImgs ? 'Continue' : 'Skip'"
                                         :loading="loadingStep2"
                                         :disable="loadingStep2"
                                         @click="startUpload"
@@ -697,7 +697,7 @@
                                 <q-stepper-navigation>
                                     <q-btn
                                         color="primary"
-                                        label="Finish"
+                                        label="Publish"
                                         type="submit"
                                         :loading="loadingStep4"
                                         :disable="loadingStep4"
@@ -861,6 +861,11 @@ export default {
     mounted() {
         this.fetchNewProdSess();
     },
+    computed: {
+        hasImgs() {
+            return this.selimgs && this.selimgs.length > 0;
+        }
+    },
     data() {
         return {
             loadingStep1: false,
@@ -890,25 +895,25 @@ export default {
                 // }
             ],
             options: [
-                {
-                    attribute: "Theme",
-                    choices: [
-                        { value: "Other", price: 10 },
-                        { value: "Disney Character", price: -10 },
-                        { value: "Cars", price: 0 }
-                    ],
-                    edit: false,
-                    userCustomizable: false
-                },
-                {
-                    attribute: "Icing type",
-                    choices: [
-                        { value: "Butter creme", price: 0 },
-                        { value: "Fondant", price: 50 }
-                    ],
-                    edit: false,
-                    userCustomizable: true
-                }
+                // {
+                //     attribute: "Theme",
+                //     choices: [
+                //         { value: "Other", price: 10 },
+                //         { value: "Disney Character", price: -10 },
+                //         { value: "Cars", price: 0 }
+                //     ],
+                //     edit: false,
+                //     userCustomizable: false
+                // },
+                // {
+                //     attribute: "Icing type",
+                //     choices: [
+                //         { value: "Butter creme", price: 0 },
+                //         { value: "Fondant", price: 50 }
+                //     ],
+                //     edit: false,
+                //     userCustomizable: true
+                // }
             ],
             newProduct: {
                 id: 0,
@@ -954,7 +959,7 @@ export default {
                     //     }
                     // }
                 ],
-                images: null
+                images: []
             }
         };
     },
@@ -1024,10 +1029,17 @@ export default {
                     this.newProduct = JSON.parse(
                         JSON.stringify(this.getProduct())
                     );
-                    if (this.newProduct.options) {
+                    if (this.newProduct.details) {
                         this.details = [
                             ...this.toReactiveDataFormat(
                                 this.newProduct.details
+                            )
+                        ];
+                    }
+                    if (this.newProduct.options) {
+                        this.options = [
+                            ...this.toReactiveOptionsDataFormat(
+                                this.newProduct.options
                             )
                         ];
                     }
@@ -1037,15 +1049,6 @@ export default {
             }
         },
 
-        onSubmit: function(evt) {
-            /**TODO */
-            this.loadingStep4 = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully added new product. ");
-                this.loadingStep4 = false;
-                this.returnToPageIndex("/products");
-            }, 2500);
-        },
         toJSONFormatOptions: function(options) {
             const retArr = [];
 
@@ -1147,7 +1150,7 @@ export default {
                 });
             }
 
-            console.log(retArr);
+            // console.log(retArr);
             return retArr;
         },
         filteredOptions(list, showOther) {
@@ -1184,7 +1187,6 @@ export default {
                         this.setProductInfo(
                             JSON.parse(JSON.stringify(this.newProduct))
                         );
-                        console.log(this.getProduct());
                         this.loadingStep1 = false;
                         this.step = 2;
                         this.$router
@@ -1193,12 +1195,11 @@ export default {
                     }
                 })
                 .catch(err => {
-                    this.showNotif(false, "Could not create product." + err);
+                    this.showNotif(false, err || "Could not create product.");
                     this.loadingStep1 = false;
                 });
         },
         saveStep2: function(imgs) {
-            /** TODO */
             this.loadingStep2 = true;
             this.$refs.step2Form
                 .validate()
@@ -1206,10 +1207,13 @@ export default {
                     if (success) {
                         if (imgs) {
                             const imgsList = imgs.map(item => {
-                                return { imageType: "gallery", image: item };
+                                return {
+                                    imageType: "gallery",
+                                    image: item
+                                };
                             });
+                            this.newProduct.images = imgsList.slice();
                             this.setProductImages(imgsList);
-                            console.log(this.getProduct());
                         }
                         this.loadingStep2 = false;
                         this.step = 3;
@@ -1219,30 +1223,65 @@ export default {
                     }
                 })
                 .catch(err => {
-                    this.showNotif(
-                        false,
-                        "Could not upload product images." + err
-                    );
+                    this.showNotif(false, err || "Error occurred on Step 2.");
                     this.loadingStep2 = false;
                 });
         },
         saveStep3: function(evt) {
-            /** TODO */
-            this.$refs.step3Form.validate().then(success => {
-                if (success) {
-                    const opts = [...this.toJSONFormatOptions(this.options)];
-                    this.setProductOptions(opts);
-                    console.log(this.getProduct());
-                    this.step = 4;
-                    this.$router.replace("/products/add/4").catch(err => {});
-                }
-            });
+            this.loadingStep3 = true;
+            this.$refs.step3Form
+                .validate()
+                .then(async success => {
+                    if (success) {
+                        if (!this.isOngoing()) {
+                            throw "Start from step 1.";
+                        }
+                        const opts = [
+                            ...this.toJSONFormatOptions(this.options)
+                        ];
+                        this.newProduct.options = opts.slice();
+                        const res = await Product.updateProduct(
+                            this.newProduct.id,
+                            this.newProduct
+                        );
+                        this.setProductOptions(opts);
+                        this.loadingStep3 = false;
+                        this.step = 4;
+                        this.$router
+                            .replace("/products/add/4")
+                            .catch(err => {});
+                    }
+                })
+                .catch(err => {
+                    this.showNotif(
+                        false,
+                        err || "Error adding customization options."
+                    );
+                    this.loadingStep3 = false;
+                });
         },
         saveStep4: function(evt) {
-            /** TODO */
-            // this.setProduct(this.newProduct);
-            console.log(this.getProduct());
-            this.onSubmit(evt);
+            this.loadingStep4 = true;
+            this.$refs.step4Form
+                .validate()
+                .then(async success => {
+                    if (success) {
+                        if (!this.isOngoing()) {
+                            throw "Start from step 1.";
+                        }
+                        const res = await Product.updateProduct(
+                            this.newProduct.id,
+                            { isActive: true }
+                        );
+
+                        this.loadingStep4 = false;
+                        this.returnToPageIndex("/products");
+                    }
+                })
+                .catch(err => {
+                    this.showNotif(false, err || "Could not activate product.");
+                    this.loadingStep4 = false;
+                });
         },
         goBack: function(step) {
             if ([1, 2, 3].includes(step)) {
@@ -1276,7 +1315,6 @@ export default {
             this.$delete(this.options, key);
         },
         removeOptionItem: function(grp, key, value) {
-            console.log(grp, key);
             this.$delete(this.options[grp].choices, key);
             if (this.options[grp].choices.length === 0) {
                 this.removeOptions(grp);
@@ -1307,7 +1345,6 @@ export default {
             return false;
         },
         toggleCustomChoice: function(toggle, grp) {
-            console.log(grp);
             if (toggle) {
                 if (
                     this.options[grp] &&
@@ -1329,29 +1366,37 @@ export default {
         },
         async startUpload() {
             try {
-                let fd = new FormData();
-                this.selimgs.forEach(file => {
-                    fd.append("image", file);
-                });
-                fd.append("imageType", "gallery");
-                const res = await Product.uploadImgs(this.newProduct.id, fd);
-                this.saveStep2(res);
+                this.loadingStep2 = true;
+                if (!this.isOngoing()) {
+                    throw "Start from step 1.";
+                }
+                if (this.hasImgs) {
+                    let fd = new FormData();
+                    this.selimgs.forEach(file => {
+                        fd.append("image", file);
+                    });
+                    fd.append("imageType", "gallery");
+                    const res = await Product.uploadImgs(
+                        this.newProduct.id,
+                        fd
+                    );
+                    this.selimgs = []; // clear
+                    this.saveStep2(res);
+                } else {
+                    this.saveStep2(false);
+                }
             } catch (err) {
-                this.showNotif(
-                    false,
-                    "Error occurred while uploading images." + err
-                );
+                this.showNotif(false, err || "Could not upload images.");
+                this.loadingStep2 = false;
             }
         },
         imgsRemoved(file) {
-            //console.log(files);
+            // Remove from list
             this.selimgs = this.selimgs.filter(item => item !== file[0]);
-            console.log(this.selimgs);
         },
         imgsAdded(file) {
             // Append to list
             this.selimgs.push(...file);
-            console.log(this.selimgs);
         },
         onImgUploadFailed: function(info) {
             this.showNotif(false, "Failed to add your selected image. ");
