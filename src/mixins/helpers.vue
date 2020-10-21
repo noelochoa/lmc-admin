@@ -51,6 +51,11 @@ export default {
             return txt.replace(new RegExp(search, "g"), replace);
         },
 
+        // Uploaded Assets URL
+        resolveAssetsUrl: function(file) {
+            return process.env.STATIC_URL + "/" + file;
+        },
+
         showNotif: function(isSuccess, msg) {
             this.$q.notify({
                 color: isSuccess ? "green-4" : "negative",

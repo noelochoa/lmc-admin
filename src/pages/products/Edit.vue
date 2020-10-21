@@ -2,10 +2,10 @@
     <q-page class="q-px-md q-pt-lg">
         <div class="page-heading text-white q-pa-md">
             <div class="heading-caption">
-                <h6>Edit Product</h6>
+                <h6>Edit Product Information</h6>
                 <br />
                 <p>
-                    Edit product details and images.
+                    You may edit the selected product details through this form.
                 </p>
             </div>
         </div>
@@ -15,7 +15,12 @@
                     <q-icon name="cake" class="caption-icon q-mx-md" />Product
                     Info
                 </div>
-                <div>
+                <div v-if="loading">
+                    <q-item class="q-my-sm">
+                        <q-spinner color="white" size="2em" />
+                    </q-item>
+                </div>
+                <div v-else>
                     <q-stepper
                         v-model="step"
                         vertical
@@ -34,6 +39,7 @@
                             <q-form
                                 ref="step1Form"
                                 @submit.prevent.stop="saveStep1"
+                                :disabled="hasError || loading"
                             >
                                 <q-list class="detail-list" separator>
                                     <q-item class="detail-field">
@@ -47,8 +53,8 @@
                                             dark
                                             dense
                                             outlined
-                                            hide-bottom-space
                                             options-dense
+                                            hide-bottom-space
                                             emit-value
                                             map-options
                                             lazy-rules
@@ -370,6 +376,8 @@
                                         color="primary"
                                         type="submit"
                                         label="Continue"
+                                        :loading="loadingStep1"
+                                        :disable="loadingStep1"
                                     />
                                 </q-stepper-navigation>
                             </q-form>
@@ -381,17 +389,80 @@
                             icon="add_photo_alternate"
                             :done="step > 2"
                         >
-                            <p>Upload product images.</p>
+                            <p>
+                                Click the + icon or drag the product images
+                                (.jpg/.png and Max 2MB) for upload.
+                            </p>
                             <q-form
                                 ref="step2Form"
-                                @submit.prevent.stop="saveStep2"
+                                :disabled="hasError || loading"
                             >
+                                <q-list class="detail-list" separator>
+                                    <q-item class="detail-field">
+                                        <span class="field-label">
+                                            Gallery
+                                        </span>
+                                        <div class="field-value full-width">
+                                            <q-uploader
+                                                ref="pimgUploader"
+                                                class="img-uploader"
+                                                multiple
+                                                square
+                                                hide-upload-btn
+                                                accept="image/jpeg,image/png"
+                                                label="Image Upload"
+                                                :filter="_validImage"
+                                                @added="imgsAdded"
+                                                @removed="imgsRemoved"
+                                                @failed="onImgUploadFailed"
+                                            />
+                                            <br />
+                                            <div class="flex">
+                                                <q-card
+                                                    class="q-mr-sm q-mb-sm"
+                                                    v-for="pimg in editProduct.images"
+                                                    :key="pimg.id"
+                                                >
+                                                    <div
+                                                        class="pimg-card"
+                                                        :style="
+                                                            'background-image:url(' +
+                                                                resolveAssetsUrl(
+                                                                    pimg.image
+                                                                ) +
+                                                                ')'
+                                                        "
+                                                    ></div>
+                                                    <q-card-actions
+                                                        align="right"
+                                                    >
+                                                        <q-btn
+                                                            dense
+                                                            flat
+                                                            round
+                                                            color="red"
+                                                            icon="delete"
+                                                        />
+                                                    </q-card-actions>
+                                                </q-card>
+                                            </div>
+                                        </div>
+                                    </q-item>
+                                </q-list>
+
                                 <q-stepper-navigation>
                                     <q-btn
-                                        type="submit"
+                                        type="button"
                                         color="primary"
-                                        label="Continue"
-                                    />
+                                        :label="hasImgs ? 'Continue' : 'Skip'"
+                                        :loading="loadingStep2"
+                                        :disable="loadingStep2"
+                                        @click="startUpload"
+                                    >
+                                        <template v-slot:loading>
+                                            <q-spinner-gears />
+                                        </template>
+                                    </q-btn>
                                     <q-btn
                                         flat
                                         @click="goBack(1)"
@@ -417,6 +488,7 @@
                             <q-form
                                 ref="step3Form"
                                 @submit.prevent.stop="saveStep3"
+                                :disabled="hasError || loading"
                             >
                                 <q-list class="detail-list" separator>
                                     <q-item class="detail-field">
@@ -632,6 +704,8 @@
                                         type="submit"
                                         color="primary"
                                         label="Continue"
+                                        :loading="loadingStep3"
+                                        :disable="loadingStep3"
                                     />
                                     <q-btn
                                         flat
@@ -644,29 +718,23 @@
                             </q-form>
                         </q-step>
 
-                        <q-step
-                            :name="4"
-                            title="Save product details"
-                            icon="add_comment"
-                        >
+                        <q-step :name="4" title="Done!" icon="add_comment">
                             <q-form
                                 ref="step4Form"
                                 @submit.prevent.stop="saveStep4"
+                                :disabled="hasError || loading"
                             >
-                                Try out different ad text to see what brings in
-                                the most customers, and learn how to enhance
-                                your ads using features like ad extensions. If
-                                you run into any problems with your ads, find
-                                out how to tell if they're running and how to
-                                resolve approval issues.
-
+                                <p>
+                                    You have successfully updated the product
+                                    details.
+                                </p>
                                 <q-stepper-navigation>
                                     <q-btn
                                         color="primary"
                                         label="Finish"
                                         type="submit"
-                                        :loading="loading"
-                                        :disable="loading"
+                                        :loading="loadingStep4"
+                                        :disable="loadingStep4"
                                     />
                                     <q-btn
                                         flat
@@ -735,6 +803,18 @@ div[class*="content-"] > div {
     flex: 1;
     max-width: 388px;
 }
+.full-width {
+    max-width: 100% !important;
+}
+.pimg-card {
+    width: 200px;
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+}
+.img-uploader {
+    width: 388px;
+}
 .group-list .q-item {
     padding: 4px 0;
     display: flex;
@@ -788,135 +868,59 @@ div[class*="content-"] > div {
 </style>
 <script>
 import HelperMixin from "../../mixins/helpers";
-import ProductMixin from "../../mixins/product";
+let Product = null,
+    Category = null;
 
 export default {
-    preFetch({ store, currentRoute }) {
-        // console.log(store.state);
-        console.log("PREFETCH CALL");
-    },
-
     name: "ProductEdit",
-    mixins: [HelperMixin, ProductMixin],
+    mixins: [HelperMixin],
     meta() {
         return {
             title: "Edit Product"
         };
     },
-    created() {
-        if (this.$route.params.step) {
-            this.step = !isNaN(this.$route.params.step)
-                ? parseInt(this.$route.params.step)
-                : 1;
-        }
-        if (!this.product.category && this.categories) {
-            // this.product.category = this.categories[0].value;
-        }
-        // this.details = [...this.toReactiveDataFormat(this.editProduct.details)];
-        // this.options = [
-        //     ...this.toReactiveOptionsDataFormat(this.editProduct.options)
-        // ];
+    beforeCreate() {
+        Category = this.$RepositoryFactory.get("categories");
+        Product = this.$RepositoryFactory.get("products");
     },
-    destroyed() {
-        this.clearState();
+    created() {
+        if (process.env.CLIENT) {
+            this.fetchCategories();
+        }
+    },
+    mounted() {
+        this.fetchProductDetails();
+    },
+    computed: {
+        hasImgs() {
+            return this.selimgs && this.selimgs.length > 0;
+        }
     },
     data() {
         return {
-            loading: false,
+            loadingStep1: false,
+            loadingStep2: false,
+            loadingStep3: false,
+            loadingStep4: false,
             step: 1,
-            selcolor: "#FFFFFF",
-            categories: [
-                {
-                    label: "Cakes",
-                    value: 1
-                },
-                {
-                    label: "Cupcakes",
-                    value: 2
-                }
-            ],
-            details: [
-                {
-                    group: "General",
-                    items: [
-                        { label: "Ingredients", value: "2 eggs, 1 cup flour" }
-                    ],
-                    edit: true
-                },
-                {
-                    group: "Shipping",
-                    items: [
-                        { label: "Weight", value: "1.5 kg" },
-                        { label: "Dimensions", value: "20cm x 15cm x 60cm" }
-                    ],
-                    edit: true
-                }
-            ],
-            options: [
-                {
-                    attribute: "Theme",
-                    choices: [
-                        { value: "Other", price: 10 },
-                        { value: "Disney Character", price: -10 },
-                        { value: "Cars", price: 0 }
-                    ],
-                    edit: false,
-                    userCustomizable: false
-                },
-                {
-                    attribute: "Icing type",
-                    choices: [
-                        { value: "Butter creme", price: 0 },
-                        { value: "Fondant", price: 50 }
-                    ],
-                    edit: false,
-                    userCustomizable: true
-                }
-            ],
+            selimgs: [],
+            selcolor: "",
+            categories: [],
+            colors: [],
+            details: [],
+            options: [],
+            loading: true,
+            hasError: false,
             editProduct: {
-                name: "Product 1",
-                category: 2,
+                name: "",
+                category: null,
                 basePrice: 100,
                 minOrderQuantity: 1,
-                description: "Test desc",
-                colors: ["#00ff00"],
-                options: [
-                    // {
-                    //     attribute: "Theme",
-                    //     choices: [
-                    //         { value: "Other", price: 110 },
-                    //         { value: "Disney Character", price: -10 },
-                    //         { value: "Cars", price: 0 }
-                    //     ],
-                    //     userCustomizable: true
-                    // },
-                    // {
-                    //     attribute: "Icing type",
-                    //     choices: [
-                    //         { value: "Other", price: 23 },
-                    //         { value: "Butter creme", price: 0 },
-                    //         { value: "Fondant", price: 50 }
-                    //     ],
-                    //     userCustomizable: false
-                    // }
-                ],
-                details: [
-                    // {
-                    //     group: "General",
-                    //     items: {
-                    //         Ingredients: "2 eggs, 2 tbsp vanilla, etc.",
-                    //         Sweetness: 123
-                    //     }
-                    // },
-                    // {
-                    //     group: "Shipping",
-                    //     items: {
-                    //         Weight: "1.5 kg",
-                    //         Dimensions: "20cm x 15cm x 60cm"
-                    //     }
-                    // }
-                ],
-                images: null
+                description: "",
+                colors: [],
+                options: [],
+                details: [],
+                images: []
             }
         };
     },
@@ -951,16 +955,59 @@ export default {
 
             return true;
         },
-        onSubmit: function(evt) {
-            console.log(evt);
-            /**TODO */
-            this.loading = true;
-            setTimeout(() => {
-                this.showNotif(true, "Successfully updated product details. ");
-                this.loading = false;
-                this.returnToPageIndex("/products");
-            }, 2500);
+
+        _validImage(files) {
+            const filtered = files.filter(
+                file =>
+                    file.size < 1024 * 1024 * 2 && // 2MB
+                    ["image/png", "image/jpeg"].includes(file.type)
+            );
+
+            if (
+                !filtered ||
+                filtered.length < 1 ||
+                filtered.length < files.length
+            ) {
+                this.showNotif(false, "Selected image is not valid.");
+            }
+
+            return filtered;
         },
+
+        async fetchCategories() {
+            try {
+                const resp = await Category.getProductCategorySelection();
+                this.categories = resp.slice();
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve product categories.");
+                this.hasError = true;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async fetchProductDetails() {
+            try {
+                // Fetch product details
+                const res = await Product.getProduct(this.$route.params.id);
+                this.editProduct = res;
+                if (this.editProduct.details) {
+                    this.details = [
+                        ...this.toReactiveDataFormat(this.editProduct.details)
+                    ];
+                }
+                if (this.editProduct.options) {
+                    this.options = [
+                        ...this.toReactiveOptionsDataFormat(
+                            this.editProduct.options
+                        )
+                    ];
+                }
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve product details.");
+            }
+        },
+
         toJSONFormatOptions: function(options) {
             const retArr = [];
 
@@ -1062,7 +1109,7 @@ export default {
                 });
             }
 
-            console.log(retArr);
+            // console.log(retArr);
             return retArr;
         },
         filteredOptions(list, showOther) {
@@ -1074,57 +1121,95 @@ export default {
             return list;
         },
         saveStep1: function(evt) {
-            /** TODO */
-            this.$refs.step1Form.validate().then(success => {
-                if (success) {
-                    this.editProduct.details = [
-                        ...this.toJSONFormatDetails(this.details)
-                    ];
-
-                    this.setProductInfo(this.editProduct);
-                    console.log(this.getProduct());
-                    this.step = 2;
-                    this.$router.replace("/products/edit/2").catch(err => {});
-                }
-            });
+            this.loadingStep1 = true;
+            this.$refs.step1Form
+                .validate()
+                .then(async success => {
+                    if (success) {
+                        let res = {};
+                        this.editProduct.details = [
+                            ...this.toJSONFormatDetails(this.details)
+                        ];
+                        // Update product and return id (inactive)
+                        res = await Product.updateProduct(
+                            this.$route.params.id,
+                            this.editProduct
+                        );
+                        this.loadingStep1 = false;
+                        this.step = 2;
+                    }
+                })
+                .catch(err => {
+                    this.showNotif(false, "Could not edit product info.");
+                    this.loadingStep1 = false;
+                });
         },
-        saveStep2: function(evt) {
-            /** TODO */
-            this.$refs.step2Form.validate().then(success => {
-                if (success) {
-                    const imgs = [
-                        { imageType: "gallery", image: "123.jpg" },
-                        { imageType: "gallery", image: "456.jpg" }
-                    ];
-                    this.setProductImages(imgs);
-                    console.log(this.getProduct());
-                    this.step = 3;
-                    this.$router.replace("/products/edit/3").catch(err => {});
-                }
-            });
+        saveStep2: function(imgs) {
+            this.loadingStep2 = true;
+            this.$refs.step2Form
+                .validate()
+                .then(async success => {
+                    if (success) {
+                        if (imgs) {
+                            const imgsList = imgs.map(item => {
+                                return {
+                                    imageType: "gallery",
+                                    image: item
+                                };
+                            });
+                            this.editProduct.images = imgsList.slice();
+                        }
+                        this.loadingStep2 = false;
+                        this.step = 3;
+                    }
+                })
+                .catch(err => {
+                    this.showNotif(false, "Error has occurred.");
+                    this.loadingStep2 = false;
+                });
         },
         saveStep3: function(evt) {
-            /** TODO */
-            this.$refs.step3Form.validate().then(success => {
-                if (success) {
-                    const opts = [...this.toJSONFormatOptions(this.options)];
-                    this.setProductOptions(opts);
-                    console.log(this.getProduct());
-                    this.step = 4;
-                    this.$router.replace("/products/edit/4").catch(err => {});
-                }
-            });
+            this.loadingStep3 = true;
+            this.$refs.step3Form
+                .validate()
+                .then(async success => {
+                    if (success) {
+                        const opts = [
+                            ...this.toJSONFormatOptions(this.options)
+                        ];
+                        this.editProduct.options = opts.slice();
+                        const res = await Product.updateProduct(
+                            this.$route.params.id,
+                            this.editProduct
+                        );
+                        this.loadingStep3 = false;
+                        this.step = 4;
+                    }
+                })
+                .catch(err => {
+                    this.showNotif(
+                        false,
+                        "Error updating customization options."
+                    );
+                    this.loadingStep3 = false;
+                });
         },
         saveStep4: function(evt) {
-            /** TODO */
-            // this.setProduct(this.editProduct);
-            // console.log(this.getProduct());
-            this.onSubmit(evt);
+            this.loadingStep4 = true;
+            this.$refs.step4Form
+                .validate()
+                .then(async success => {
+                    this.loadingStep4 = false;
+                    this.returnToPageIndex("/products");
+                })
+                .catch(err => {
+                    this.showNotif(false, "Error has occurred product.");
+                    this.loadingStep4 = false;
+                });
         },
         goBack: function(step) {
             if ([1, 2, 3].includes(step)) {
                 this.step = step;
-                this.$router.replace("/products/edit/" + step).catch(err => {});
             }
         },
         removeGroup: function(key) {
@@ -1153,7 +1238,6 @@ export default {
             this.$delete(this.options, key);
         },
         removeOptionItem: function(grp, key, value) {
-            console.log(grp, key);
             this.$delete(this.options[grp].choices, key);
             if (this.options[grp].choices.length === 0) {
                 this.removeOptions(grp);
@@ -1180,11 +1264,9 @@ export default {
                     return item.value == "Other";
                 });
             }
-
             return false;
         },
         toggleCustomChoice: function(toggle, grp) {
-            console.log(grp);
             if (toggle) {
                 if (
                     this.options[grp] &&
@@ -1203,6 +1285,41 @@ export default {
                     this.options[grp].choices.shift();
                 }
             }
+        },
+        async startUpload() {
+            try {
+                this.loadingStep2 = true;
+                if (this.hasImgs) {
+                    let fd = new FormData();
+                    this.selimgs.forEach(file => {
+                        fd.append("image", file);
+                    });
+                    fd.append("imageType", "gallery");
+                    const res = await Product.uploadImgs(
+                        this.$route.params.id,
+                        fd
+                    );
+                    // clear
+                    this.selimgs = [];
+                    this.saveStep2(res);
+                } else {
+                    this.saveStep2(false);
+                }
+            } catch (err) {
+                this.showNotif(false, "Could not upload images.");
+                this.loadingStep2 = false;
+            }
+        },
+        imgsRemoved(file) {
+            // Remove from list
+            this.selimgs = this.selimgs.filter(item => item !== file[0]);
+        },
+        imgsAdded(file) {
+            // Append to list
+            this.selimgs.push(...file);
+        },
+        onImgUploadFailed: function(info) {
+            this.showNotif(false, "Failed to add your selected image. ");
         }
     }
 };

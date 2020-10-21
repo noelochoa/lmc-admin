@@ -1162,7 +1162,6 @@ export default {
             return list;
         },
         saveStep1: function(evt) {
-            /** TODO */
             this.loadingStep1 = true;
             this.$refs.step1Form
                 .validate()
@@ -1195,7 +1194,7 @@ export default {
                     }
                 })
                 .catch(err => {
-                    this.showNotif(false, err || "Could not create product.");
+                    this.showNotif(false, "Could not create product.");
                     this.loadingStep1 = false;
                 });
         },
@@ -1223,7 +1222,7 @@ export default {
                     }
                 })
                 .catch(err => {
-                    this.showNotif(false, err || "Error occurred on Step 2.");
+                    this.showNotif(false, "Error has occurred.");
                     this.loadingStep2 = false;
                 });
         },
@@ -1255,7 +1254,7 @@ export default {
                 .catch(err => {
                     this.showNotif(
                         false,
-                        err || "Error adding customization options."
+                        "Error adding customization options."
                     );
                     this.loadingStep3 = false;
                 });
@@ -1273,13 +1272,12 @@ export default {
                             this.newProduct.id,
                             { isActive: true }
                         );
-
                         this.loadingStep4 = false;
                         this.returnToPageIndex("/products");
                     }
                 })
                 .catch(err => {
-                    this.showNotif(false, err || "Could not activate product.");
+                    this.showNotif(false, "Could not activate product.");
                     this.loadingStep4 = false;
                 });
         },
@@ -1341,7 +1339,6 @@ export default {
                     return item.value == "Other";
                 });
             }
-
             return false;
         },
         toggleCustomChoice: function(toggle, grp) {
@@ -1380,13 +1377,14 @@ export default {
                         this.newProduct.id,
                         fd
                     );
-                    this.selimgs = []; // clear
+                    // clear
+                    this.selimgs = [];
                     this.saveStep2(res);
                 } else {
                     this.saveStep2(false);
                 }
             } catch (err) {
-                this.showNotif(false, err || "Could not upload images.");
+                this.showNotif(false, "Could not upload images.");
                 this.loadingStep2 = false;
             }
         },

@@ -188,7 +188,13 @@
                         >
                             <q-card class="bg-gray-alpha-2">
                                 <q-img
-                                    src="https://cdn.quasar.dev/img/parallax2.jpg"
+                                    :src="
+                                        props.row.images && props.row.images[0]
+                                            ? resolveAssetsUrl(
+                                                  props.row.images[0].image
+                                              )
+                                            : 'https://dummyimage.com/640x480/454345/fafafa.png&text=No+Img'
+                                    "
                                     basic
                                     class="product-img"
                                 >

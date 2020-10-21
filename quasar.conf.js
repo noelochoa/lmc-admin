@@ -92,11 +92,13 @@ module.exports = function(ctx) {
             env: ctx.dev
                 ? {
                       // so on dev we'll have
-                      API: "http://localhost:8080"
+                      API: "http://localhost:8080",
+                      STATIC_URL: "http://localhost:3000"
                   }
                 : {
                       // and on build (production):
-                      API: "https://localhost:8080"
+                      API: "https://localhost:8080",
+                      STATIC_URL: "https://localhost:3000"
                   }
         },
 

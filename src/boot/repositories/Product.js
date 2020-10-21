@@ -41,6 +41,17 @@ export default class Product {
         }
     }
 
+    async getProduct(paramID) {
+        try {
+            const res = await this.axios.get(
+                `api/products/cms/item/${paramID}`
+            );
+            return res.data;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
     async createProduct(product) {
         try {
             const res = await this.axios.post("/api/products", {
