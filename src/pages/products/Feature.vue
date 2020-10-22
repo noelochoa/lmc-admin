@@ -6,8 +6,8 @@
                 <br />
                 <p>
                     Cofigure the following form to feature the product.<br />
-                    Please note that uploading an image will replace the
-                    existing banner, if applicable.
+                    NOTE: Uploading an image will replace the existing banner,
+                    if applicable.
                 </p>
             </div>
         </div>
@@ -50,7 +50,7 @@
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">
-                                    Banner (Single)
+                                    Banner
                                 </span>
                                 <div class="field-value">
                                     <q-uploader
@@ -95,7 +95,7 @@
                                 type="submit"
                                 color="primary"
                                 :loading="loading"
-                                :disable="loading"
+                                :disable="loading || missingUpload"
                             >
                                 <template v-slot:loading>
                                     <q-spinner-gears />
@@ -203,6 +203,9 @@ export default {
             });
             if (!banner) return null;
             return banner.image;
+        },
+        missingUpload() {
+            return this.selimg == null && this.featureProduct.data.isFeatured;
         }
     },
     data() {

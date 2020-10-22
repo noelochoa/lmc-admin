@@ -1137,17 +1137,19 @@ export default {
             this.$refs.step1Form
                 .validate()
                 .then(async success => {
-                    let res = {};
-                    this.editProduct.details = [
-                        ...this.toJSONFormatDetails(this.details)
-                    ];
-                    // Update product and return id (inactive)
-                    res = await Product.updateProduct(
-                        this.$route.params.id,
-                        this.editProduct
-                    );
-                    this.loadingStep1 = false;
-                    this.step = 2;
+                    if (success) {
+                        let res = {};
+                        this.editProduct.details = [
+                            ...this.toJSONFormatDetails(this.details)
+                        ];
+                        // Update product and return id (inactive)
+                        res = await Product.updateProduct(
+                            this.$route.params.id,
+                            this.editProduct
+                        );
+                        this.loadingStep1 = false;
+                        this.step = 2;
+                    }
                 })
                 .catch(err => {
                     this.showNotif(false, "Could not edit product info.");
@@ -1159,11 +1161,13 @@ export default {
             this.$refs.step2Form
                 .validate()
                 .then(async success => {
-                    if (imgs) {
-                        this.editProduct.images = imgs.slice();
+                    if (success) {
+                        if (imgs) {
+                            this.editProduct.images = imgs.slice();
+                        }
+                        this.loadingStep2 = false;
+                        this.step = 3;
                     }
-                    this.loadingStep2 = false;
-                    this.step = 3;
                 })
                 .catch(err => {
                     this.showNotif(false, "Error has occurred.");
@@ -1175,14 +1179,18 @@ export default {
             this.$refs.step3Form
                 .validate()
                 .then(async success => {
-                    const opts = [...this.toJSONFormatOptions(this.options)];
-                    this.editProduct.options = opts.slice();
-                    const res = await Product.updateProduct(
-                        this.$route.params.id,
-                        this.editProduct
-                    );
-                    this.loadingStep3 = false;
-                    this.step = 4;
+                    if (success) {
+                        const opts = [
+                            ...this.toJSONFormatOptions(this.options)
+                        ];
+                        this.editProduct.options = opts.slice();
+                        const res = await Product.updateProduct(
+                            this.$route.params.id,
+                            this.editProduct
+                        );
+                        this.loadingStep3 = false;
+                        this.step = 4;
+                    }
                 })
                 .catch(err => {
                     this.showNotif(

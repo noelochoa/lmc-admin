@@ -1166,28 +1166,32 @@ export default {
             this.$refs.step1Form
                 .validate()
                 .then(async success => {
-                    let res = {};
-                    this.newProduct.details = [
-                        ...this.toJSONFormatDetails(this.details)
-                    ];
-                    if (this.isOngoing()) {
-                        // Update product and return id (inactive)
-                        res = await Product.updateProduct(
-                            this.newProduct.id,
-                            this.newProduct
+                    if (success) {
+                        let res = {};
+                        this.newProduct.details = [
+                            ...this.toJSONFormatDetails(this.details)
+                        ];
+                        if (this.isOngoing()) {
+                            // Update product and return id (inactive)
+                            res = await Product.updateProduct(
+                                this.newProduct.id,
+                                this.newProduct
+                            );
+                        } else {
+                            // Create product and return id (inactive)
+                            res = await Product.createProduct(this.newProduct);
+                            this.newProduct.id = res.id;
+                        }
+                        // Save to localstorage
+                        this.setProductInfo(
+                            JSON.parse(JSON.stringify(this.newProduct))
                         );
-                    } else {
-                        // Create product and return id (inactive)
-                        res = await Product.createProduct(this.newProduct);
-                        this.newProduct.id = res.id;
+                        this.loadingStep1 = false;
+                        this.step = 2;
+                        this.$router
+                            .replace("/products/add/2")
+                            .catch(err => {});
                     }
-                    // Save to localstorage
-                    this.setProductInfo(
-                        JSON.parse(JSON.stringify(this.newProduct))
-                    );
-                    this.loadingStep1 = false;
-                    this.step = 2;
-                    this.$router.replace("/products/add/2").catch(err => {});
                 })
                 .catch(err => {
                     this.showNotif(false, "Could not create product.");
@@ -1199,13 +1203,17 @@ export default {
             this.$refs.step2Form
                 .validate()
                 .then(async success => {
-                    if (imgs) {
-                        this.newProduct.images = imgs.slice();
-                        this.setProductImages(imgs);
+                    if (success) {
+                        if (imgs) {
+                            this.newProduct.images = imgs.slice();
+                            this.setProductImages(imgs);
+                        }
+                        this.loadingStep2 = false;
+                        this.step = 3;
+                        this.$router
+                            .replace("/products/add/3")
+                            .catch(err => {});
                     }
-                    this.loadingStep2 = false;
-                    this.step = 3;
-                    this.$router.replace("/products/add/3").catch(err => {});
                 })
                 .catch(err => {
                     this.showNotif(false, "Error has occurred.");
@@ -1217,19 +1225,25 @@ export default {
             this.$refs.step3Form
                 .validate()
                 .then(async success => {
-                    if (!this.isOngoing()) {
-                        throw "Start from step 1.";
+                    if (success) {
+                        if (!this.isOngoing()) {
+                            throw "Start from step 1.";
+                        }
+                        const opts = [
+                            ...this.toJSONFormatOptions(this.options)
+                        ];
+                        this.newProduct.options = opts.slice();
+                        const res = await Product.updateProduct(
+                            this.newProduct.id,
+                            this.newProduct
+                        );
+                        this.setProductOptions(opts);
+                        this.loadingStep3 = false;
+                        this.step = 4;
+                        this.$router
+                            .replace("/products/add/4")
+                            .catch(err => {});
                     }
-                    const opts = [...this.toJSONFormatOptions(this.options)];
-                    this.newProduct.options = opts.slice();
-                    const res = await Product.updateProduct(
-                        this.newProduct.id,
-                        this.newProduct
-                    );
-                    this.setProductOptions(opts);
-                    this.loadingStep3 = false;
-                    this.step = 4;
-                    this.$router.replace("/products/add/4").catch(err => {});
                 })
                 .catch(err => {
                     this.showNotif(
@@ -1244,15 +1258,17 @@ export default {
             this.$refs.step4Form
                 .validate()
                 .then(async success => {
-                    if (!this.isOngoing()) {
-                        throw "Start from step 1.";
+                    if (success) {
+                        if (!this.isOngoing()) {
+                            throw "Start from step 1.";
+                        }
+                        const res = await Product.updateProduct(
+                            this.newProduct.id,
+                            { isActive: true }
+                        );
+                        this.loadingStep4 = false;
+                        this.returnToPageIndex("/products");
                     }
-                    const res = await Product.updateProduct(
-                        this.newProduct.id,
-                        { isActive: true }
-                    );
-                    this.loadingStep4 = false;
-                    this.returnToPageIndex("/products");
                 })
                 .catch(err => {
                     this.showNotif(false, "Could not activate product.");
