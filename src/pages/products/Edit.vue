@@ -421,29 +421,41 @@
                                                 <q-card
                                                     class="q-mr-sm q-mb-sm"
                                                     v-for="pimg in editProduct.images"
-                                                    :key="pimg.id"
+                                                    :key="pimg._id"
                                                 >
                                                     <div
-                                                        class="pimg-card"
-                                                        :style="
-                                                            'background-image:url(' +
-                                                                resolveAssetsUrl(
-                                                                    pimg.image
-                                                                ) +
-                                                                ')'
+                                                        v-if="
+                                                            pimg.imageType ==
+                                                                'gallery'
                                                         "
-                                                    ></div>
-                                                    <q-card-actions
-                                                        align="right"
                                                     >
-                                                        <q-btn
-                                                            dense
-                                                            flat
-                                                            round
-                                                            color="red"
-                                                            icon="delete"
-                                                        />
-                                                    </q-card-actions>
+                                                        <div
+                                                            class="pimg-card"
+                                                            :style="
+                                                                'background-image:url(\'' +
+                                                                    resolveAssetsUrl(
+                                                                        `${pimg.image}`
+                                                                    ) +
+                                                                    '\')'
+                                                            "
+                                                        ></div>
+                                                        <q-card-actions
+                                                            align="right"
+                                                        >
+                                                            <q-btn
+                                                                dense
+                                                                flat
+                                                                round
+                                                                color="red"
+                                                                icon="delete"
+                                                                @click="
+                                                                    delImage(
+                                                                        pimg._id
+                                                                    )
+                                                                "
+                                                            />
+                                                        </q-card-actions>
+                                                    </div>
                                                 </q-card>
                                             </div>
                                         </div>
@@ -1125,19 +1137,17 @@ export default {
             this.$refs.step1Form
                 .validate()
                 .then(async success => {
-                    if (success) {
-                        let res = {};
-                        this.editProduct.details = [
-                            ...this.toJSONFormatDetails(this.details)
-                        ];
-                        // Update product and return id (inactive)
-                        res = await Product.updateProduct(
-                            this.$route.params.id,
-                            this.editProduct
-                        );
-                        this.loadingStep1 = false;
-                        this.step = 2;
-                    }
+                    let res = {};
+                    this.editProduct.details = [
+                        ...this.toJSONFormatDetails(this.details)
+                    ];
+                    // Update product and return id (inactive)
+                    res = await Product.updateProduct(
+                        this.$route.params.id,
+                        this.editProduct
+                    );
+                    this.loadingStep1 = false;
+                    this.step = 2;
                 })
                 .catch(err => {
                     this.showNotif(false, "Could not edit product info.");
@@ -1149,19 +1159,11 @@ export default {
             this.$refs.step2Form
                 .validate()
                 .then(async success => {
-                    if (success) {
-                        if (imgs) {
-                            const imgsList = imgs.map(item => {
-                                return {
-                                    imageType: "gallery",
-                                    image: item
-                                };
-                            });
-                            this.editProduct.images = imgsList.slice();
-                        }
-                        this.loadingStep2 = false;
-                        this.step = 3;
+                    if (imgs) {
+                        this.editProduct.images = imgs.slice();
                     }
+                    this.loadingStep2 = false;
+                    this.step = 3;
                 })
                 .catch(err => {
                     this.showNotif(false, "Error has occurred.");
@@ -1173,18 +1175,14 @@ export default {
             this.$refs.step3Form
                 .validate()
                 .then(async success => {
-                    if (success) {
-                        const opts = [
-                            ...this.toJSONFormatOptions(this.options)
-                        ];
-                        this.editProduct.options = opts.slice();
-                        const res = await Product.updateProduct(
-                            this.$route.params.id,
-                            this.editProduct
-                        );
-                        this.loadingStep3 = false;
-                        this.step = 4;
-                    }
+                    const opts = [...this.toJSONFormatOptions(this.options)];
+                    this.editProduct.options = opts.slice();
+                    const res = await Product.updateProduct(
+                        this.$route.params.id,
+                        this.editProduct
+                    );
+                    this.loadingStep3 = false;
+                    this.step = 4;
                 })
                 .catch(err => {
                     this.showNotif(
@@ -1284,6 +1282,22 @@ export default {
                 ) {
                     this.options[grp].choices.shift();
                 }
+            }
+        },
+        async delImage(pImgID) {
+            try {
+                const res = await Product.deleteImage(
+                    this.$route.params.id,
+                    pImgID
+                );
+                // Remove from local list
+                this.editProduct.images = this.editProduct.images.filter(
+                    item => {
+                        return item._id !== pImgID;
+                    }
+                );
+            } catch (err) {
+                this.showNotif(false, "Could not remove image." + err);
             }
         },
         async startUpload() {

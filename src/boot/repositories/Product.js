@@ -94,6 +94,31 @@ export default class Product {
         }
     }
 
+    async uploadBanner(paramID, formdat) {
+        try {
+            const res = await this.axios.patch(
+                `api/products/banner/${paramID}`,
+                formdat,
+                {
+                    "Content-Type": "multipart/form-data"
+                }
+            );
+            //Return ID
+            return res.data;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
+    async deleteImage(paramID, pimgID) {
+        try {
+            await this.axios.delete(`api/products/images/${paramID}/${pimgID}`);
+            return true;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
     async toggleActiveProduct(paramID, bool) {
         try {
             await this.axios.patch(`api/products/${paramID}`, [

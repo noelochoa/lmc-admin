@@ -424,13 +424,13 @@
                                             <q-spinner-gears />
                                         </template>
                                     </q-btn>
-                                    <q-btn
+                                    <!-- <q-btn
                                         flat
                                         @click="goBack(1)"
                                         color="primary"
                                         label="Back"
                                         class="q-ml-sm"
-                                    />
+                                    /> -->
                                 </q-stepper-navigation>
                             </q-form>
                         </q-step>
@@ -667,13 +667,13 @@
                                         :loading="loadingStep3"
                                         :disable="loadingStep3"
                                     />
-                                    <q-btn
+                                    <!-- <q-btn
                                         flat
                                         @click="goBack(2)"
                                         color="primary"
                                         label="Back"
                                         class="q-ml-sm"
-                                    />
+                                    /> -->
                                 </q-stepper-navigation>
                             </q-form>
                         </q-step>
@@ -702,13 +702,13 @@
                                         :loading="loadingStep4"
                                         :disable="loadingStep4"
                                     />
-                                    <q-btn
+                                    <!-- <q-btn
                                         flat
                                         @click="goBack(3)"
                                         color="primary"
                                         label="Back"
                                         class="q-ml-sm"
-                                    />
+                                    /> -->
                                 </q-stepper-navigation>
                             </q-form>
                         </q-step>
@@ -1007,7 +1007,7 @@ export default {
                 filtered.length < 1 ||
                 filtered.length < files.length
             ) {
-                this.showNotif(false, "Selected image is not valid.");
+                this.showNotif(false, "Limit image size to 2MB (PNG/JPG).");
             }
 
             return filtered;
@@ -1166,32 +1166,28 @@ export default {
             this.$refs.step1Form
                 .validate()
                 .then(async success => {
-                    if (success) {
-                        let res = {};
-                        this.newProduct.details = [
-                            ...this.toJSONFormatDetails(this.details)
-                        ];
-                        if (this.isOngoing()) {
-                            // Update product and return id (inactive)
-                            res = await Product.updateProduct(
-                                this.newProduct.id,
-                                this.newProduct
-                            );
-                        } else {
-                            // Create product and return id (inactive)
-                            res = await Product.createProduct(this.newProduct);
-                            this.newProduct.id = res.id;
-                        }
-                        // Save to localstorage
-                        this.setProductInfo(
-                            JSON.parse(JSON.stringify(this.newProduct))
+                    let res = {};
+                    this.newProduct.details = [
+                        ...this.toJSONFormatDetails(this.details)
+                    ];
+                    if (this.isOngoing()) {
+                        // Update product and return id (inactive)
+                        res = await Product.updateProduct(
+                            this.newProduct.id,
+                            this.newProduct
                         );
-                        this.loadingStep1 = false;
-                        this.step = 2;
-                        this.$router
-                            .replace("/products/add/2")
-                            .catch(err => {});
+                    } else {
+                        // Create product and return id (inactive)
+                        res = await Product.createProduct(this.newProduct);
+                        this.newProduct.id = res.id;
                     }
+                    // Save to localstorage
+                    this.setProductInfo(
+                        JSON.parse(JSON.stringify(this.newProduct))
+                    );
+                    this.loadingStep1 = false;
+                    this.step = 2;
+                    this.$router.replace("/products/add/2").catch(err => {});
                 })
                 .catch(err => {
                     this.showNotif(false, "Could not create product.");
@@ -1203,23 +1199,13 @@ export default {
             this.$refs.step2Form
                 .validate()
                 .then(async success => {
-                    if (success) {
-                        if (imgs) {
-                            const imgsList = imgs.map(item => {
-                                return {
-                                    imageType: "gallery",
-                                    image: item
-                                };
-                            });
-                            this.newProduct.images = imgsList.slice();
-                            this.setProductImages(imgsList);
-                        }
-                        this.loadingStep2 = false;
-                        this.step = 3;
-                        this.$router
-                            .replace("/products/add/3")
-                            .catch(err => {});
+                    if (imgs) {
+                        this.newProduct.images = imgs.slice();
+                        this.setProductImages(imgs);
                     }
+                    this.loadingStep2 = false;
+                    this.step = 3;
+                    this.$router.replace("/products/add/3").catch(err => {});
                 })
                 .catch(err => {
                     this.showNotif(false, "Error has occurred.");
@@ -1231,25 +1217,19 @@ export default {
             this.$refs.step3Form
                 .validate()
                 .then(async success => {
-                    if (success) {
-                        if (!this.isOngoing()) {
-                            throw "Start from step 1.";
-                        }
-                        const opts = [
-                            ...this.toJSONFormatOptions(this.options)
-                        ];
-                        this.newProduct.options = opts.slice();
-                        const res = await Product.updateProduct(
-                            this.newProduct.id,
-                            this.newProduct
-                        );
-                        this.setProductOptions(opts);
-                        this.loadingStep3 = false;
-                        this.step = 4;
-                        this.$router
-                            .replace("/products/add/4")
-                            .catch(err => {});
+                    if (!this.isOngoing()) {
+                        throw "Start from step 1.";
                     }
+                    const opts = [...this.toJSONFormatOptions(this.options)];
+                    this.newProduct.options = opts.slice();
+                    const res = await Product.updateProduct(
+                        this.newProduct.id,
+                        this.newProduct
+                    );
+                    this.setProductOptions(opts);
+                    this.loadingStep3 = false;
+                    this.step = 4;
+                    this.$router.replace("/products/add/4").catch(err => {});
                 })
                 .catch(err => {
                     this.showNotif(
@@ -1264,29 +1244,27 @@ export default {
             this.$refs.step4Form
                 .validate()
                 .then(async success => {
-                    if (success) {
-                        if (!this.isOngoing()) {
-                            throw "Start from step 1.";
-                        }
-                        const res = await Product.updateProduct(
-                            this.newProduct.id,
-                            { isActive: true }
-                        );
-                        this.loadingStep4 = false;
-                        this.returnToPageIndex("/products");
+                    if (!this.isOngoing()) {
+                        throw "Start from step 1.";
                     }
+                    const res = await Product.updateProduct(
+                        this.newProduct.id,
+                        { isActive: true }
+                    );
+                    this.loadingStep4 = false;
+                    this.returnToPageIndex("/products");
                 })
                 .catch(err => {
                     this.showNotif(false, "Could not activate product.");
                     this.loadingStep4 = false;
                 });
         },
-        goBack: function(step) {
-            if ([1, 2, 3].includes(step)) {
-                this.step = step;
-                this.$router.replace("/products/add/" + step).catch(err => {});
-            }
-        },
+        // goBack: function(step) {
+        //     if ([1, 2, 3].includes(step)) {
+        //         this.step = step;
+        //         this.$router.replace("/products/add/" + step).catch(err => {});
+        //     }
+        // },
         removeGroup: function(key) {
             this.$delete(this.details, key);
         },
