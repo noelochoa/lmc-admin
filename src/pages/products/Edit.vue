@@ -1186,7 +1186,7 @@ export default {
                         this.editProduct.options = opts.slice();
                         const res = await Product.updateProduct(
                             this.$route.params.id,
-                            this.editProduct
+                            { options: this.editProduct.options }
                         );
                         this.loadingStep3 = false;
                         this.step = 4;

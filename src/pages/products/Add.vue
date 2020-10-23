@@ -1235,7 +1235,7 @@ export default {
                         this.newProduct.options = opts.slice();
                         const res = await Product.updateProduct(
                             this.newProduct.id,
-                            this.newProduct
+                            { options: this.newProduct.options }
                         );
                         this.setProductOptions(opts);
                         this.loadingStep3 = false;

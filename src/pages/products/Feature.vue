@@ -81,7 +81,15 @@
                                                 resolveAssetsUrl(productBanner)
                                             "
                                             :ratio="16 / 9"
-                                        />
+                                        >
+                                            <template v-slot:error>
+                                                <div
+                                                    class="absolute-full flex flex-center bg-black text-white"
+                                                >
+                                                    Cannot load banner image
+                                                </div>
+                                            </template>
+                                        </q-img>
                                     </div>
                                 </div>
                             </q-item>
@@ -267,8 +275,6 @@ export default {
                         this.featureProduct.data.isFeatured
                     );
                     await Product.uploadBanner(this.$route.params.id, fd);
-                    // clear
-                    this.selimg = null;
                 } else {
                     // Update only
                     await Product.updateProduct(this.$route.params.id, {
