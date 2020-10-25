@@ -119,11 +119,12 @@
                                     map-options
                                     lazy-rules
                                     :rules="[val => val !== null]"
+                                    @input="onSelCustomer"
                                 >
                                     <template v-slot:append>
                                         <q-icon
                                             name="close"
-                                            @click.stop="order.customer = null"
+                                            @click.stop="clearSelCustomer"
                                             class="cursor-pointer"
                                         />
                                     </template>
@@ -141,7 +142,7 @@
                             <transition name="fade">
                                 <q-item
                                     class="detail-field"
-                                    v-if="order.type == 1"
+                                    v-if="order.type == 'delivery'"
                                 >
                                     <span class="field-label">Address</span>
                                     <q-input
@@ -168,12 +169,18 @@
                                     <q-item
                                         class="product-item"
                                         v-for="(product, idx) in order.products"
-                                        :key="'key-' + idx"
+                                        :key="'product-' + idx"
                                     >
                                         <q-item-section side>
                                             <q-avatar rounded size="64px">
                                                 <img
-                                                    src="https://cdn.quasar.dev/img/avatar.png"
+                                                    :src="
+                                                        product.image
+                                                            ? resolveAssetsUrl(
+                                                                  product.image
+                                                              )
+                                                            : 'https://dummyimage.com/64x64/363636/ffffff.png&text=No+Img'
+                                                    "
                                                 />
                                                 <q-badge
                                                     floating
@@ -193,8 +200,9 @@
                                                 class="text-grey-4 product-name"
                                             >
                                                 <span
-                                                    v-for="opt in product.options"
-                                                    :key="'key-' + opt._option"
+                                                    v-for="(opt,
+                                                    oIdx) in product.options"
+                                                    :key="'optKey-' + oIdx"
                                                 >
                                                     {{
                                                         opt._option +
@@ -214,7 +222,16 @@
                                             </q-item-label>
                                         </q-item-section>
                                         <q-item-section side class="text-white">
-                                            {{ product.price }} PHP
+                                            <span v-if="product.discount > 0"
+                                                ><span class="text-strike">{{
+                                                    product.price
+                                                }}</span>
+                                                (-{{ product.discount }}%)<br />
+                                                {{ product.finalPrice }} PHP
+                                            </span>
+                                            <span v-else
+                                                >{{ product.price }} PHP</span
+                                            >
                                         </q-item-section>
                                         <q-item-section
                                             side
@@ -243,12 +260,13 @@
                                         icon="add"
                                         label="Add Product"
                                         :disabled="showProductAdd"
+                                        @click="openProductPicker()"
                                     />
                                 </div>
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Total Price</span>
-                                {{ order.total }} PHP
+                                {{ orderTotalPrice }} PHP
                             </q-item>
                         </q-list>
                         <q-separator />
@@ -269,6 +287,158 @@
                 </div>
             </div>
             <div class="content-2"></div>
+            <!-- Product Picker Dialog -->
+            <ProductPicker
+                :showDlg.sync="showProductAdd"
+                @hide="onCloseDialog(val)"
+            >
+                <template v-slot:product>
+                    <q-form ref="selProductForm">
+                        <q-item class="productdlg-item">
+                            <q-select
+                                class="search-field"
+                                popup-content-class="options-light"
+                                v-model="searchProduct"
+                                :options="productOptions"
+                                label="Search Product"
+                                hide-dropdown-icon
+                                hide-bottom-space
+                                dark
+                                options-dark
+                                outlined
+                                use-input
+                                emit-value
+                                map-options
+                                debounce="250"
+                                :loading="pfilterLoading"
+                                @filter="pfilterFn"
+                                @input="onSelectProduct"
+                            >
+                                <template v-slot:prepend>
+                                    <q-icon name="search" color="white" />
+                                </template>
+                                <template v-slot:append>
+                                    <q-icon
+                                        name="close"
+                                        v-if="!pfilterLoading"
+                                        @click.stop="
+                                            [
+                                                (searchProduct = null),
+                                                (selectProduct = null)
+                                            ]
+                                        "
+                                        class="cursor-pointer"
+                                    />
+                                </template>
+                                <template v-slot:no-option>
+                                    <q-item class="options-light">
+                                        <q-item-section
+                                            class="text-italic text-grey"
+                                        >
+                                            No products found.
+                                        </q-item-section>
+                                    </q-item>
+                                </template>
+                            </q-select>
+                        </q-item>
+                        <q-list class="productdlg-list" v-if="selectProduct">
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Name
+                                </div>
+                                <div class="attr-value">
+                                    {{ selectProduct.name }}
+                                </div>
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Qty. (MIN:
+                                    {{ selectProduct.minOrderQuantity }})
+                                </div>
+                                <q-input
+                                    dense
+                                    outlined
+                                    hide-bottom-space
+                                    dark
+                                    type="number"
+                                    class="attr-value"
+                                    @input="onChgQty"
+                                    :min="selectProduct.minOrderQuantity"
+                                    v-model="customizedProduct.quantity"
+                                />
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Options
+                                </div>
+                                <div
+                                    class="attr-value q-my-sm"
+                                    v-for="(item, key) in selectProduct.options"
+                                    :key="'optKey-' + key"
+                                >
+                                    <span class="capitalize option-label">
+                                        {{ item.attribute }}
+                                    </span>
+                                    <q-select
+                                        popup-content-class="options-light"
+                                        dense
+                                        dark
+                                        outlined
+                                        :options="
+                                            toSelOptions(
+                                                item.attribute,
+                                                item.choices
+                                            )
+                                        "
+                                        v-model="customizedProduct.options[key]"
+                                        @input="onSelOption(key)"
+                                        lazy-rules
+                                        :rules="[val => !!val]"
+                                    />
+                                    <q-input
+                                        v-if="
+                                            isOtherSelected(
+                                                customizedProduct.options[key]
+                                            )
+                                        "
+                                        dense
+                                        dark
+                                        outlined
+                                        placeholder="Please specify"
+                                        v-model="
+                                            customizedProduct.otherVal[key]
+                                        "
+                                        lazy-rules
+                                        :rules="[val => !!val]"
+                                    />
+                                </div>
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Price (PHP)
+                                </div>
+                                <div class="attr-value">
+                                    {{ customizedProduct.price }}
+                                </div>
+                            </q-item>
+                        </q-list>
+                    </q-form>
+                </template>
+                <template v-slot:actions>
+                    <q-btn
+                        flat
+                        label="Cancel"
+                        @click="onCloseDialog"
+                        v-close-popup
+                    />
+                    <q-btn
+                        flat
+                        label="Add"
+                        color="primary"
+                        @click="onSetProduct"
+                    />
+                </template>
+            </ProductPicker>
         </div>
     </q-page>
 </template>
@@ -338,7 +508,21 @@ div[class*="content-"] > div {
     text-overflow: ellipsis;
     width: inherit;
 }
-
+.productdlg-item {
+    flex-wrap: wrap;
+}
+.productdlg-item > div {
+    text-transform: capitalize;
+}
+div[class*="attr-"] {
+    flex-basis: 100%;
+}
+.search-field {
+    width: 100%;
+    overflow: hidden;
+    word-wrap: none;
+    text-overflow: ellipsis;
+}
 @media (max-width: 580px) {
     .detail-field {
         flex-direction: column;
@@ -366,99 +550,94 @@ div[class*="content-"] > div {
 .q-field__bottom {
     display: none;
 }
+.options-light {
+    background: #fff !important;
+}
+.options-light .q-item__label {
+    color: #000 !important;
+}
 </style>
 <script>
+import ProductPicker from "../../components/ProductPicker";
 import HelperMixin from "../../mixins/helpers";
+let Account = null,
+    Product = null,
+    Order = null;
 
 export default {
     name: "OrderAdd",
+    components: { ProductPicker },
     mixins: [HelperMixin],
     meta() {
         return {
             title: "Add Order"
         };
     },
-    created() {},
+    beforeCreate() {
+        Account = this.$RepositoryFactory.get("accounts");
+        Product = this.$RepositoryFactory.get("products");
+        Order = this.$RepositoryFactory.get("orders");
+    },
+    created() {
+        if (process.env.CLIENT) {
+            this.getAccounts();
+        }
+    },
     mounted() {},
-    computed: {},
+    computed: {
+        orderTotalPrice() {
+            return this.order.products.length > 0
+                ? this.order.products.reduce((total, item) => {
+                      return (
+                          total +
+                          Number.parseFloat(
+                              item.finalPrice ? item.finalPrice : item.price
+                          )
+                      );
+                  }, 0)
+                : 0;
+        }
+    },
     data() {
         return {
+            showProductEdit: false,
             showProductAdd: false,
             loading: false,
+            pfilterLoading: false,
             hasTyped: false,
             order: {
-                products: [
-                    {
-                        id: 12334553,
-                        name: "product 1",
-                        quantity: 2,
-                        price: 200.0,
-                        options: [
-                            { _option: "color", _selected: "red" },
-                            { _option: "theme", _selected: "mario" }
-                        ]
-                    },
-                    {
-                        id: 12334552,
-                        name: "product 2product 2product 2product 2",
-                        quantity: 5,
-                        price: 1200.0,
-                        options: []
-                    },
-                    {
-                        id: 12334556,
-                        name: "product 3",
-                        quantity: 1,
-                        price: 200.0,
-                        options: [
-                            { _option: "color", _selected: "red" },
-                            {
-                                _option: "theme",
-                                _selected: "Other",
-                                otherValue: "DMC 5"
-                            }
-                        ]
-                    }
-                ],
-                total: 12333.01,
+                products: [],
                 customer: null,
                 target: null,
                 address: "",
-                type: 1
+                type: "delivery"
             },
             deliveryTypes: [
                 {
                     label: "For Delivery",
-                    value: 1
+                    value: "delivery"
                 },
                 {
                     label: "For Pickup",
-                    value: 2
+                    value: "pickup"
                 }
             ],
-            customerList: [
-                {
-                    label: "John1",
-                    value: 1
-                },
-                {
-                    label: "Mary",
-                    value: 2
-                },
-                {
-                    label: "Twitter",
-                    value: 3
-                },
-                {
-                    label: "Apple",
-                    value: 4
-                },
-                {
-                    label: "Oracle",
-                    value: 5
-                }
-            ],
-            options: null
+            customerList: [],
+            productList: [],
+            options: null,
+            productOptions: null,
+            searchProduct: null,
+            selectProduct: null,
+            customizedProduct: {
+                id: -1,
+                name: "",
+                image: "",
+                quantity: 0,
+                price: 0,
+                discounts: [],
+                options: [],
+                otherVal: []
+            }
         };
     },
     methods: {
@@ -488,7 +667,6 @@ export default {
         },
 
         filterFn(val, update, abort) {
-            /**TODO */
             if (!val || val.trim() == "") {
                 abort();
                 return;
@@ -501,19 +679,215 @@ export default {
                 );
             });
         },
+
+        async pfilterFn(val, update, abort) {
+            if (!val || val.trim() == "") {
+                abort();
+                return;
+            }
+
+            try {
+                this.pfilterLoading = true;
+                const res = await Product.searchProducts(val);
+                this.productList = res.products.slice();
+
+                update(() => {
+                    this.productOptions = this.productList.map(item => {
+                        return { label: item.name, value: item.id };
+                    });
+                });
+            } catch (err) {
+                this.showNotif(false, "Error searching product/s." + err);
+            } finally {
+                this.pfilterLoading = false;
+            }
+        },
+
         removeProduct(productKey) {
-            console.log(productKey);
             this.$delete(this.order.products, productKey);
         },
-        onSubmit: function(evt) {
-            /**TODO */
-            this.loading = true;
 
-            setTimeout(() => {
-                this.showNotif(true, "Successfully added new order. ");
+        openProductPicker(evt) {
+            this.selectProduct = null;
+            this.searchProduct = null;
+            this.showProductAdd = true;
+        },
+
+        clearSelection() {
+            this.customizedProduct.id = -1;
+            this.customizedProduct.name = "";
+            this.customizedProduct.options = [];
+            this.customizedProduct.otherVal = [];
+            this.customizedProduct.quantity = 0;
+            this.customizedProduct.price = 0;
+        },
+
+        clearSelCustomer() {
+            this.order.customer = null;
+            this.order.products.forEach(item => {
+                item.discount = 0;
+                item.finalPrice = item.price;
+            });
+        },
+
+        onCloseDialog() {},
+
+        onSelectProduct(val) {
+            // On select from search results
+            this.selectProduct = this.productList.find(item => {
+                return item.id == val;
+            });
+            this.clearSelection();
+            // Set item for cutomization
+            this.customizedProduct.id = this.selectProduct.id;
+            this.customizedProduct.name = this.selectProduct.name;
+            this.customizedProduct.image =
+                this.selectProduct.images &&
+                this.selectProduct.images.length > 0
+                    ? this.selectProduct.images[0].image
+                    : null;
+            this.customizedProduct.quantity = this.selectProduct.minOrderQuantity;
+            this.customizedProduct.discounts = this.selectProduct.discount;
+            this.computeCutomizationPrice();
+        },
+
+        finalizePrice() {
+            // Check for discounts and update prices
+            const accnt = this.customerList.find(item => {
+                return item.value == this.order.customer;
+            });
+
+            if (!accnt) return;
+
+            this.order.products.forEach(el => {
+                const discount = el.discounts.filter(item => {
+                    return item.target == accnt.type || item.target == "all";
+                });
+                if (discount && discount.length > 0) {
+                    const maxDiscount = Math.max.apply(
+                        Math,
+                        discount.map(function(o) {
+                            return o.percent;
+                        })
+                    );
+                    const finalPrice = (
+                        el.price -
+                        (el.price * maxDiscount) / 100
+                    ).toFixed(0);
+
+                    // Update new price (discounted)
+                    this.$set(el, "discount", maxDiscount);
+                    this.$set(el, "finalPrice", finalPrice);
+                }
+            });
+        },
+
+        onSelCustomer(val) {
+            this.finalizePrice();
+        },
+
+        onSetProduct() {
+            // On "Add" from Dialog
+            this.$refs.selProductForm.validate().then(success => {
+                if (!success) {
+                    return;
+                }
+                if (!this.selectProduct) return;
+                this.order.products.push({
+                    product: this.customizedProduct.id,
+                    name: this.customizedProduct.name,
+                    image: this.customizedProduct.image,
+                    price: this.customizedProduct.price,
+                    quantity: this.customizedProduct.quantity,
+                    discounts: this.customizedProduct.discounts,
+                    options: this.customizedProduct.options.map((item, key) => {
+                        return {
+                            _option: item.key,
+                            _selected: item.value.value,
+                            otherValue:
+                                item.value.value == "Other"
+                                    ? this.customizedProduct.otherVal[key]
+                                    : null
+                        };
+                    })
+                });
+                this.finalizePrice();
+
+                // Reset Dialog
+                this.showProductAdd = false;
+                this.clearSelection();
+            });
+        },
+
+        onChgQty(val) {
+            this.computeCutomizationPrice();
+        },
+
+        onSelOption(val) {
+            this.computeCutomizationPrice();
+        },
+
+        computeCutomizationPrice() {
+            const reducer = (total, item) => total + item.value.price;
+            this.customizedProduct.price =
+                this.customizedProduct.quantity *
+                this.customizedProduct.options.reduce(
+                    reducer,
+                    this.selectProduct.basePrice
+                );
+        },
+
+        toSelOptions(key, obj) {
+            // console.log(this.customizedProduct);
+            if (obj) {
+                return obj.map(item => {
+                    return {
+                        label:
+                            item.value +
+                            (item.price >= 0
+                                ? `(+${item.price}  PHP)`
+                                : `(${item.price} PHP)`),
+                        value: item,
+                        key: key
+                    };
+                });
+            }
+            return obj;
+        },
+
+        isOtherSelected(obj) {
+            if (obj) {
+                return obj.value.value == "Other";
+            }
+
+            return false;
+        },
+
+        async getAccounts() {
+            Account.getAccountSelection()
+                .then(dat => {
+                    this.customerList = dat;
+                })
+                .catch(err => {
+                    this.customerList = [];
+                });
+        },
+
+        onSubmit: async function(evt) {
+            this.loading = true;
+            try {
+                if (this.order.products.length < 1) {
+                    throw "No products selected";
+                }
+                await Order.placeOrder(this.order);
+                this.showNotif(true, "Placed new Order.");
                 this.loading = false;
                 this.returnToPageIndex("/orders");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, "Could not place the order. ");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 };

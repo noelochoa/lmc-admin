@@ -232,7 +232,8 @@
                                                                             val !==
                                                                                 null &&
                                                                             val.trim() !==
-                                                                                ''
+                                                                                '',
+                                                                        _isUniqueDetailGrp
                                                                     ]"
                                                                 />
                                                             </q-item-label>
@@ -496,7 +497,8 @@
                                                                             val !==
                                                                                 null &&
                                                                             val.trim() !==
-                                                                                ''
+                                                                                '',
+                                                                        _isUniqueOptionGrp
                                                                     ]"
                                                                 />
                                                             </q-item-label>
@@ -983,6 +985,31 @@ export default {
 
             return true;
         },
+
+        _isUniqueDetailGrp(val) {
+            if (this.details && this.details.length > 0) {
+                const res = this.details.filter(item => {
+                    return item.group == val;
+                });
+                if (res.length > 1) {
+                    return "Duplicate detail group title.";
+                }
+            }
+            return true;
+        },
+
+        _isUniqueOptionGrp(val) {
+            if (this.options && this.options.length > 0) {
+                const res = this.options.filter(item => {
+                    return item.attribute == val;
+                });
+                if (res.length > 1) {
+                    return "Duplicate option group title.";
+                }
+            }
+            return true;
+        },
+
         _isValidColor(val) {
             if (val && val.length > 0) {
                 const hexpattern = /^#([0-9A-F]{3}){1,2}$/i;

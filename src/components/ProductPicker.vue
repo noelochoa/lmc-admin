@@ -19,8 +19,8 @@
 </template>
 <style lang="scss" scoped>
 .product-dialog-content {
-    min-height: 210px;
-    min-width: 360px;
+    min-height: 240px;
+    width: 420px;
 }
 </style>
 <script>
@@ -34,13 +34,11 @@ export default {
         },
         dialogLoading: {
             type: Boolean,
-            required: true,
-            default: true
+            default: false
         },
         productReady: {
             type: Boolean,
-            required: true,
-            default: false
+            default: true
         }
     },
     methods: {

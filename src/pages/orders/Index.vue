@@ -48,19 +48,23 @@
                     </q-input>
                 </div>
                 <div class="order-stats q-ml-sm">
-                    <q-breadcrumbs separator="|" active-color="white">
+                    <p class="text-subtitle2 q-mt-sm" v-if="loadingStats">
+                        <q-spinner color="white" size="2em" />
+                    </p>
+                    <q-breadcrumbs separator="|" active-color="white" v-else>
                         <q-breadcrumbs-el
                             v-for="stat in orderStats"
                             :key="stat.name"
                             :label="stat.name + '(' + stat.count + ')'"
                             :class="{ 'active-stat': stat.count > 0 }"
-                            @click="selectStat(stat)"
+                            @click="onSelectStatus(stat)"
                         />
                     </q-breadcrumbs>
                 </div>
             </div>
             <div class="content-2">
                 <q-table
+                    ref="ordersTbl"
                     square
                     class="orders-table"
                     row-key="id"
@@ -70,6 +74,7 @@
                     :rows-per-page-options="[0]"
                     :loading="loading"
                     @request="onRequest"
+                    @update:pagination="onChgPage"
                     binary-state-sort
                 >
                     <template v-slot:body="props">
@@ -80,9 +85,7 @@
                             <q-td key="status" :props="props">
                                 <q-chip
                                     square
-                                    :class="
-                                        'chip-' + props.row.status.toLowerCase()
-                                    "
+                                    :class="'chip-' + props.row.class"
                                 >
                                     {{ props.row.status }}
                                 </q-chip>
@@ -135,7 +138,7 @@
                         flat
                         label="OK"
                         color="primary"
-                        @click="updateMonth"
+                        @click="onUpdateMonth"
                         v-close-popup
                     />
                 </q-card-actions>
@@ -247,22 +250,23 @@
         background: $primary;
     }
     &accepted {
-        background: #ff9800;
+        background: $accepted;
     }
-    &processing {
-        background: #ff9800;
+    &preparing {
+        background: $preparing;
     }
     &fulfilled {
-        background: #009688;
+        background: $fulfilled;
     }
-    &cancelled {
-        background: #e57373;
+    &declined {
+        background: $declined;
     }
 }
 </style>
 <script>
 import MonthPicker from "../../components/MonthPicker";
 import HelperMixin from "../../mixins/helpers";
+let Order = null;
 
 export default {
     name: "OrderIndex",
@@ -273,13 +277,29 @@ export default {
             title: "Orders"
         };
     },
+    beforeCreate() {
+        Order = this.$RepositoryFactory.get("orders");
+    },
     created() {
         if (this.$route.query.m) {
             let timestamp = Date.parse(this.$route.query.m);
             if (isNaN(timestamp) == false) {
                 this.selDate = new Date(timestamp);
-                this.updateMonth();
+                this.selectedMonth =
+                    this.selDate.getFullYear() +
+                    "-" +
+                    (this.selDate.getMonth() + 1).toString().padStart(2, 0);
             }
+        }
+        if (this.$route.query.s) {
+            this.search = this.$route.query.s;
+        }
+        if (this.$route.query.p && !isNaN(this.$route.query.p)) {
+            this.pagination.page = Number.parseInt(this.$route.query.p);
+        }
+
+        if (process.env.CLIENT) {
+            this.getOrderStats();
         }
     },
     mounted() {
@@ -291,28 +311,23 @@ export default {
     data() {
         const dateToday = new Date();
         return {
+            loading: false,
+            loadingStats: true,
             showSelect: false,
             minDate: new Date(2010, 0),
             maxDate: new Date(dateToday.getFullYear() + 10, 11),
             selDate: dateToday,
+            search: "",
             selectedMonth:
                 dateToday.getFullYear() +
                 "-" +
                 (dateToday.getMonth() + 1).toString().padStart(2, 0),
-            orderStats: [
-                { name: "Placed", count: 122 },
-                { name: "accepted", count: 2 },
-                { name: "Processing", count: 0 },
-                { name: "fulfilled", count: 7 },
-                { name: "cancelled", count: 2 }
-            ],
-            loading: false,
+            orderStats: [],
             pagination: {
-                sortBy: "ordernum",
+                sortBy: "target",
                 descending: true,
                 page: 1,
-                rowsPerPage: 10,
-                rowsNumber: 10
+                rowsPerPage: 9
             },
             columns: [
                 {
@@ -358,36 +373,7 @@ export default {
                 }
             ],
             data: [],
-            original: [
-                {
-                    ordernum: "507f1f77bcf86cd799439011",
-                    status: "Placed",
-                    target: "Feb 20, 2020",
-                    customer: "John",
-                    total: 1000
-                },
-                {
-                    ordernum: 2,
-                    status: "Processing",
-                    target: "Feb 20, 2020",
-                    customer: "John",
-                    total: 3000
-                },
-                {
-                    ordernum: 1,
-                    status: "fulfilled",
-                    target: "Feb 20, 2020 10:30",
-                    customer: "AAAAAAA",
-                    total: 2000
-                },
-                {
-                    ordernum: 22,
-                    status: "Cancelled",
-                    target: "Feb 10, 2020 10:30",
-                    customer: "AAA",
-                    total: 200.5
-                }
-            ]
+            original: []
         };
     },
     methods: {
@@ -395,6 +381,7 @@ export default {
         filterMonth(val) {
             let searchQry = Object.assign({}, this.$route.query, { m: val });
             if (!val) delete searchQry.m;
+            delete searchQry.p;
 
             this.$router
                 .replace({
@@ -402,10 +389,13 @@ export default {
                 })
                 .catch(err => {});
 
-            /** TODO */
-            // add filtering logic
+            this.getOrderStats();
+            this.$refs["ordersTbl"].requestServerInteraction({
+                pagination: { ...this.pagination, page: 1 }
+            });
         },
-        updateMonth: function(evt) {
+
+        onUpdateMonth: function(evt) {
             if (this.selDate) {
                 this.selectedMonth =
                     this.selDate.getFullYear() +
@@ -414,13 +404,15 @@ export default {
                 this.filterMonth(this.selectedMonth);
             }
         },
-        selectStat: function(stat) {
+
+        onSelectStatus(stat) {
             if (stat && stat.count) {
-                // console.log(stat.name, stat.count);
+                this.search = stat.name;
                 let searchQry = Object.assign({}, this.$route.query, {
                     s: stat.name
                 });
                 if (!stat.name) delete searchQry.s;
+                delete searchQry.p; // Reset page
 
                 this.$router
                     .replace({
@@ -428,91 +420,52 @@ export default {
                     })
                     .catch(err => {});
 
-                /** TODO */
-                // add filtering logic
+                this.$refs["ordersTbl"].requestServerInteraction({
+                    pagination: { ...this.pagination, page: 1 }
+                });
             }
         },
-        /**TODO */
-        onRequest(props) {
-            const { page, rowsPerPage, sortBy, descending } = props.pagination;
-            console.log(page, rowsPerPage, sortBy, descending);
-            const filter = props.filter;
 
-            this.loading = true;
-
-            // emulate server
-            setTimeout(() => {
-                // update rowsCount with appropriate value
-                this.pagination.rowsNumber = this.getRowsNumberCount(filter);
-
-                // get all rows if "All" (0) is selected
-                const fetchCount =
-                    rowsPerPage === 0
-                        ? this.pagination.rowsNumber
-                        : rowsPerPage;
-
-                // calculate starting row of data
-                const startRow = (page - 1) * rowsPerPage;
-
-                // fetch data from "server"
-                const returnedData = this.fetchFromServer(
-                    startRow,
-                    fetchCount,
-                    filter,
-                    sortBy,
-                    descending
-                );
-
-                // clear out existing data and add new
-                this.data.splice(0, this.data.length, ...returnedData);
-
-                // don't forget to update local pagination object
-                this.pagination.page = page;
-                this.pagination.rowsPerPage = rowsPerPage;
-                this.pagination.sortBy = sortBy;
-                this.pagination.descending = descending;
-
-                // ...and turn of loading indicator
-                this.loading = false;
-            }, 500);
-        },
-
-        // emulate ajax call
-        fetchFromServer(startRow, count, filter, sortBy, descending) {
-            const data = filter
-                ? this.original.filter(row => row.name.includes(filter))
-                : this.original.slice();
-
-            // handle sortBy
-            if (sortBy) {
-                const sortFn = () => {
-                    if (sortBy === "name") {
-                        if (descending) {
-                            (a, b) =>
-                                a.name > b.name ? -1 : a.name < b.name ? 1 : 0;
-                        } else {
-                            (a, b) =>
-                                a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
-                        }
-                    }
-                };
-                data.sort(sortFn);
-            }
-
-            return data.slice(startRow, startRow + count);
-        },
-
-        getRowsNumberCount(filter) {
-            if (!filter) {
-                return this.original.length;
-            }
-            let count = 0;
-            this.original.forEach(item => {
-                if (item.name.includes(filter)) {
-                    ++count;
-                }
+        onChgPage(newPg) {
+            let pageQry = Object.assign({}, this.$route.query, {
+                p: newPg.page
             });
-            return count;
+            if (!newPg) delete pageQry.p;
+
+            this.$router
+                .replace({
+                    query: pageQry
+                })
+                .catch(err => {});
+        },
+
+        async getOrderStats() {
+            this.loadingStats = true;
+            try {
+                const resp = await Order.getOrderStats(this.selDate);
+                this.orderStats = resp.slice();
+            } catch (err) {
+                this.showNotif(
+                    false,
+                    err + "Could not retrieve order statistics. "
+                );
+            } finally {
+                this.loadingStats = false;
+            }
+        },
+
+        async onRequest(props) {
+            this.loading = true;
+            try {
+                const resp = await Order.getOrders(this.selDate, this.search);
+                this.original = resp;
+                this.data = this.original.slice();
+                this.pagination.page = props.pagination.page;
+            } catch (err) {
+                this.showNotif(false, "Could not retrieve account details. ");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 };

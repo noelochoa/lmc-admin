@@ -20,6 +20,19 @@ export default class Product {
         }
     }
 
+    async searchProducts(search) {
+        try {
+            const res = await this.axios.get("/api/products/cms", {
+                params: {
+                    name: search
+                }
+            });
+            return res.data;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
     async getProducts(category = "all") {
         try {
             let res;

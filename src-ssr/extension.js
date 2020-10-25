@@ -41,7 +41,7 @@ module.exports.extendApp = function({ app, ssr }) {
             .then(function(body) {
                 const { token, cmsuser, xsrf } = body;
                 res.cookie("_JWT_CMS", token, {
-                    maxAge: 60 * 60 * 1000, //1hr
+                    maxAge: 60 * 60 * 1000 * 24 * 7, //1 week
                     httpOnly: true,
                     sameSite: "Strict",
                     secure: prod
@@ -60,8 +60,7 @@ module.exports.extendApp = function({ app, ssr }) {
             });
     });
 
-    app.use(cookieParser());
-    app.use("/api/users/refresh", function(req, res) {
+    app.use("/api/users/refresh", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
         if (!req.cookies._JWT_CMS || !req.headers["x-csrf-token"]) {
             return res.status(403).send({
@@ -83,7 +82,7 @@ module.exports.extendApp = function({ app, ssr }) {
                 const { token, xsrf } = body;
                 // console.log(token, xsrf);
                 res.cookie("_JWT_CMS", token, {
-                    maxAge: 60 * 60 * 1000, //1hr
+                    maxAge: 60 * 60 * 1000 * 24 * 7, //1 week
                     httpOnly: true,
                     sameSite: "Strict",
                     secure: prod
@@ -104,7 +103,7 @@ module.exports.extendApp = function({ app, ssr }) {
             });
     });
 
-    app.use("/api", function(req, res) {
+    app.use("/api", cookieParser(), function(req, res) {
         console.log(req.originalUrl, req.path, req.query);
         // console.log(req.cookies);
         if (!req.cookies._JWT_CMS) {
@@ -119,7 +118,6 @@ module.exports.extendApp = function({ app, ssr }) {
                 qs: req.query
             });
             proxy
-                .on("response", response => {})
                 .on("error", err => {
                     res.status(500).send({
                         error: "Unexpected error has occurred."

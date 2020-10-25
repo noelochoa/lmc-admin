@@ -40,6 +40,33 @@ export default class Account {
         }
     }
 
+    async getAccountSelection(filter) {
+        try {
+            let ret = [],
+                res;
+            if (filter) {
+                res = await this.axios.get("/api/customers", {
+                    params: {
+                        type: filter
+                    }
+                });
+            } else {
+                res = await this.axios.get("/api/customers");
+            }
+            res.data.forEach(item => {
+                ret.push({
+                    value: item.id,
+                    label: item.name,
+                    type: item.accountType
+                });
+                return item;
+            });
+            return ret;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
     async getAccount(paramID) {
         try {
             let ret = {};

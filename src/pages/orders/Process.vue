@@ -547,19 +547,19 @@ div[class*="attr-"] {
 }
 .ctext- {
     &placed {
-        color: $primary;
+        background: $primary;
     }
     &accepted {
-        color: #ff9800;
+        background: $accepted;
     }
-    &processing {
-        color: #ff9800;
+    &preparing {
+        background: $preparing;
     }
     &fulfilled {
-        color: #009688;
+        background: $fulfilled;
     }
-    &cancelled {
-        color: #e57373;
+    &declined {
+        background: $declined;
     }
 }
 @media (max-width: 580px) {
@@ -615,7 +615,6 @@ export default {
             right: false,
             loading: false,
             dialogLoading: true,
-            hasTyped: false,
             productReady: false,
             showProductEdit: false,
             showProductAdd: false,
