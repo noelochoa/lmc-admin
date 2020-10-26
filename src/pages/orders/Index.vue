@@ -48,8 +48,8 @@
                     </q-input>
                 </div>
                 <div class="order-stats q-ml-sm">
-                    <p class="text-subtitle2 q-mt-sm" v-if="loadingStats">
-                        <q-spinner color="white" size="2em" />
+                    <p class="text-subtitle2" v-if="loadingStats">
+                        <q-spinner color="white" size="2.45em" />
                     </p>
                     <q-breadcrumbs separator="|" active-color="white" v-else>
                         <q-breadcrumbs-el
@@ -93,8 +93,12 @@
                             <q-td key="target" :props="props">
                                 {{ props.row.target }}
                             </q-td>
-                            <q-td key="customer" :props="props">
-                                {{ props.row.customer }}
+                            <q-td
+                                key="customer"
+                                class="capitalize"
+                                :props="props"
+                            >
+                                {{ props.row.customer }} ({{ props.row.type }})
                             </q-td>
                             <q-td key="total" :props="props">
                                 {{ props.row.total }}
@@ -252,14 +256,26 @@
     &accepted {
         background: $accepted;
     }
+    &cancelled {
+        background: $cancelled;
+    }
+    &replaced {
+        background: $replaced;
+    }
     &preparing {
         background: $preparing;
     }
+    &finalizing {
+        background: $finalizing;
+    }
+    &out-for-delivery {
+        background: $out-for-delivery;
+    }
+    &ready-for-pickup {
+        background: $ready-for-pickup;
+    }
     &fulfilled {
         background: $fulfilled;
-    }
-    &declined {
-        background: $declined;
     }
 }
 </style>

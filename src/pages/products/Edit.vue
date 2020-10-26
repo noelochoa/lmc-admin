@@ -12,8 +12,8 @@
         <div class="page-contents text-white q-pa-md">
             <div class="content-1">
                 <div class="text-subtitle2 flex flex-center">
-                    <q-icon name="cake" class="caption-icon q-mx-md" />Product
-                    Info
+                    <q-icon name="cake" class="caption-icon q-mx-md" />
+                    Product Info
                 </div>
                 <div v-if="loading">
                     <q-item class="q-my-sm">

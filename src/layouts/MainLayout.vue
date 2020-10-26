@@ -203,10 +203,6 @@ import Navigation from "../components/Navigation";
 import SearchResults from "../components/SearchResults";
 
 export default {
-    preFetch({ store, redirect }) {
-        //console.log(store.state);
-    },
-
     name: "MainLayout",
     components: { Navigation, SearchResults },
     computed: {

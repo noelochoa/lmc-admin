@@ -590,7 +590,7 @@ export default {
                 ? this.order.products.reduce((total, item) => {
                       return (
                           total +
-                          Number.parseFloat(
+                          Number.parseInt(
                               item.finalPrice ? item.finalPrice : item.price
                           )
                       );
@@ -600,7 +600,6 @@ export default {
     },
     data() {
         return {
-            showProductEdit: false,
             showProductAdd: false,
             loading: false,
             pfilterLoading: false,
@@ -716,7 +715,9 @@ export default {
         clearSelection() {
             this.customizedProduct.id = -1;
             this.customizedProduct.name = "";
+            this.customizedProduct.image = "";
             this.customizedProduct.options = [];
+            this.customizedProduct.discounts = [];
             this.customizedProduct.otherVal = [];
             this.customizedProduct.quantity = 0;
             this.customizedProduct.price = 0;
@@ -748,7 +749,7 @@ export default {
                     : null;
             this.customizedProduct.quantity = this.selectProduct.minOrderQuantity;
             this.customizedProduct.discounts = this.selectProduct.discount;
-            this.computeCutomizationPrice();
+            this.calcCustomized();
         },
 
         finalizePrice() {
@@ -756,7 +757,6 @@ export default {
             const accnt = this.customerList.find(item => {
                 return item.value == this.order.customer;
             });
-
             if (!accnt) return;
 
             this.order.products.forEach(el => {
@@ -776,8 +776,10 @@ export default {
                     ).toFixed(0);
 
                     // Update new price (discounted)
-                    this.$set(el, "discount", maxDiscount);
-                    this.$set(el, "finalPrice", finalPrice);
+                    // this.$set(el, "discount", maxDiscount);
+                    // this.$set(el, "finalPrice", finalPrice);
+                    el.discount = maxDiscount;
+                    el.finalPrice = finalPrice;
                 }
             });
         },
@@ -799,6 +801,8 @@ export default {
                     image: this.customizedProduct.image,
                     price: this.customizedProduct.price,
                     quantity: this.customizedProduct.quantity,
+                    discount: 0, // temporary
+                    finalPrice: this.customizedProduct.price, //temporary
                     discounts: this.customizedProduct.discounts,
                     options: this.customizedProduct.options.map((item, key) => {
                         return {
@@ -811,6 +815,7 @@ export default {
                         };
                     })
                 });
+                // Update all prices
                 this.finalizePrice();
 
                 // Reset Dialog
@@ -820,14 +825,14 @@ export default {
         },
 
         onChgQty(val) {
-            this.computeCutomizationPrice();
+            this.calcCustomized();
         },
 
         onSelOption(val) {
-            this.computeCutomizationPrice();
+            this.calcCustomized();
         },
 
-        computeCutomizationPrice() {
+        calcCustomized() {
             const reducer = (total, item) => total + item.value.price;
             this.customizedProduct.price =
                 this.customizedProduct.quantity *

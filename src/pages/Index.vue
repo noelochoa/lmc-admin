@@ -372,11 +372,7 @@ import HelperMixin from "../mixins/helpers";
 let Stats = null;
 
 export default {
-    preFetch({ store }) {
-        // return store.dispatch("auth/getCustomerStats");
-    },
     name: "DashboardIndex",
-
     components: { Accounts, Statistic, Comments },
     mixins: [HelperMixin],
     beforeCreate() {

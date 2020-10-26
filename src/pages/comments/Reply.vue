@@ -200,7 +200,6 @@ import HelperMixin from "../../mixins/helpers";
 let Comment = null;
 
 export default {
-    preFetch({ previousRoute }) {},
     name: "ReplyComment",
     mixins: [HelperMixin],
     meta() {

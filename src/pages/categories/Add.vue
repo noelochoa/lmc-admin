@@ -131,7 +131,6 @@ import HelperMixin from "../../mixins/helpers";
 let Category = null;
 
 export default {
-    preFetch({ previousRoute }) {},
     name: "CategoryAdd",
     mixins: [HelperMixin],
     meta() {

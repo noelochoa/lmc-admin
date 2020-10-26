@@ -7,9 +7,29 @@ export default class Order {
         this.axios = axios;
     }
 
-    async getOrderStats(date) {
+    async getStatusSelection() {
+        // Order Status
         try {
             let ret = [];
+            const res = await this.axios.get("/api/orders/statlist");
+            res.data.forEach(item => {
+                ret.push({
+                    value: item._id,
+                    label:
+                        item.status.charAt(0).toUpperCase() +
+                        item.status.slice(1)
+                });
+            });
+            return ret;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
+    async getOrderStats(date) {
+        try {
+            let ret = [],
+                total = 0;
             let params = {};
             if (date && date instanceof Date) {
                 params.year = date.getFullYear();
@@ -18,9 +38,12 @@ export default class Order {
             const res = await this.axios.get("/api/orders/stats", {
                 params: params
             });
+
             for (const [key, value] of Object.entries(res.data)) {
                 ret.push({ name: key, count: value });
+                total += value;
             }
+            ret.unshift({ name: "all", count: total });
             return ret;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";
@@ -37,7 +60,7 @@ export default class Order {
                 params.month = date.getMonth() + 1;
             }
             if (status) {
-                params.status = status;
+                params.status = status.toLowerCase();
             }
 
             res = await this.axios.get("/api/orders/cms", {
@@ -53,10 +76,33 @@ export default class Order {
                     target: moment(item.target).format("MMM DD, YYYY HH:mm"),
                     customer:
                         item.customer[0].fname + " " + item.customer[0].lname,
+                    type: item.deliveryType ? item.deliveryType : "-",
                     total: item.total
                 });
             });
             return ret;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
+    async getOrder(paramID) {
+        try {
+            const res = await this.axios.get(`api/orders/cms/${paramID}`);
+            res.data.target = moment(res.data.target).format(
+                "YYYY-MM-DD HH:mm"
+            );
+            res.data.type = res.data.deliveryType;
+
+            // Selected products
+            res.data.products.forEach(item => {
+                item.name = item.product.name;
+                item.image =
+                    item.product.images && item.product.images.length > 0
+                        ? item.product.images[0].image
+                        : "";
+            });
+            return res.data;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";
         }
@@ -69,7 +115,6 @@ export default class Order {
             });
             return true;
         } catch (err) {
-            console.log(err);
             throw err.response.data.error || "Error has occurred.";
         }
     }

@@ -81,13 +81,19 @@
                     />
                 </div>
                 <div>
-                    <q-form @submit.prevent.stop="onSubmit">
-                        <q-list class="detail-list" separator>
+                    <q-form
+                        @submit.prevent.stop="onSubmit"
+                        :disabled="order.hasError || order.loading"
+                    >
+                        <q-item class="q-mt-sm" v-if="order.loading">
+                            <q-spinner color="white" size="2em" />
+                        </q-item>
+                        <q-list class="detail-list" separator v-else>
                             <q-item class="detail-field">
                                 <span class="field-label">Status</span>
                                 <q-select
                                     class="field-value"
-                                    v-model="order.status"
+                                    v-model="order.data.status"
                                     :options="orderStatuses"
                                     dark
                                     dense
@@ -108,7 +114,7 @@
                                     hide-bottom-space
                                     dark
                                     class="field-value"
-                                    v-model="order.target"
+                                    v-model="order.data.target"
                                     :rules="[
                                         val =>
                                             val !== null && val.trim() !== '',
@@ -128,7 +134,7 @@
                                                 <q-date
                                                     dark
                                                     no-unset
-                                                    v-model="order.target"
+                                                    v-model="order.data.target"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     @input="
                                                         () =>
@@ -151,7 +157,7 @@
                                             >
                                                 <q-time
                                                     dark
-                                                    v-model="order.target"
+                                                    v-model="order.data.target"
                                                     mask="YYYY-MM-DD HH:mm"
                                                     format24h
                                                     @input="
@@ -168,7 +174,7 @@
                                 <span class="field-label">Delivery Type</span>
                                 <q-select
                                     class="field-value"
-                                    v-model="order.type"
+                                    v-model="order.data.type"
                                     :options="deliveryTypes"
                                     dark
                                     dense
@@ -185,7 +191,7 @@
                                 <span class="field-label">Customer</span>
                                 <q-select
                                     class="field-value customer-select"
-                                    v-model="order.customer"
+                                    v-model="order.data.customer"
                                     :options="options"
                                     hide-dropdown-icon
                                     hide-bottom-space
@@ -203,7 +209,9 @@
                                     <template v-slot:append>
                                         <q-icon
                                             name="close"
-                                            @click.stop="order.customer = null"
+                                            @click.stop="
+                                                order.data.customer = null
+                                            "
                                             class="cursor-pointer"
                                         />
                                     </template>
@@ -221,7 +229,7 @@
                             <transition name="fade">
                                 <q-item
                                     class="detail-field"
-                                    v-if="order.type == 1"
+                                    v-if="order.data.type == 1"
                                 >
                                     <span class="field-label">Address</span>
                                     <q-input
@@ -230,7 +238,7 @@
                                         dark
                                         hide-bottom-space
                                         class="field-value"
-                                        v-model="order.address"
+                                        v-model="order.data.address"
                                         lazy-rules
                                         :rules="[
                                             val =>
@@ -247,13 +255,20 @@
                                 <div class="product-details q-py-sm">
                                     <q-item
                                         class="product-item"
-                                        v-for="(product, idx) in order.products"
+                                        v-for="(product, idx) in order.data
+                                            .products"
                                         :key="'key-' + idx"
                                     >
                                         <q-item-section side>
                                             <q-avatar rounded size="64px">
                                                 <img
-                                                    src="https://cdn.quasar.dev/img/avatar.png"
+                                                    :src="
+                                                        product.image
+                                                            ? resolveAssetsUrl(
+                                                                  product.image
+                                                              )
+                                                            : 'https://dummyimage.com/64x64/363636/ffffff.png&text=No+Img'
+                                                    "
                                                 />
                                                 <q-badge
                                                     floating
@@ -342,7 +357,7 @@
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Total Price</span>
-                                {{ order.total }} PHP
+                                {{ order.data.total }} PHP
                             </q-item>
                         </q-list>
                         <q-separator />
@@ -547,19 +562,31 @@ div[class*="attr-"] {
 }
 .ctext- {
     &placed {
-        background: $primary;
+        color: $primary;
     }
     &accepted {
-        background: $accepted;
+        color: $accepted;
+    }
+    &cancelled {
+        color: $cancelled;
+    }
+    &replaced {
+        color: $replaced;
     }
     &preparing {
-        background: $preparing;
+        color: $preparing;
+    }
+    &finalizing {
+        color: $finalizing;
+    }
+    &out-for-delivery {
+        color: $out-for-delivery;
+    }
+    &ready-for-pickup {
+        color: $ready-for-pickup;
     }
     &fulfilled {
-        background: $fulfilled;
-    }
-    &declined {
-        background: $declined;
+        color: $fulfilled;
     }
 }
 @media (max-width: 580px) {
@@ -597,6 +624,9 @@ div[class*="attr-"] {
 <script>
 import ProductPicker from "../../components/ProductPicker";
 import HelperMixin from "../../mixins/helpers";
+let Account = null,
+    Product = null,
+    Order = null;
 
 export default {
     name: "OrderProcess",
@@ -607,8 +637,20 @@ export default {
             title: "Process Order"
         };
     },
-    created() {},
-    mounted() {},
+    beforeCreate() {
+        Account = this.$RepositoryFactory.get("accounts");
+        Product = this.$RepositoryFactory.get("products");
+        Order = this.$RepositoryFactory.get("orders");
+    },
+    created() {
+        if (process.env.CLIENT) {
+            this.getOrderStatuses();
+            this.getAccounts();
+        }
+    },
+    mounted() {
+        this.getOrderDetails();
+    },
     computed: {},
     data() {
         return {
@@ -621,125 +663,30 @@ export default {
             searchProduct: "",
             selectedProduct: null,
             order: {
-                products: [
-                    {
-                        ID: 12334553,
-                        name: "product 1",
-                        quantity: 112,
-                        price: 200.0,
-                        options: [
-                            { _option: "color", _selected: "red" },
-                            { _option: "theme", _selected: "mario" }
-                        ]
-                    },
-                    {
-                        ID: 12334552,
-                        name: "product 2 Loremipsum",
-                        quantity: 55,
-                        price: 1200.0,
-                        options: []
-                    },
-                    {
-                        ID: 12334556,
-                        name: "product 3",
-                        quantity: 1,
-                        price: 200.0,
-                        options: [
-                            { _option: "color", _selected: "red" },
-                            {
-                                _option: "theme",
-                                _selected: "Other",
-                                otherValue: "DMC 5"
-                            },
-                            {
-                                _option: "sweetness",
-                                _selected: "sweetest"
-                            },
-                            {
-                                _option: "style",
-                                _selected: "Other",
-                                otherValue: "Grande"
-                            },
-                            {
-                                _option: "12345678",
-                                _selected: "Other",
-                                otherValue: "Grande1"
-                            },
-                            {
-                                _option: "12345",
-                                _selected: "Other",
-                                otherValue: "Grande2"
-                            },
-                            {
-                                _option: "22",
-                                _selected: "Other",
-                                otherValue: "Grande3"
-                            }
-                        ]
-                    }
-                ],
-                total: 12333.01,
-                customer: null,
-                target: null,
-                address: "",
-                type: 1,
-                status: 5
-            },
-            /**TODO */
-            orderStatuses: [
-                {
-                    label: "Placed",
-                    value: 1
-                },
-                {
-                    label: "Accepted",
-                    value: 2
-                },
-                {
-                    label: "Processing",
-                    value: 3
-                },
-                {
-                    label: "Fulfilled",
-                    value: 4
-                },
-                {
-                    label: "Canceled",
-                    value: 5
+                loading: true,
+                hasError: false,
+                data: {
+                    products: [],
+                    total: 12333.01,
+                    customer: null,
+                    target: null,
+                    address: "",
+                    type: "delivery",
+                    status: null
                 }
-            ],
+            },
+            orderStatuses: [],
             deliveryTypes: [
                 {
                     label: "For Delivery",
-                    value: 1
+                    value: "delivery"
                 },
                 {
                     label: "For Pickup",
-                    value: 2
+                    value: "pickup"
                 }
             ],
-            customerList: [
-                {
-                    label: "John1",
-                    value: 1
-                },
-                {
-                    label: "Mary",
-                    value: 2
-                },
-                {
-                    label: "Twitter",
-                    value: 3
-                },
-                {
-                    label: "Apple",
-                    value: 4
-                },
-                {
-                    label: "Oracle",
-                    value: 5
-                }
-            ],
+            customerList: [],
             options: null,
             similarOrders: [
                 {
@@ -779,7 +726,7 @@ export default {
         _isValidStatus(val) {
             if (
                 !(
-                    this.order.status &&
+                    this.order.data.status &&
                     this.orderStatuses &&
                     this.orderStatuses.length > 0
                 )
@@ -788,7 +735,7 @@ export default {
             }
 
             const statusItem = this.orderStatuses.find(option => {
-                return option.value === this.order.status;
+                return option.value === this.order.data.status;
             });
 
             if (!statusItem) return "Invalid status selected";
@@ -798,7 +745,7 @@ export default {
         _isValidType(val) {
             if (
                 !(
-                    this.order.type &&
+                    this.order.data.type &&
                     this.deliveryTypes &&
                     this.deliveryTypes.length > 0
                 )
@@ -807,7 +754,7 @@ export default {
             }
 
             const typeItem = this.deliveryTypes.find(option => {
-                return option.value === this.order.type;
+                return option.value === this.order.data.type;
             });
 
             if (!typeItem) return "Invalid type selected";
@@ -837,7 +784,7 @@ export default {
         createProductDialog(productKey) {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    this.selectedProduct = this.order.products[productKey];
+                    this.selectedProduct = this.order.data.products[productKey];
                     resolve("TODO");
                 }, 1500);
             });
@@ -867,12 +814,48 @@ export default {
         },
         removeProduct(productKey) {
             console.log(productKey);
-            this.$delete(this.order.products, productKey);
+            this.$delete(this.order.data.products, productKey);
         },
         onSetProduct() {
             /**TODO */
             // replace list after http request
         },
+        async getOrderDetails() {
+            try {
+                const resp = await Order.getOrder(this.$route.params.id);
+                this.order.data = resp;
+            } catch (err) {
+                this.showNotif(
+                    false,
+                    err + "Could not retrieve order details. "
+                );
+                this.order.hasError = true;
+            } finally {
+                this.order.loading = false;
+            }
+        },
+
+        async getAccounts() {
+            Account.getAccountSelection()
+                .then(dat => {
+                    this.customerList = dat;
+                    this.options = dat.slice();
+                })
+                .catch(err => {
+                    this.customerList = [];
+                });
+        },
+
+        async getOrderStatuses() {
+            Order.getStatusSelection()
+                .then(dat => {
+                    this.orderStatuses = dat;
+                })
+                .catch(err => {
+                    this.orderStatuses = [];
+                });
+        },
+
         onSubmit: function(evt) {
             /**TODO */
             this.loading = true;
