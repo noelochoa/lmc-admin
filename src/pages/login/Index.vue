@@ -151,6 +151,7 @@ export default {
                 this.$router.push("/").catch(err => {});
             } catch (err) {
                 this.error = err;
+            } finally {
                 this.loading = false;
             }
         },

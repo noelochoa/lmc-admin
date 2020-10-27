@@ -181,10 +181,10 @@ export default {
                     this.category.data
                 );
                 this.showNotif(true, "Successfully updated category name.");
-                this.loading = false;
                 this.returnToPageIndex("/categories");
             } catch (err) {
                 this.showNotif(false, "Could not edit category info. ");
+            } finally {
                 this.loading = false;
             }
         }

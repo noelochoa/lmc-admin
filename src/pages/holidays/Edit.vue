@@ -336,10 +336,10 @@ export default {
                     this.holiday.data
                 );
                 this.showNotif(true, "Successfully updated holiday info.");
-                this.loading = false;
                 this.returnToPageIndex("/holidays");
             } catch (err) {
                 this.showNotif(false, "Could not edit holiday info. ");
+            } finally {
                 this.loading = false;
             }
         }

@@ -429,10 +429,10 @@ export default {
                     this.discount.data
                 );
                 this.showNotif(true, "Successfully updated discount info.");
-                this.loading = false;
                 this.returnToPageIndex("/discounts");
             } catch (err) {
                 this.showNotif(false, "Could not edit discount info. ");
+            } finally {
                 this.loading = false;
             }
         }

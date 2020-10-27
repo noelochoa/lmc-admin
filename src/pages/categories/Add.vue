@@ -155,7 +155,6 @@ export default {
             try {
                 await Category.addCategory(this.category);
                 this.showNotif(true, "Created new product category.");
-                this.loading = false;
                 this.returnToPageIndex("/categories");
             } catch (err) {
                 this.showNotif(false, "Could not create product category. ");

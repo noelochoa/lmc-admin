@@ -395,7 +395,6 @@ export default {
             try {
                 await Discount.addDiscount(this.discount);
                 this.showNotif(true, "Added new discount entry.");
-                this.loading = false;
                 this.returnToPageIndex("/discounts");
             } catch (err) {
                 this.showNotif(false, "Could not create discount entry. ");

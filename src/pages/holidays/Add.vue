@@ -309,7 +309,6 @@ export default {
             try {
                 await Holiday.addHoliday(this.holiday);
                 this.showNotif(true, "Added new holiday entry.");
-                this.loading = false;
                 this.returnToPageIndex("/holidays");
             } catch (err) {
                 this.showNotif(false, "Could not create holiday entry. ");

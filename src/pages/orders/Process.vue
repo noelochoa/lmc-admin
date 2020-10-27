@@ -59,7 +59,10 @@
                 <h6>Process Order</h6>
                 <br />
                 <p>
-                    You may view, edit, and change the order status and details.
+                    You may view, edit, and change the order status and
+                    details.<br />
+                    CAUTION: Editing Customer and/or Products fields will place
+                    a NEW order with the updated price.
                 </p>
             </div>
         </div>
@@ -94,7 +97,7 @@
                                 <q-select
                                     class="field-value"
                                     v-model="order.data.status"
-                                    :options="orderStatuses"
+                                    :options="orderStatusList"
                                     dark
                                     dense
                                     outlined
@@ -105,6 +108,13 @@
                                     lazy-rules
                                     :rules="[_isValidStatus]"
                                 />
+                            </q-item>
+                            <q-item
+                                class="detail-field"
+                                v-if="isReplacedStatus"
+                            >
+                                <span class="field-label">Replaced by:</span>
+                                {{ order.data.replacedBy }}
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Target Date</span>
@@ -187,9 +197,45 @@
                                     :rules="[_isValidType]"
                                 />
                             </q-item>
+                            <transition name="fade">
+                                <q-item
+                                    class="detail-field"
+                                    v-if="order.data.type == 'delivery'"
+                                >
+                                    <span class="field-label">Address</span>
+                                    <q-input
+                                        dense
+                                        outlined
+                                        dark
+                                        hide-bottom-space
+                                        class="field-value"
+                                        v-model="order.data.address"
+                                        lazy-rules
+                                        :rules="[
+                                            val =>
+                                                val !== null &&
+                                                val.trim() !== ''
+                                        ]"
+                                    />
+                                </q-item>
+                            </transition>
+                            <q-item class="detail-field">
+                                <span class="field-label">Replace Order</span>
+                                <q-toggle
+                                    v-model="confirmEditProduct"
+                                    checked-icon="check"
+                                    color="green-4"
+                                    unchecked-icon="clear"
+                                    :label="confirmEditProduct ? 'Yes' : 'No'"
+                                />
+                            </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Customer</span>
                                 <q-select
+                                    :disabled="!confirmEditProduct"
+                                    :class="{
+                                        'no-pointer-events': !confirmEditProduct
+                                    }"
                                     class="field-value customer-select"
                                     v-model="order.data.customer"
                                     :options="options"
@@ -226,28 +272,7 @@
                                     </template>
                                 </q-select>
                             </q-item>
-                            <transition name="fade">
-                                <q-item
-                                    class="detail-field"
-                                    v-if="order.data.type == 1"
-                                >
-                                    <span class="field-label">Address</span>
-                                    <q-input
-                                        dense
-                                        outlined
-                                        dark
-                                        hide-bottom-space
-                                        class="field-value"
-                                        v-model="order.data.address"
-                                        lazy-rules
-                                        :rules="[
-                                            val =>
-                                                val !== null &&
-                                                val.trim() !== ''
-                                        ]"
-                                    />
-                                </q-item>
-                            </transition>
+
                             <q-item class="detail-field product-field">
                                 <span class="field-label">
                                     Products
@@ -257,7 +282,7 @@
                                         class="product-item"
                                         v-for="(product, idx) in order.data
                                             .products"
-                                        :key="'key-' + idx"
+                                        :key="'product-' + idx"
                                     >
                                         <q-item-section side>
                                             <q-avatar rounded size="64px">
@@ -309,13 +334,23 @@
                                             </q-item-label>
                                         </q-item-section>
                                         <q-item-section side class="text-white">
-                                            {{ product.price }} PHP
+                                            <span v-if="product.discount > 0">
+                                                <span class="text-strike">
+                                                    {{ product.price }}
+                                                </span>
+                                                (-{{ product.discount }}%)<br />
+                                                {{ product.finalPrice }} PHP
+                                            </span>
+                                            <span v-else
+                                                >{{ product.price }} PHP
+                                            </span>
                                         </q-item-section>
                                         <q-item-section
                                             side
                                             class="action-buttons text-white"
                                         >
                                             <q-btn
+                                                :disabled="!confirmEditProduct"
                                                 flat
                                                 dense
                                                 rounded
@@ -333,7 +368,8 @@
                                                 icon="clear"
                                                 @click="removeProduct(idx)"
                                                 :disabled="
-                                                    showProductEdit ||
+                                                    !confirmEditProduct ||
+                                                        showProductEdit ||
                                                         showProductAdd
                                                 "
                                             >
@@ -357,7 +393,7 @@
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Total Price</span>
-                                {{ order.data.total }} PHP
+                                {{ orderTotalPrice }} PHP
                             </q-item>
                         </q-list>
                         <q-separator />
@@ -651,7 +687,35 @@ export default {
     mounted() {
         this.getOrderDetails();
     },
-    computed: {},
+    computed: {
+        isReplacedStatus() {
+            if (!this.orderStatuses || this.orderStatuses.length < 1)
+                return false;
+            return this.orderStatuses.some(item => item == this.order.status);
+        },
+
+        orderStatusList() {
+            if (!this.isReplacedStatus) {
+                return this.orderStatuses.filter(item => {
+                    return item.label.toLowerCase() !== "replaced";
+                });
+            }
+
+            return this.orderStatuses;
+        },
+        orderTotalPrice() {
+            return this.order.data.products.length > 0
+                ? this.order.data.products.reduce((total, item) => {
+                      return (
+                          total +
+                          Number.parseInt(
+                              item.finalPrice ? item.finalPrice : item.price
+                          )
+                      );
+                  }, 0)
+                : 0;
+        }
+    },
     data() {
         return {
             right: false,
@@ -660,6 +724,7 @@ export default {
             productReady: false,
             showProductEdit: false,
             showProductAdd: false,
+            confirmEditProduct: false,
             searchProduct: "",
             selectedProduct: null,
             order: {
@@ -838,7 +903,7 @@ export default {
         async getAccounts() {
             Account.getAccountSelection()
                 .then(dat => {
-                    this.customerList = dat;
+                    this.customerList = dat.slice();
                     this.options = dat.slice();
                 })
                 .catch(err => {
@@ -856,15 +921,32 @@ export default {
                 });
         },
 
-        onSubmit: function(evt) {
-            /**TODO */
+        onSubmit: async function(evt) {
             this.loading = true;
-
-            setTimeout(() => {
-                this.showNotif(true, "Successfully updated order details. ");
-                this.loading = false;
+            try {
+                if (this.order.data.products.length < 1) {
+                    throw "No products selected";
+                }
+                if (this.confirmEditProduct) {
+                    // Place new Order and update status of this order to 'Replaced'
+                    await Order.replaceOrder(
+                        this.$route.params.id,
+                        this.order.data
+                    );
+                    this.showNotif(true, "Replaced new Order.");
+                } else {
+                    await Order.updateOrder(
+                        this.$route.params.id,
+                        this.order.data
+                    );
+                    this.showNotif(true, "Updated Order details.");
+                }
                 this.returnToPageIndex("/orders");
-            }, 2500);
+            } catch (err) {
+                this.showNotif(false, err + " Could not process the order. ");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 };

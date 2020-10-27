@@ -357,19 +357,19 @@ export default {
                         true,
                         "Successfully added new announcement. "
                     );
-                    this.loading = false;
                     this.returnToPageIndex("/announcements");
                 } catch (err) {
                     this.showNotif(
                         false,
                         "Could not create the announcement. "
                     );
+                } finally {
+                    this.loading = false;
                 }
             } else {
                 this.$refs.qTxtEditor.focus();
+                this.loading = false;
             }
-
-            this.loading = false;
         }
     }
 };

@@ -222,16 +222,16 @@
                                             </q-item-label>
                                         </q-item-section>
                                         <q-item-section side class="text-white">
-                                            <span v-if="product.discount > 0"
-                                                ><span class="text-strike">{{
-                                                    product.price
-                                                }}</span>
+                                            <span v-if="product.discount > 0">
+                                                <span class="text-strike">
+                                                    {{ product.price }}
+                                                </span>
                                                 (-{{ product.discount }}%)<br />
                                                 {{ product.finalPrice }} PHP
                                             </span>
                                             <span v-else
-                                                >{{ product.price }} PHP</span
-                                            >
+                                                >{{ product.price }} PHP
+                                            </span>
                                         </q-item-section>
                                         <q-item-section
                                             side
@@ -583,7 +583,6 @@ export default {
             this.getAccounts();
         }
     },
-    mounted() {},
     computed: {
         orderTotalPrice() {
             return this.order.products.length > 0
@@ -749,7 +748,7 @@ export default {
                     : null;
             this.customizedProduct.quantity = this.selectProduct.minOrderQuantity;
             this.customizedProduct.discounts = this.selectProduct.discount;
-            this.calcCustomized();
+            this.calcCustomizationPrice();
         },
 
         finalizePrice() {
@@ -825,14 +824,14 @@ export default {
         },
 
         onChgQty(val) {
-            this.calcCustomized();
+            this.calcCustomizationPrice();
         },
 
         onSelOption(val) {
-            this.calcCustomized();
+            this.calcCustomizationPrice();
         },
 
-        calcCustomized() {
+        calcCustomizationPrice() {
             const reducer = (total, item) => total + item.value.price;
             this.customizedProduct.price =
                 this.customizedProduct.quantity *
@@ -886,7 +885,6 @@ export default {
                 }
                 await Order.placeOrder(this.order);
                 this.showNotif(true, "Placed new Order.");
-                this.loading = false;
                 this.returnToPageIndex("/orders");
             } catch (err) {
                 this.showNotif(false, "Could not place the order. ");

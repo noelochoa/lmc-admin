@@ -277,10 +277,11 @@ export default {
                         true,
                         "Successfully posted reply to comment."
                     );
-                    this.loading = false;
                     this.returnToPageIndex("/comments");
                 } catch (err) {
                     this.showNotif(false, "Could not post reply. ");
+                } finally {
+                    this.loading = false;
                 }
             } else {
                 this.$refs.qTxtEditor.focus();

@@ -374,7 +374,10 @@ export default {
                 const resp = await Psa.getAnnouncement(this.$route.params.id);
                 this.announcement.data = resp;
             } catch (err) {
-                this.showNotif(false, "Could not retrieve announcement details. ");
+                this.showNotif(
+                    false,
+                    "Could not retrieve announcement details. "
+                );
                 this.announcement.hasError = true;
             } finally {
                 this.announcement.loading = false;
@@ -393,10 +396,11 @@ export default {
                         true,
                         "Successfully edited the announcement. "
                     );
-                    this.loading = false;
                     this.returnToPageIndex("/announcements");
                 } catch (err) {
                     this.showNotif(false, "Could not edit the announcement. ");
+                } finally {
+                    this.loading = false;
                 }
             } else {
                 this.$refs.qTxtEditor.focus();

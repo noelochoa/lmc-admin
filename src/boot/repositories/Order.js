@@ -93,7 +93,7 @@ export default class Order {
                 "YYYY-MM-DD HH:mm"
             );
             res.data.type = res.data.deliveryType;
-
+            res.data.address = res.data.shippingAddress;
             // Selected products
             res.data.products.forEach(item => {
                 item.name = item.product.name;
@@ -113,6 +113,31 @@ export default class Order {
             await this.axios.post("/api/orders/cms", {
                 ...order
             });
+            return true;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
+    async replaceOrder(order) {
+        try {
+            await this.axios.post("/api/orders/cms", {
+                ...order
+            });
+            return true;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
+    async updateOrder(paramID, { status, target, type, address }) {
+        try {
+            await this.axios.patch(`api/orders/cms/${paramID}`, [
+                { property: "status", value: status },
+                { property: "target", value: target },
+                { property: "deliveryType", value: type },
+                { property: "shippingAddress", value: address }
+            ]);
             return true;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";

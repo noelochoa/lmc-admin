@@ -282,10 +282,10 @@ export default {
                     });
                 }
                 this.showNotif(true, "Successfully updated feature config.");
-                this.loading = false;
                 this.returnToPageIndex("/products");
             } catch (err) {
                 this.showNotif(false, "Could not update feature config.");
+            } finally {
                 this.loading = false;
             }
         },
