@@ -72,7 +72,7 @@
                     <q-icon
                         name="account_circle"
                         class="caption-icon q-mx-md"
-                    />Order Info
+                    />Order Info ({{ order.data.ordernum }})
 
                     <q-btn
                         no-ripple
@@ -220,16 +220,37 @@
                                 </q-item>
                             </transition>
                             <q-item class="detail-field">
-                                <span class="field-label">Replace Order</span>
+                                <span class="field-label">
+                                    Memo
+                                </span>
+                                <q-input
+                                    type="textarea"
+                                    textarea
+                                    dense
+                                    outlined
+                                    dark
+                                    hide-bottom-space
+                                    class="field-value"
+                                    v-model="order.data.memo"
+                                />
+                            </q-item>
+                            <q-item class="detail-field">
+                                <span class="field-label">Replace Items</span>
                                 <q-toggle
                                     v-model="confirmEditProduct"
                                     checked-icon="check"
                                     color="green-4"
                                     unchecked-icon="clear"
                                     :label="confirmEditProduct ? 'Yes' : 'No'"
+                                    @input="onToggleReplace"
                                 />
                             </q-item>
-                            <q-item class="detail-field">
+                            <q-item
+                                class="detail-field"
+                                :class="{
+                                    'cursor-not-allowed bg-grey-8': !confirmEditProduct
+                                }"
+                            >
                                 <span class="field-label">Customer</span>
                                 <q-select
                                     :disabled="!confirmEditProduct"
@@ -273,7 +294,12 @@
                                 </q-select>
                             </q-item>
 
-                            <q-item class="detail-field product-field">
+                            <q-item
+                                class="detail-field product-field"
+                                :class="{
+                                    'cursor-not-allowed bg-grey-8': !confirmEditProduct
+                                }"
+                            >
                                 <span class="field-label">
                                     Products
                                 </span>
@@ -386,11 +412,15 @@
                                         icon="add"
                                         label="Add Product"
                                         :disabled="
-                                            showProductEdit || showProductAdd
+                                            !confirmEditProduct ||
+                                                showProductEdit ||
+                                                showProductAdd
                                         "
+                                        @click="openProductPicker()"
                                     />
                                 </div>
                             </q-item>
+
                             <q-item class="detail-field">
                                 <span class="field-label">Total Price</span>
                                 {{ orderTotalPrice }} PHP
@@ -417,7 +447,7 @@
 
             <!-- Product Picker Dialog -->
             <ProductPicker
-                :showDlg.sync="showProductEdit"
+                :showDlg.sync="showProductAdd"
                 v-bind="{
                     productReady,
                     dialogLoading
@@ -725,14 +755,13 @@ export default {
             showProductEdit: false,
             showProductAdd: false,
             confirmEditProduct: false,
-            searchProduct: "",
-            selectedProduct: null,
             order: {
                 loading: true,
                 hasError: false,
                 data: {
+                    ordernum: "",
                     products: [],
-                    total: 12333.01,
+                    total: 0,
                     customer: null,
                     target: null,
                     address: "",
@@ -740,6 +769,7 @@ export default {
                     status: null
                 }
             },
+            orderBackup: {},
             orderStatuses: [],
             deliveryTypes: [
                 {
@@ -753,6 +783,19 @@ export default {
             ],
             customerList: [],
             options: null,
+            productOptions: null,
+            searchProduct: null,
+            selectProduct: null,
+            customizedProduct: {
+                id: -1,
+                name: "",
+                image: "",
+                quantity: 0,
+                price: 0,
+                discounts: [],
+                options: [],
+                otherVal: []
+            },
             similarOrders: [
                 {
                     ordernum: "507f1f77bcf86cd799439011",
@@ -878,17 +921,59 @@ export default {
             // this.dialogLoading = true;
         },
         removeProduct(productKey) {
-            console.log(productKey);
             this.$delete(this.order.data.products, productKey);
         },
+
+        openProductPicker(evt) {
+            this.selectProduct = null;
+            this.searchProduct = null;
+            this.showProductAdd = true;
+        },
+
+        clearSelection() {
+            this.customizedProduct.id = -1;
+            this.customizedProduct.name = "";
+            this.customizedProduct.image = "";
+            this.customizedProduct.options = [];
+            this.customizedProduct.discounts = [];
+            this.customizedProduct.otherVal = [];
+            this.customizedProduct.quantity = 0;
+            this.customizedProduct.price = 0;
+        },
+
+        clearSelCustomer() {
+            this.order.data.customer = null;
+            this.order.data.products.forEach(item => {
+                item.discount = 0;
+                item.finalPrice = item.price;
+            });
+        },
+
         onSetProduct() {
             /**TODO */
             // replace list after http request
         },
+
+        onToggleReplace(val, evt) {
+            if (!val) {
+                // Revert to original
+                this.options = this.customerList.slice();
+                this.order.data.customer = this.orderBackup.customer;
+                this.order.data.products = this.orderBackup.products.slice();
+            } else {
+                this.showNotif(
+                    true,
+                    "CAUTION: Saving changes will place a NEW Order."
+                );
+            }
+        },
+
         async getOrderDetails() {
             try {
                 const resp = await Order.getOrder(this.$route.params.id);
-                this.order.data = resp;
+                this.order.data = { ...resp };
+                this.orderBackup.customer = resp.customer; // make copy
+                this.orderBackup.products = resp.products.slice();
             } catch (err) {
                 this.showNotif(
                     false,

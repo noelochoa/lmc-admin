@@ -456,25 +456,25 @@ export default {
                 {
                     label: "Orders Placed",
                     value: 0,
-                    link: "/orders/placed",
+                    link: "/orders?s=placed",
                     key: "placed"
                 },
                 {
                     label: "Orders Accepted",
                     value: 0,
-                    link: "/orders/accepted",
+                    link: "/orders?s=accepted",
                     key: "accepted"
                 },
                 {
                     label: "Orders being Prepared",
                     value: 0,
-                    link: "/orders/preparing",
+                    link: "/orders?s=preparing",
                     key: "preparing"
                 },
                 {
                     label: "Orders Fulfilled",
                     value: 0,
-                    link: "/orders/fulfilled",
+                    link: "/orders?s=fulfilled",
                     key: "fulfilled"
                 }
             ]

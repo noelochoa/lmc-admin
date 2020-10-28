@@ -1,5 +1,12 @@
 <template>
-    <q-dialog :value="showDlg" seamless persistent square @hide="emitClose">
+    <q-dialog
+        :value="showDlg"
+        seamless
+        persistent
+        square
+        position="right"
+        @hide="emitClose"
+    >
         <q-card dark class="product-dialog-content">
             <q-card-section>
                 <div class="text-h6">Select Product</div>

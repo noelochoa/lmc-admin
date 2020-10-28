@@ -7,6 +7,19 @@ export default class Order {
         this.axios = axios;
     }
 
+    __zeroPad(num, numZeros) {
+        var n = Math.abs(num);
+        if (isNaN(num)) n = 0;
+        var zeros = Math.max(0, numZeros - Math.floor(n).toString().length);
+        var zeroString = Math.pow(10, zeros)
+            .toString()
+            .substr(1);
+        if (num < 0) {
+            zeroString = "-" + zeroString;
+        }
+        return zeroString + n;
+    }
+
     async getStatusSelection() {
         // Order Status
         try {
@@ -67,13 +80,19 @@ export default class Order {
                 params: params
             });
             res.data.forEach(item => {
+                const dt = moment(item.target);
                 ret.push({
-                    ordernum: item._id,
+                    id: item._id,
+                    ordernum:
+                        "OR" +
+                        dt.format("YY") +
+                        "-" +
+                        this.__zeroPad(item.ordernum, 6),
                     status: item.status[0].status,
                     class: item.status[0].status
                         .replace(/\s/g, "-")
                         .toLowerCase(),
-                    target: moment(item.target).format("MMM DD, YYYY HH:mm"),
+                    target: dt.format("MMM DD, YYYY HH:mm"),
                     customer:
                         item.customer[0].fname + " " + item.customer[0].lname,
                     type: item.deliveryType ? item.deliveryType : "-",
@@ -89,9 +108,13 @@ export default class Order {
     async getOrder(paramID) {
         try {
             const res = await this.axios.get(`api/orders/cms/${paramID}`);
-            res.data.target = moment(res.data.target).format(
-                "YYYY-MM-DD HH:mm"
-            );
+            const dt = moment(res.data.target);
+            res.data.ordernum =
+                "OR" +
+                dt.format("YY") +
+                "-" +
+                this.__zeroPad(res.data.ordernum, 6);
+            res.data.target = dt.format("YYYY-MM-DD HH:mm");
             res.data.type = res.data.deliveryType;
             res.data.address = res.data.shippingAddress;
             // Selected products
@@ -130,13 +153,14 @@ export default class Order {
         }
     }
 
-    async updateOrder(paramID, { status, target, type, address }) {
+    async updateOrder(paramID, { status, target, type, address, memo }) {
         try {
             await this.axios.patch(`api/orders/cms/${paramID}`, [
                 { property: "status", value: status },
                 { property: "target", value: target },
                 { property: "deliveryType", value: type },
-                { property: "shippingAddress", value: address }
+                { property: "shippingAddress", value: address },
+                { property: "memo", value: memo }
             ]);
             return true;
         } catch (err) {

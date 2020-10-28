@@ -110,9 +110,7 @@
                                     round
                                     icon="build"
                                     class="q-mr-sm"
-                                    :to="
-                                        '/orders/process/' + props.row.ordernum
-                                    "
+                                    :to="'/orders/process/' + props.row.id"
                                 >
                                     <q-tooltip
                                         anchor="center right"

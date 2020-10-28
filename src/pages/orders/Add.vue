@@ -265,6 +265,21 @@
                                 </div>
                             </q-item>
                             <q-item class="detail-field">
+                                <span class="field-label">
+                                    Memo
+                                </span>
+                                <q-input
+                                    type="textarea"
+                                    textarea
+                                    dense
+                                    outlined
+                                    dark
+                                    hide-bottom-space
+                                    class="field-value"
+                                    v-model="order.memo"
+                                />
+                            </q-item>
+                            <q-item class="detail-field">
                                 <span class="field-label">Total Price</span>
                                 {{ orderTotalPrice }} PHP
                             </q-item>
@@ -272,11 +287,13 @@
                         <q-separator />
                         <div class="q-pa-md">
                             <q-btn
-                                label="Add"
+                                label="Place Order"
                                 type="submit"
                                 color="primary"
                                 :loading="loading"
-                                :disable="loading"
+                                :disable="
+                                    loading || this.order.products.length < 1
+                                "
                             >
                                 <template v-slot:loading>
                                     <q-spinner-gears />
@@ -602,13 +619,13 @@ export default {
             showProductAdd: false,
             loading: false,
             pfilterLoading: false,
-            hasTyped: false,
             order: {
                 products: [],
                 customer: null,
                 target: null,
                 address: "",
-                type: "delivery"
+                type: "delivery",
+                memo: ""
             },
             deliveryTypes: [
                 {
