@@ -270,6 +270,7 @@
                                 </span>
                                 <q-input
                                     type="textarea"
+                                    :rows="3"
                                     textarea
                                     dense
                                     outlined
@@ -792,8 +793,6 @@ export default {
                     ).toFixed(0);
 
                     // Update new price (discounted)
-                    // this.$set(el, "discount", maxDiscount);
-                    // this.$set(el, "finalPrice", finalPrice);
                     el.discount = maxDiscount;
                     el.finalPrice = finalPrice;
                 }
@@ -804,7 +803,7 @@ export default {
             this.finalizePrice();
         },
 
-        onSetProduct() {
+        onSetProduct(evt) {
             // On "Add" from Dialog
             this.$refs.selProductForm.validate().then(success => {
                 if (!success) {

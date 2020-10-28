@@ -1,4 +1,5 @@
 const moment = require("moment");
+const prefix = "OR";
 
 export default class Order {
     axios = void 0;
@@ -18,6 +19,10 @@ export default class Order {
             zeroString = "-" + zeroString;
         }
         return zeroString + n;
+    }
+
+    __buildOrderNum(yy, num) {
+        return prefix + yy + "-" + this.__zeroPad(num, 6);
     }
 
     async getStatusSelection() {
@@ -83,11 +88,10 @@ export default class Order {
                 const dt = moment(item.target);
                 ret.push({
                     id: item._id,
-                    ordernum:
-                        "OR" +
-                        dt.format("YY") +
-                        "-" +
-                        this.__zeroPad(item.ordernum, 6),
+                    ordernum: this.__buildOrderNum(
+                        dt.format("YY"),
+                        item.ordernum
+                    ),
                     status: item.status[0].status,
                     class: item.status[0].status
                         .replace(/\s/g, "-")
@@ -109,21 +113,30 @@ export default class Order {
         try {
             const res = await this.axios.get(`api/orders/cms/${paramID}`);
             const dt = moment(res.data.target);
-            res.data.ordernum =
-                "OR" +
-                dt.format("YY") +
-                "-" +
-                this.__zeroPad(res.data.ordernum, 6);
+            res.data.ordernum = this.__buildOrderNum(
+                dt.format("YY"),
+                res.data.ordernum
+            );
             res.data.target = dt.format("YYYY-MM-DD HH:mm");
             res.data.type = res.data.deliveryType;
             res.data.address = res.data.shippingAddress;
+            if (res.data.replacedBy) {
+                res.data.replacedBy = Object.assign({}, res.data.replacedBy, {
+                    ordernum: this.__buildOrderNum(
+                        dt.format("YY"),
+                        res.data.replacedBy.ordernum
+                    )
+                });
+            }
             // Selected products
             res.data.products.forEach(item => {
                 item.name = item.product.name;
+                item.discounts = item.product.discounts;
                 item.image =
                     item.product.images && item.product.images.length > 0
                         ? item.product.images[0].image
                         : "";
+                item.product = item.product._id;
             });
             return res.data;
         } catch (err) {
@@ -142,10 +155,13 @@ export default class Order {
         }
     }
 
-    async replaceOrder(order) {
+    async replaceOrder(paramID, order) {
         try {
-            await this.axios.post("/api/orders/cms", {
-                ...order
+            let params = order;
+            delete params._id;
+            delete params.ordernum;
+            await this.axios.patch(`api/orders/cms/replace/${paramID}`, {
+                ...params
             });
             return true;
         } catch (err) {

@@ -86,7 +86,9 @@
                 <div>
                     <q-form
                         @submit.prevent.stop="onSubmit"
-                        :disabled="order.hasError || order.loading"
+                        :disabled="
+                            order.hasError || order.loading || isReplacedStatus
+                        "
                     >
                         <q-item class="q-mt-sm" v-if="order.loading">
                             <q-spinner color="white" size="2em" />
@@ -114,7 +116,7 @@
                                 v-if="isReplacedStatus"
                             >
                                 <span class="field-label">Replaced by:</span>
-                                {{ order.data.replacedBy }}
+                                {{ order.data.replacedBy.ordernum }}
                             </q-item>
                             <q-item class="detail-field">
                                 <span class="field-label">Target Date</span>
@@ -225,6 +227,7 @@
                                 </span>
                                 <q-input
                                     type="textarea"
+                                    :rows="3"
                                     textarea
                                     dense
                                     outlined
@@ -234,7 +237,10 @@
                                     v-model="order.data.memo"
                                 />
                             </q-item>
-                            <q-item class="detail-field">
+                            <q-item
+                                class="detail-field"
+                                v-if="!isReplacedStatus"
+                            >
                                 <span class="field-label">Replace Items</span>
                                 <q-toggle
                                     v-model="confirmEditProduct"
@@ -272,13 +278,12 @@
                                     map-options
                                     lazy-rules
                                     :rules="[val => val !== null]"
+                                    @input="onSelCustomer"
                                 >
                                     <template v-slot:append>
                                         <q-icon
                                             name="close"
-                                            @click.stop="
-                                                order.data.customer = null
-                                            "
+                                            @click.stop="clearSelCustomer"
                                             class="cursor-pointer"
                                         />
                                     </template>
@@ -376,18 +381,6 @@
                                             class="action-buttons text-white"
                                         >
                                             <q-btn
-                                                :disabled="!confirmEditProduct"
-                                                flat
-                                                dense
-                                                rounded
-                                                icon="build_circle"
-                                                @click="editProduct(idx)"
-                                            >
-                                                <q-tooltip>
-                                                    Configure
-                                                </q-tooltip>
-                                            </q-btn>
-                                            <q-btn
                                                 flat
                                                 dense
                                                 rounded
@@ -395,8 +388,7 @@
                                                 @click="removeProduct(idx)"
                                                 :disabled="
                                                     !confirmEditProduct ||
-                                                        showProductEdit ||
-                                                        showProductAdd
+                                                        showPicker
                                                 "
                                             >
                                                 <q-tooltip>
@@ -412,9 +404,7 @@
                                         icon="add"
                                         label="Add Product"
                                         :disabled="
-                                            !confirmEditProduct ||
-                                                showProductEdit ||
-                                                showProductAdd
+                                            !confirmEditProduct || showPicker
                                         "
                                         @click="openProductPicker()"
                                     />
@@ -447,66 +437,71 @@
 
             <!-- Product Picker Dialog -->
             <ProductPicker
-                :showDlg.sync="showProductAdd"
-                v-bind="{
-                    productReady,
-                    dialogLoading
-                }"
+                :showDlg.sync="showPicker"
                 @hide="onCloseDialog(val)"
             >
                 <template v-slot:product>
-                    <q-form @submit.prevent.stop="onSetProduct">
-                        <q-list class="productdlg-list">
-                            <q-item class="productdlg-item">
-                                <q-input
-                                    dense
-                                    outlined
-                                    hide-bottom-space
-                                    dark
-                                    debounce="250"
-                                    placeholder="Search Product"
-                                    class="search-field"
-                                    v-model="searchProduct"
-                                    @
-                                >
-                                    <template v-slot:prepend>
-                                        <q-icon name="search" color="white" />
-                                    </template>
-                                </q-input>
-                            </q-item>
+                    <q-form ref="selProductForm">
+                        <q-item class="productdlg-item">
+                            <q-select
+                                class="search-field"
+                                popup-content-class="options-light"
+                                v-model="searchProduct"
+                                :options="productOptions"
+                                label="Search Product"
+                                hide-dropdown-icon
+                                hide-bottom-space
+                                dark
+                                options-dark
+                                outlined
+                                use-input
+                                emit-value
+                                map-options
+                                debounce="250"
+                                :loading="pfilterLoading"
+                                @filter="pfilterFn"
+                                @input="onSelectProduct"
+                            >
+                                <template v-slot:prepend>
+                                    <q-icon name="search" color="white" />
+                                </template>
+                                <template v-slot:append>
+                                    <q-icon
+                                        name="close"
+                                        v-if="!pfilterLoading"
+                                        @click.stop="
+                                            [
+                                                (searchProduct = null),
+                                                (selectProduct = null)
+                                            ]
+                                        "
+                                        class="cursor-pointer"
+                                    />
+                                </template>
+                                <template v-slot:no-option>
+                                    <q-item class="options-light">
+                                        <q-item-section
+                                            class="text-italic text-grey"
+                                        >
+                                            No products found.
+                                        </q-item-section>
+                                    </q-item>
+                                </template>
+                            </q-select>
+                        </q-item>
+                        <q-list class="productdlg-list" v-if="selectProduct">
                             <q-item class="productdlg-item">
                                 <div class="attr-label text-grey-6">
                                     Name
                                 </div>
                                 <div class="attr-value">
-                                    {{ selectedProduct.name }}
+                                    {{ selectProduct.name }}
                                 </div>
                             </q-item>
                             <q-item class="productdlg-item">
                                 <div class="attr-label text-grey-6">
-                                    Options
-                                </div>
-                                <div
-                                    class="attr-value q-my-sm"
-                                    v-for="(item,
-                                    key) in selectedProduct.options"
-                                    :key="'pkey-' + key"
-                                >
-                                    <span class="capitalize option-label">
-                                        {{ item._option }}
-                                    </span>
-                                    <q-select
-                                        class="option-select"
-                                        dense
-                                        dark
-                                        outlined
-                                        v-model="item._selected"
-                                    />
-                                </div>
-                            </q-item>
-                            <q-item class="productdlg-item">
-                                <div class="attr-label text-grey-6">
-                                    Qty.
+                                    Qty. (MIN:
+                                    {{ selectProduct.minOrderQuantity }})
                                 </div>
                                 <q-input
                                     dense
@@ -515,15 +510,63 @@
                                     dark
                                     type="number"
                                     class="attr-value"
-                                    v-model="selectedProduct.quantity"
+                                    @input="onChgQty"
+                                    :min="selectProduct.minOrderQuantity"
+                                    v-model="customizedProduct.quantity"
                                 />
+                            </q-item>
+                            <q-item class="productdlg-item">
+                                <div class="attr-label text-grey-6">
+                                    Options
+                                </div>
+                                <div
+                                    class="attr-value q-my-sm"
+                                    v-for="(item, key) in selectProduct.options"
+                                    :key="'optKey-' + key"
+                                >
+                                    <span class="capitalize option-label">
+                                        {{ item.attribute }}
+                                    </span>
+                                    <q-select
+                                        popup-content-class="options-light"
+                                        dense
+                                        dark
+                                        outlined
+                                        :options="
+                                            toSelOptions(
+                                                item.attribute,
+                                                item.choices
+                                            )
+                                        "
+                                        v-model="customizedProduct.options[key]"
+                                        @input="onSelOption(key)"
+                                        lazy-rules
+                                        :rules="[val => !!val]"
+                                    />
+                                    <q-input
+                                        v-if="
+                                            isOtherSelected(
+                                                customizedProduct.options[key]
+                                            )
+                                        "
+                                        dense
+                                        dark
+                                        outlined
+                                        placeholder="Please specify"
+                                        v-model="
+                                            customizedProduct.otherVal[key]
+                                        "
+                                        lazy-rules
+                                        :rules="[val => !!val]"
+                                    />
+                                </div>
                             </q-item>
                             <q-item class="productdlg-item">
                                 <div class="attr-label text-grey-6">
                                     Price (PHP)
                                 </div>
                                 <div class="attr-value">
-                                    {{ selectedProduct.price }}
+                                    {{ customizedProduct.price }}
                                 </div>
                             </q-item>
                         </q-list>
@@ -538,10 +581,9 @@
                     />
                     <q-btn
                         flat
-                        label="OK"
+                        label="Add"
                         color="primary"
-                        @click="onSelectProduct"
-                        v-close-popup
+                        @click="onSetProduct"
                     />
                 </template>
             </ProductPicker>
@@ -626,6 +668,12 @@ div[class*="attr-"] {
 .search-field {
     width: 100%;
 }
+.search-field {
+    width: 100%;
+    overflow: hidden;
+    word-wrap: none;
+    text-overflow: ellipsis;
+}
 .ctext- {
     &placed {
         color: $primary;
@@ -681,6 +729,12 @@ div[class*="attr-"] {
 .q-field__bottom {
     display: none;
 }
+.options-light {
+    background: #fff !important;
+}
+.options-light .q-item__label {
+    color: #000 !important;
+}
 @media (max-width: 1290px) {
     .similar-orders {
         background: #1a1d1a !important;
@@ -721,7 +775,11 @@ export default {
         isReplacedStatus() {
             if (!this.orderStatuses || this.orderStatuses.length < 1)
                 return false;
-            return this.orderStatuses.some(item => item == this.order.status);
+            return this.orderStatuses.some(
+                item =>
+                    item.value == this.order.data.status &&
+                    item.label.toLowerCase() == "replaced"
+            );
         },
 
         orderStatusList() {
@@ -730,7 +788,6 @@ export default {
                     return item.label.toLowerCase() !== "replaced";
                 });
             }
-
             return this.orderStatuses;
         },
         orderTotalPrice() {
@@ -750,10 +807,8 @@ export default {
         return {
             right: false,
             loading: false,
-            dialogLoading: true,
-            productReady: false,
-            showProductEdit: false,
-            showProductAdd: false,
+            pfilterLoading: false,
+            showPicker: false,
             confirmEditProduct: false,
             order: {
                 loading: true,
@@ -876,7 +931,6 @@ export default {
         },
 
         filterFn(val, update, abort) {
-            /**TODO */
             if (!val || val.trim() == "") {
                 abort();
                 return;
@@ -889,37 +943,84 @@ export default {
                 );
             });
         },
-        createProductDialog(productKey) {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    this.selectedProduct = this.order.data.products[productKey];
-                    resolve("TODO");
-                }, 1500);
+
+        async pfilterFn(val, update, abort) {
+            if (!val || val.trim() == "") {
+                abort();
+                return;
+            }
+
+            try {
+                this.pfilterLoading = true;
+                const res = await Product.searchProducts(val);
+                this.productList = res.products.slice();
+
+                update(() => {
+                    this.productOptions = this.productList.map(item => {
+                        return { label: item.name, value: item.id };
+                    });
+                });
+            } catch (err) {
+                this.showNotif(false, "Error searching product/s." + err);
+            } finally {
+                this.pfilterLoading = false;
+            }
+        },
+
+        onCloseDialog() {},
+        finalizePrice() {
+            // Check for discounts and update prices
+            const accnt = this.customerList.find(item => {
+                return item.value == this.order.data.customer;
+            });
+            if (!accnt) return;
+
+            this.order.data.products.forEach(el => {
+                const discount = el.discounts.filter(item => {
+                    return item.target == accnt.type || item.target == "all";
+                });
+                if (discount && discount.length > 0) {
+                    const maxDiscount = Math.max.apply(
+                        Math,
+                        discount.map(function(o) {
+                            return o.percent;
+                        })
+                    );
+                    const finalPrice = (
+                        el.price -
+                        (el.price * maxDiscount) / 100
+                    ).toFixed(0);
+
+                    // Update new price (discounted)
+                    el.discount = maxDiscount;
+                    el.finalPrice = finalPrice;
+                }
             });
         },
-        async addProduct() {
-            this.showProductAdd = true;
-        },
-        async editProduct(productKey) {
-            this.productReady = false;
-            this.dialogLoading = true;
 
-            this.showProductEdit = true;
-            await this.createProductDialog(productKey);
+        onSelCustomer(val) {
+            this.finalizePrice();
+        },
 
-            this.productReady = true;
-            this.dialogLoading = false;
+        onSelectProduct(val) {
+            // On select from search results
+            this.selectProduct = this.productList.find(item => {
+                return item.id == val;
+            });
+            this.clearSelection();
+            // Set item for cutomization
+            this.customizedProduct.id = this.selectProduct.id;
+            this.customizedProduct.name = this.selectProduct.name;
+            this.customizedProduct.image =
+                this.selectProduct.images &&
+                this.selectProduct.images.length > 0
+                    ? this.selectProduct.images[0].image
+                    : null;
+            this.customizedProduct.quantity = this.selectProduct.minOrderQuantity;
+            this.customizedProduct.discounts = this.selectProduct.discount;
+            this.calcCustomizationPrice();
         },
-        onCloseDialog() {
-            // RESET
-            // this.productReady = false;
-            // this.dialogLoading = true;
-        },
-        onSelectProduct() {
-            // RESET
-            // this.productReady = false;
-            // this.dialogLoading = true;
-        },
+
         removeProduct(productKey) {
             this.$delete(this.order.data.products, productKey);
         },
@@ -927,7 +1028,7 @@ export default {
         openProductPicker(evt) {
             this.selectProduct = null;
             this.searchProduct = null;
-            this.showProductAdd = true;
+            this.showPicker = true;
         },
 
         clearSelection() {
@@ -949,9 +1050,84 @@ export default {
             });
         },
 
-        onSetProduct() {
-            /**TODO */
-            // replace list after http request
+        onSetProduct(evt) {
+            // On "Add" from Dialog
+            this.$refs.selProductForm.validate().then(success => {
+                if (!success) {
+                    return;
+                }
+                if (!this.selectProduct) return;
+                this.order.data.products.push({
+                    product: this.customizedProduct.id,
+                    name: this.customizedProduct.name,
+                    image: this.customizedProduct.image,
+                    price: this.customizedProduct.price,
+                    quantity: this.customizedProduct.quantity,
+                    discount: 0, // temporary
+                    finalPrice: this.customizedProduct.price, //temporary
+                    discounts: this.customizedProduct.discounts,
+                    options: this.customizedProduct.options.map((item, key) => {
+                        return {
+                            _option: item.key,
+                            _selected: item.value.value,
+                            otherValue:
+                                item.value.value == "Other"
+                                    ? this.customizedProduct.otherVal[key]
+                                    : null
+                        };
+                    })
+                });
+                // Update all prices
+                this.finalizePrice();
+
+                // Reset Dialog
+                this.showPicker = false;
+                this.clearSelection();
+            });
+        },
+
+        onChgQty(val) {
+            this.calcCustomizationPrice();
+        },
+
+        onSelOption(val) {
+            this.calcCustomizationPrice();
+        },
+
+        calcCustomizationPrice() {
+            const reducer = (total, item) => total + item.value.price;
+            this.customizedProduct.price =
+                this.customizedProduct.quantity *
+                this.customizedProduct.options.reduce(
+                    reducer,
+                    this.selectProduct.basePrice
+                );
+        },
+
+        toSelOptions(key, obj) {
+            // console.log(this.customizedProduct);
+            if (obj) {
+                return obj.map(item => {
+                    return {
+                        label:
+                            item.value +
+                            (item.price >= 0
+                                ? `(+${item.price}  PHP)`
+                                : `(${item.price} PHP)`),
+                        value: item,
+                        key: key
+                    };
+                });
+            }
+            return obj;
+        },
+
+        isOtherSelected(obj) {
+            if (obj) {
+                return obj.value.value == "Other";
+            }
+
+            return false;
         },
 
         onToggleReplace(val, evt) {
@@ -1014,21 +1190,19 @@ export default {
                 }
                 if (this.confirmEditProduct) {
                     // Place new Order and update status of this order to 'Replaced'
-                    await Order.replaceOrder(
-                        this.$route.params.id,
-                        this.order.data
-                    );
-                    this.showNotif(true, "Replaced new Order.");
+                    await Order.replaceOrder(this.$route.params.id, {
+                        ...this.order.data
+                    });
+                    this.showNotif(true, "Successfully placed a new order.");
                 } else {
-                    await Order.updateOrder(
-                        this.$route.params.id,
-                        this.order.data
-                    );
+                    await Order.updateOrder(this.$route.params.id, {
+                        ...this.order.data
+                    });
                     this.showNotif(true, "Updated Order details.");
                 }
                 this.returnToPageIndex("/orders");
             } catch (err) {
-                this.showNotif(false, err + " Could not process the order. ");
+                this.showNotif(false, "Could not process the order. ");
             } finally {
                 this.loading = false;
             }
