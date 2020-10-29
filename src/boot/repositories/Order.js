@@ -109,6 +109,33 @@ export default class Order {
         }
     }
 
+    async findSimilarOrders(paramID, { target, status, products }) {
+        try {
+            let ret = [];
+            const prodOptions = products
+                ? products
+                      .map(prod => {
+                          return prod.options
+                              .map(opt => opt._selected)
+                              .join(" ");
+                      })
+                      .filter(() => {
+                          return true;
+                      })
+                : null;
+
+            const res = await this.axios.post(`api/orders/similar/${paramID}`, {
+                target,
+                status,
+                options: prodOptions
+            });
+            console.log(res.data);
+            return ret;
+        } catch (err) {
+            throw err.response.data.error || "Error has occurred.";
+        }
+    }
+
     async getOrder(paramID) {
         try {
             const res = await this.axios.get(`api/orders/cms/${paramID}`);

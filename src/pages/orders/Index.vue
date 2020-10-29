@@ -459,10 +459,7 @@ export default {
                 const resp = await Order.getOrderStats(this.selDate);
                 this.orderStats = resp.slice();
             } catch (err) {
-                this.showNotif(
-                    false,
-                    err + "Could not retrieve order statistics. "
-                );
+                this.showNotif(false, "Could not retrieve order statistics. ");
             } finally {
                 this.loadingStats = false;
             }
@@ -476,7 +473,7 @@ export default {
                 this.data = this.original.slice();
                 this.pagination.page = props.pagination.page;
             } catch (err) {
-                this.showNotif(false, "Could not retrieve account details. ");
+                this.showNotif(false, "Could not retrieve list of orders. ");
             } finally {
                 this.loading = false;
             }

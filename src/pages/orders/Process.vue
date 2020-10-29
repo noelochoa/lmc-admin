@@ -19,7 +19,13 @@
             </div>
             <div
                 class="q-my-sm text-h6 text-grey-5 flex flex-center"
-                v-if="similarOrders && similarOrders.length > 0"
+                v-if="findingSimilar"
+            >
+                <q-spinner color="white" size="2em" />
+            </div>
+            <div
+                class="q-my-sm text-h6 text-grey-5 flex flex-center"
+                v-else-if="similarOrderList && similarOrderList.length > 0"
             >
                 Similar Orders
             </div>
@@ -28,7 +34,7 @@
             </div>
             <q-card
                 class="q-ma-md bg-grey-8"
-                v-for="item in similarOrders"
+                v-for="item in similarOrderList"
                 :key="item.ordernum"
             >
                 <q-card-section>
@@ -80,7 +86,7 @@
                         flat
                         align="right"
                         :label="(right ? 'Hide' : 'Find') + ' Similar'"
-                        @click="right = !right"
+                        @click="findSimilar"
                     />
                 </div>
                 <div>
@@ -790,6 +796,7 @@ export default {
             }
             return this.orderStatuses;
         },
+
         orderTotalPrice() {
             return this.order.data.products.length > 0
                 ? this.order.data.products.reduce((total, item) => {
@@ -801,6 +808,19 @@ export default {
                       );
                   }, 0)
                 : 0;
+        },
+
+        similarOrderList() {
+            if (
+                this.findingSimilar ||
+                (this.similarOrders && this.similarOrders.length < 1)
+            )
+                return [];
+            return this.similarOrders.reduce((r, a) => {
+                r[a.similarity] = r[a.similarity] || [];
+                r[a.similarity].push(a);
+                return r;
+            }, Object.create(null));
         }
     },
     data() {
@@ -808,6 +828,7 @@ export default {
             right: false,
             loading: false,
             pfilterLoading: false,
+            findingSimilar: false,
             showPicker: false,
             confirmEditProduct: false,
             order: {
@@ -852,36 +873,36 @@ export default {
                 otherVal: []
             },
             similarOrders: [
-                {
-                    ordernum: "507f1f77bcf86cd799439011",
-                    status: "Placed",
-                    target: "Feb 20, 2020",
-                    customer: "John",
-                    similarity: "Same product orders",
-                    total: 1000
-                },
-                {
-                    ordernum: 2,
-                    status: "Processing",
-                    target: "Feb 20, 2020",
-                    customer: "John",
-                    similarity: "Same target date",
-                    total: 3000
-                },
-                {
-                    ordernum: 1,
-                    status: "fulfilled",
-                    target: "Feb 20, 2020 10:30",
-                    customer: "AAAAAAA",
-                    total: 2000
-                },
-                {
-                    ordernum: 22,
-                    status: "Cancelled",
-                    target: "Feb 10, 2020 10:30",
-                    customer: "AAA",
-                    total: 200.5
-                }
+                // {
+                //     ordernum: "507f1f77bcf86cd799439011",
+                //     status: "Placed",
+                //     target: "Feb 20, 2020",
+                //     customer: "John",
+                //     similarity: "Same product orders",
+                //     total: 1000
+                // },
+                // {
+                //     ordernum: 2,
+                //     status: "Processing",
+                //     target: "Feb 20, 2020",
+                //     customer: "John",
+                //     similarity: "Same target date",
+                //     total: 3000
+                // },
+                // {
+                //     ordernum: 1,
+                //     status: "fulfilled",
+                //     target: "Feb 20, 2020 10:30",
+                //     customer: "AAAAAAA",
+                //     total: 2000
+                // },
+                // {
+                //     ordernum: 22,
+                //     status: "Cancelled",
+                //     target: "Feb 10, 2020 10:30",
+                //     customer: "AAA",
+                //     total: 200.5
+                // }
             ]
         };
     },
@@ -1126,7 +1147,6 @@ export default {
             if (obj) {
                 return obj.value.value == "Other";
             }
-
             return false;
         },
 
@@ -1151,10 +1171,7 @@ export default {
                 this.orderBackup.customer = resp.customer; // make copy
                 this.orderBackup.products = resp.products.slice();
             } catch (err) {
-                this.showNotif(
-                    false,
-                    err + "Could not retrieve order details. "
-                );
+                this.showNotif(false, "Could not retrieve order details. ");
                 this.order.hasError = true;
             } finally {
                 this.order.loading = false;
@@ -1180,6 +1197,23 @@ export default {
                 .catch(err => {
                     this.orderStatuses = [];
                 });
+        },
+
+        async findSimilar() {
+            this.right = !this.right; //toggle
+            if (this.right) {
+                // to show
+                this.findingSimilar = true;
+                Order.findSimilarOrders(this.$route.params.id, {
+                    ...this.order.data
+                })
+                    .then(dat => {
+                        this.findingSimilar = false;
+                    })
+                    .catch(err => {
+                        this.findingSimilar = false;
+                    });
+            }
         },
 
         onSubmit: async function(evt) {
