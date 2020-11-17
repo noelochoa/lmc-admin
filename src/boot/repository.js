@@ -8,9 +8,11 @@ import Product from "./repositories/Product";
 import Order from "./repositories/Order";
 import Comment from "./repositories/Comment";
 import Holiday from "./repositories/Holiday";
+import Search from "./repositories/Search";
 
 export default inject(async function({ app, ssrContext, Vue }) {
     const repositories = {
+        search: new Search(app.axios),
         statistics: new Dashboard(app.axios),
         accounts: new Account(app.axios),
         announcements: new Announcement(app.axios),

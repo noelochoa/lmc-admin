@@ -2,8 +2,8 @@
 
 @font-face {
     font-family: Spartan;
-    font-weight: 400;  
-    font-style: normal;  
+    font-weight: 400;
+    font-style: normal;
     font-display: swap;
     src: url("/fonts/Spartan-Medium.ttf");
 }
@@ -61,7 +61,6 @@ form[disabled="disabled"] * {
 .quick-search .q-placeholder {
     color: white;
 }
-
 .blur-bg {
     position: fixed;
     height: 100%;
@@ -76,4 +75,23 @@ form[disabled="disabled"] * {
     -webkit-filter: blur(10px);
     transform: scale(1.1);
     overflow: hidden;
+}
+/* custom scrollbar */
+::-webkit-scrollbar {
+    width: 20px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #323535;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #4d5e61;
 }

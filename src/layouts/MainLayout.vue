@@ -19,14 +19,14 @@
                     >
                 </q-btn>
                 <q-input
-                    debounce="250"
+                    debounce="350"
                     v-model="searchText"
                     placeholder="Quick search"
                     dense
                     color="white"
                     class="quick-search"
                     ref="quickSearch"
-                    @input="searchFocused = true"
+                    @input="search"
                     @blur="searchFocused = false"
                 >
                     <template v-slot:prepend>
@@ -112,7 +112,10 @@
                     </q-menu>
                 </q-btn>
             </q-toolbar>
-            <SearchResults v-bind="{ showSearch, searchResults, searchText }" />
+            <SearchResults
+                v-bind="{ showSearch, searchText, resReady, searchResults }"
+                @close="searchFocused = false"
+            />
         </q-header>
 
         <q-drawer
@@ -201,6 +204,7 @@
 <script>
 import Navigation from "../components/Navigation";
 import SearchResults from "../components/SearchResults";
+let Search = null;
 
 export default {
     name: "MainLayout",
@@ -213,6 +217,9 @@ export default {
             // return false;
             return this.searchFocused && this.searchText.trim() !== "";
         }
+    },
+    beforeCreate() {
+        Search = this.$RepositoryFactory.get("search");
     },
     mounted() {
         this.handleScroll();
@@ -241,57 +248,13 @@ export default {
     data() {
         return {
             searchText: "",
+            resReady: false,
             searchFocused: false,
             eventTimer: null,
             scrolled: false,
             drawer: false,
             showNavBtn: false,
-
-            searchResults: [
-                {
-                    category: "Categories Categories",
-                    path: "/categories",
-                    items: [
-                        {
-                            title: "Cakes",
-                            id: "1",
-                            link: "/categories/edit/1",
-                            caption: "Sweets"
-                        },
-                        {
-                            title: "Cupcakes",
-                            id: "2",
-                            link: "/categories/edit/2"
-                        }
-                    ]
-                },
-                {
-                    category: "Products",
-                    path: "/products",
-                    items: [
-                        {
-                            title: "Test Product 1",
-                            id: "1",
-                            link: "/products/edit/1",
-                            caption:
-                                "Lorem lorem loremloremloremloremloremloremlorem"
-                        },
-                        {
-                            title: "Test Product 2",
-                            id: "2",
-                            link: "/products/edit/2"
-                        }
-                    ]
-                },
-                {
-                    category: "Customers",
-                    path: "/customers",
-                    items: []
-                },
-                {
-                    category: "Comments"
-                }
-            ],
+            searchResults: [],
             navigationlinks: [
                 {
                     title: "Dashboard",
@@ -354,6 +317,17 @@ export default {
         },
         drawerLayoutChange(state) {
             this.showNavBtn = !state;
+        },
+        async search(evt) {
+            this.searchFocused = true;
+            this.resReady = false;
+            if (this.searchText && this.searchText.trim() != "") {
+                try {
+                    const res = await Search.findItems(this.searchText);
+                    this.searchResults = res.slice();
+                    this.resReady = true;
+                } catch (err) {}
+            }
         },
         async logoutUser() {
             try {

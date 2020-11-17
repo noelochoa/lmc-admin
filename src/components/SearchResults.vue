@@ -6,13 +6,22 @@
         square
         dark
         no-focus
+        max-height="480px"
         content-class="bg-none no-box-shadow"
         @hide="emitClose"
     >
         <div class="row menu-arrow bg-grey-8">
             &nbsp;
         </div>
-        <div class="row no-wrap bg-grey-8" v-if="filteredResults.length == 0">
+        <div class="row no-wrap bg-grey-8" v-if="!resReady">
+            <div class="block q-pa-md">
+                Searching... <q-spinner color="white" size="1em" />
+            </div>
+        </div>
+        <div
+            class="row no-wrap bg-grey-8"
+            v-else-if="filteredResults.length == 0"
+        >
             <div class="block q-pa-md">
                 No results found.
             </div>
@@ -20,8 +29,8 @@
         <div class="row no-wrap bg-grey-8" v-else>
             <q-list>
                 <q-list
-                    v-for="result in filteredResults"
-                    :key="result.category"
+                    v-for="(result, idx) in filteredResults"
+                    :key="'key-' + idx"
                 >
                     <q-item dense class="q-pt-xs" active-class="text-white">
                         <q-item-section>
@@ -42,8 +51,8 @@
                         </q-item-section>
                     </q-item>
                     <q-item
-                        v-for="item in result.items"
-                        :key="item.title"
+                        v-for="(item, iidx) in result.items"
+                        :key="'item-' + iidx"
                         :to="item.link"
                         class="bg-grey-10 text-white result-item"
                     >
@@ -55,7 +64,7 @@
                             </q-item-label>
                             <q-item-label
                                 v-if="item.caption"
-                                class="text-caption result-value q-mb-xs"
+                                class="text-caption result-value capitalize q-mb-xs"
                             >
                                 <i v-html="markText(item.caption)"></i>
                             </q-item-label>
@@ -74,8 +83,7 @@
     border-bottom: 0;
 }
 .result-value {
-    min-width: 200px;
-    max-width: 320px;
+    width: 240px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -101,6 +109,11 @@ export default {
             required: true,
             default: false
         },
+        resReady: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
         searchResults: {
             type: Array,
             required: true,
@@ -122,7 +135,7 @@ export default {
         markText(str) {
             if (str && this.searchText) {
                 return str.replace(
-                    new RegExp(`(${this.searchText})`, "ig"),
+                    new RegExp(`(${this.searchText})`, "i"),
                     `<span class='highlighted'>$1</span>`
                 );
             }

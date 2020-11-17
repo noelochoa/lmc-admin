@@ -213,7 +213,10 @@ export default {
             return banner.image;
         },
         missingUpload() {
-            return this.selimg == null && this.featureProduct.data.isFeatured;
+            return (
+                !this.productBanner &&
+                this.selimg == null && this.featureProduct.data.isFeatured
+            );
         }
     },
     data() {

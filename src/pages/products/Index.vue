@@ -110,15 +110,6 @@
                             dense
                             flat
                             size="sm"
-                            icon="edit"
-                            label="Bulk edit"
-                            class="q-pr-xs"
-                        >
-                        </q-btn>
-                        <q-btn
-                            dense
-                            flat
-                            size="sm"
                             icon="arrow_drop_down"
                             label="Bulk action"
                             class="q-px-xs"

@@ -291,6 +291,13 @@ let Account = null;
 export default {
     name: "AccountsEdit",
     mixins: [HelperMixin],
+    watch: {
+        $route(to, from) {
+            if (to.path !== from.path) {
+                this.getAccount();
+            }
+        }
+    },
     meta() {
         return {
             title: "Review Account",

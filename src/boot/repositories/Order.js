@@ -8,23 +8,6 @@ export default class Order {
         this.axios = axios;
     }
 
-    __zeroPad(num, numZeros) {
-        var n = Math.abs(num);
-        if (isNaN(num)) n = 0;
-        var zeros = Math.max(0, numZeros - Math.floor(n).toString().length);
-        var zeroString = Math.pow(10, zeros)
-            .toString()
-            .substr(1);
-        if (num < 0) {
-            zeroString = "-" + zeroString;
-        }
-        return zeroString + n;
-    }
-
-    __buildOrderNum(yy, num) {
-        return prefix + yy + "-" + this.__zeroPad(num, 6);
-    }
-
     async getStatusSelection() {
         // Order Status
         try {
@@ -88,17 +71,12 @@ export default class Order {
                 const dt = moment(item.target);
                 ret.push({
                     id: item._id,
-                    ordernum: this.__buildOrderNum(
-                        dt.format("YY"),
-                        item.ordernum
-                    ),
-                    status: item.status[0].status,
-                    class: item.status[0].status
-                        .replace(/\s/g, "-")
-                        .toLowerCase(),
+                    ordernum: item.orderRef,
+                    status: item.status.status,
+                    class: item.status.status.replace(/\s/g, "-").toLowerCase(),
                     target: dt.format("MMM DD, YYYY HH:mm"),
                     customer:
-                        item.customer[0].fname + " " + item.customer[0].lname,
+                        item.customer.firstname + " " + item.customer.lastname,
                     type: item.deliveryType ? item.deliveryType : "-",
                     total: item.total
                 });
@@ -109,27 +87,46 @@ export default class Order {
         }
     }
 
-    async findSimilarOrders(paramID, { target, status, products }) {
+    async findSimilarOrders(paramID, { target, status, customer, products }) {
         try {
             let ret = [];
-            const prodOptions = products
-                ? products
-                      .map(prod => {
-                          return prod.options
-                              .map(opt => opt._selected)
-                              .join(" ");
-                      })
-                      .filter(() => {
-                          return true;
-                      })
-                : null;
+            let prodOptions = [];
+            let productList = [];
+
+            prodOptions = products
+                .map(prod => {
+                    return prod.options.map(opt => opt._selected).join(" ");
+                })
+                .filter(Boolean)
+                .join(" ");
+
+            productList = products.map(prod => {
+                return prod.product;
+            });
 
             const res = await this.axios.post(`api/orders/similar/${paramID}`, {
                 target,
                 status,
-                options: prodOptions
+                customer,
+                options: prodOptions,
+                products: productList
             });
-            console.log(res.data);
+
+            res.data.forEach(item => {
+                const dt = moment(item.target);
+                ret.push({
+                    similarity: item.similarity,
+                    id: item._id,
+                    ordernum: item.orderRef,
+                    status: item.status.status,
+                    class: item.status.status.replace(/\s/g, "-").toLowerCase(),
+                    target: dt.format("MMM DD, YYYY HH:mm"),
+                    customer:
+                        item.customer.firstname + " " + item.customer.lastname,
+                    type: item.deliveryType ? item.deliveryType : "-",
+                    total: item.total
+                });
+            });
             return ret;
         } catch (err) {
             throw err.response.data.error || "Error has occurred.";
@@ -140,19 +137,13 @@ export default class Order {
         try {
             const res = await this.axios.get(`api/orders/cms/${paramID}`);
             const dt = moment(res.data.target);
-            res.data.ordernum = this.__buildOrderNum(
-                dt.format("YY"),
-                res.data.ordernum
-            );
+            res.data.ordernum = res.data.orderRef;
             res.data.target = dt.format("YYYY-MM-DD HH:mm");
             res.data.type = res.data.deliveryType;
             res.data.address = res.data.shippingAddress;
             if (res.data.replacedBy) {
                 res.data.replacedBy = Object.assign({}, res.data.replacedBy, {
-                    ordernum: this.__buildOrderNum(
-                        dt.format("YY"),
-                        res.data.replacedBy.ordernum
-                    )
+                    ordernum: res.data.orderRef
                 });
             }
             // Selected products

@@ -346,7 +346,7 @@ export default {
             const end = new Date(val);
             const start = new Date(this.announcement.data.start);
 
-            console.log(end, start);
+            //console.log(end, start);
             return (
                 end.getTime() > start.getTime() ||
                 "End date needs to be greater"
@@ -355,6 +355,7 @@ export default {
         _isValidLink(val) {
             if (!val || val == "") return true;
 
+            // const urlpattern = /^https?:\/\/\w+(:[0-9]*)?(\.\w+)?$/;
             const urlpattern = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
             //const urlpattern = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
             return urlpattern.test(val) || "Invalid URL format";

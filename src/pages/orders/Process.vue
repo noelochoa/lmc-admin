@@ -34,15 +34,15 @@
             </div>
             <q-card
                 class="q-ma-md bg-grey-8"
-                v-for="item in similarOrderList"
-                :key="item.ordernum"
+                v-for="(item, idx) in similarOrderList"
+                :key="'similar-' + idx"
             >
                 <q-card-section>
                     <div class="text-subtitle2">{{ item.ordernum }}</div>
                     <div
                         square
                         class="text-subtitle2 capitalize"
-                        :class="'ctext-' + item.status.toLowerCase()"
+                        :class="'ctext-' + item.class"
                     >
                         {{ item.status }}
                     </div>
@@ -53,9 +53,9 @@
                 </q-card-section>
                 <q-separator />
                 <q-card-actions dense vertical>
-                    <q-btn dense flat :to="'/orders/process/' + item.ordernum"
-                        >Configure</q-btn
-                    >
+                    <q-btn dense flat :to="'/orders/process/' + item.id">
+                        Configure
+                    </q-btn>
                 </q-card-actions>
             </q-card>
         </q-drawer>
@@ -758,6 +758,13 @@ export default {
     name: "OrderProcess",
     components: { ProductPicker },
     mixins: [HelperMixin],
+    watch: {
+        $route(to, from) {
+            if (to.path !== from.path) {
+                this.getOrderDetails();
+            }
+        }
+    },
     meta() {
         return {
             title: "Process Order"
@@ -816,11 +823,12 @@ export default {
                 (this.similarOrders && this.similarOrders.length < 1)
             )
                 return [];
-            return this.similarOrders.reduce((r, a) => {
-                r[a.similarity] = r[a.similarity] || [];
-                r[a.similarity].push(a);
-                return r;
-            }, Object.create(null));
+            // return this.similarOrders.reduce((r, a) => {
+            //     r[a.similarity] = r[a.similarity] || [];
+            //     r[a.similarity].push(a);
+            //     return r;
+            // }, Object.create(null));
+            return this.similarOrders;
         }
     },
     data() {
@@ -1166,6 +1174,7 @@ export default {
 
         async getOrderDetails() {
             try {
+                this.order.loading = true;
                 const resp = await Order.getOrder(this.$route.params.id);
                 this.order.data = { ...resp };
                 this.orderBackup.customer = resp.customer; // make copy
@@ -1208,6 +1217,7 @@ export default {
                     ...this.order.data
                 })
                     .then(dat => {
+                        this.similarOrders = dat.slice();
                         this.findingSimilar = false;
                     })
                     .catch(err => {
@@ -1240,6 +1250,11 @@ export default {
             } finally {
                 this.loading = false;
             }
+        },
+
+        goTo(link) {
+            this.$router.replace(link).catch(err => {});
+            this.getOrderDetails();
         }
     }
 };

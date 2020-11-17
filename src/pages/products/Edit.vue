@@ -888,6 +888,13 @@ let Product = null,
 export default {
     name: "ProductEdit",
     mixins: [HelperMixin],
+    watch: {
+        $route(to, from) {
+            if (to.path !== from.path) {
+                this.fetchProductDetails();
+            }
+        }
+    },
     meta() {
         return {
             title: "Edit Product"
