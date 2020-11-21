@@ -53,7 +53,7 @@ export default {
 
         // Uploaded Assets URL
         resolveAssetsUrl: function(file) {
-            return process.env.STATIC_URL + "/" + file;
+            return process.env.STATIC_URL + "\/" + file;
         },
 
         showNotif: function(isSuccess, msg) {
