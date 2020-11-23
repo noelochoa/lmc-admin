@@ -59,7 +59,8 @@ export default class Comment {
         try {
             await this.axios.patch(`api/comments/${paramID}`, [
                 { property: "replyAuthor", value: replyAuthor },
-                { property: "reply", value: reply }
+                { property: "reply", value: reply },
+                { property: "replied", value: new Date() }
             ]);
             return true;
         } catch (err) {
