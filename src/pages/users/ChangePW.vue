@@ -196,10 +196,9 @@ export default {
             return emailPattern.test(val) || "Invalid email format";
         },
         onSubmit: async function(evt) {
-            /**TODO */
             this.loading = true;
             try {
-                await this.$store.dispatch("auth/changePW", this.user);
+                await this.$store.dispatch("auth/changePW", { ...this.user });
                 this.showNotif(true, "Updated account password.");
                 this.$router.push("/dashboard").catch(err => {});
             } catch (err) {

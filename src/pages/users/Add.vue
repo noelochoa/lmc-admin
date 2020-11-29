@@ -188,7 +188,6 @@ export default {
             return emailPattern.test(val) || "Invalid email format";
         },
         onSubmit: async function(evt) {
-            /**TODO */
             this.loading = true;
             try {
                 await this.$store.dispatch("auth/createUser", this.user);
