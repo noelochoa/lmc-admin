@@ -37,6 +37,24 @@
                                     ]"
                                 />
                             </q-item>
+                            <q-item class="detail-field">
+                                <span class="field-label"
+                                    >Difficulty Scale</span
+                                >
+                                <q-slider
+                                    class="field-value q-mx-xs"
+                                    v-model="category.difficulty"
+                                    :min="1"
+                                    :max="3"
+                                    :label-value="
+                                        ['Easy', 'Medium', 'Hard'][
+                                            category.difficulty - 1
+                                        ]
+                                    "
+                                    label
+                                    color="green-4"
+                                />
+                            </q-item>
                         </q-list>
                         <q-separator />
                         <div class="q-pa-md">
@@ -145,7 +163,8 @@ export default {
         return {
             loading: false,
             category: {
-                name: ""
+                name: "",
+                difficulty: 1
             }
         };
     },

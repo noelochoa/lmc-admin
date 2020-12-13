@@ -65,10 +65,11 @@ export default class Category {
         }
     }
 
-    async addCategory({ name }) {
+    async addCategory({ name, difficulty }) {
         try {
             await this.axios.post("/api/categories", {
-                name
+                name,
+                difficulty
             });
             return true;
         } catch (err) {
@@ -76,10 +77,11 @@ export default class Category {
         }
     }
 
-    async editCategory(paramID, { name }) {
+    async editCategory(paramID, { name, difficulty }) {
         try {
             await this.axios.patch(`api/categories/${paramID}`, [
-                { property: "name", value: name }
+                { property: "name", value: name },
+                { property: "difficulty", value: difficulty }
             ]);
             return true;
         } catch (err) {
