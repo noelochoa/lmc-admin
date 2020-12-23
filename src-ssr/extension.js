@@ -95,7 +95,7 @@ module.exports.extendApp = function({ app, ssr }) {
                 if (response) {
                     return res.status(response.statusCode).send(response.body);
                 } else {
-                    console.log("err", err);
+                    // console.log("err", err);
                     return res.status(500).send({
                         error: "Unexpected error has occurred."
                     });
@@ -104,7 +104,7 @@ module.exports.extendApp = function({ app, ssr }) {
     });
 
     app.use("/api", cookieParser(), function(req, res) {
-        console.log(req.originalUrl, req.path, req.query);
+        // console.log(req.originalUrl, req.path, req.query);
         // console.log(req.cookies);
         if (!req.cookies._JWT_CMS) {
             res.status(403).send({
