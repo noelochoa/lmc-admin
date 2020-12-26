@@ -230,14 +230,17 @@ export default {
     },
     meta: {
         title: "Home",
-        titleTemplate: title => `${title} | LMC Admin Portal`,
+        titleTemplate: title => `${title} | Bake Free Admin Portal`,
         // meta tags
         meta: {
             description: {
                 name: "description",
-                content: "Content Management System for LMC"
+                content: "Content Management System for Bake Free"
             },
-            keywords: { name: "keywords", content: "cms lmc admin portal" },
+            keywords: {
+                name: "keywords",
+                content: "cms bake free admin portal"
+            },
             equiv: {
                 "http-equiv": "Content-Type",
                 content: "text/html; charset=UTF-8"

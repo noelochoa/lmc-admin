@@ -132,7 +132,7 @@ export default {
     created() {},
     data() {
         return {
-            email: "noelochoa@gmail.com",
+            email: "",
             password: "",
             error: "",
             loading: false
