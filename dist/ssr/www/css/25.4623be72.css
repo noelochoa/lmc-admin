@@ -1,0 +1,109 @@
+.page-heading[data-v-4a52583a],
+.page-contents[data-v-4a52583a] {
+  display: grid;
+}
+.page-contents[data-v-4a52583a] {
+  grid-template-columns: minmax(360px, 900px);
+  grid-template-areas: "content-1" "content-2";
+  grid-column-gap: 1rem;
+  grid-row-gap: 2rem;
+}
+.content-1[data-v-4a52583a] {
+  grid-area: content-1;
+}
+.content-2[data-v-4a52583a] {
+  grid-area: content-2;
+}
+div[class*="content-"][data-v-4a52583a] {
+  display: flex;
+  flex-direction: column;
+}
+div[class*="content-"] > div[data-v-4a52583a] {
+  min-height: 4em;
+  justify-content: left;
+  margin: 1px 0;
+  background: rgba(128, 128, 128, 0.65);
+  width: 100%;
+}
+.caption-icon[data-v-4a52583a] {
+  font-size: 2.5rem;
+  display: inline-flex;
+}
+.detail-list[data-v-4a52583a] {
+  display: flex;
+  flex-direction: column;
+}
+.detail-field[data-v-4a52583a] {
+  align-items: center;
+  padding-left: 0;
+}
+.detail-field .field-label[data-v-4a52583a] {
+  width: 140px;
+}
+.detail-field .field-value[data-v-4a52583a] {
+  flex: 1;
+  max-width: 388px;
+}
+.full-width[data-v-4a52583a] {
+  max-width: 100% !important;
+}
+.pimg-card[data-v-4a52583a] {
+  width: 200px;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+}
+.img-uploader[data-v-4a52583a] {
+  width: 388px;
+}
+.group-list .q-item[data-v-4a52583a] {
+  padding: 4px 0;
+  display: flex;
+}
+.group-list > .q-item:first-child .q-input[data-v-4a52583a] {
+  max-width: 180px;
+}
+.detail-field-keyval[data-v-4a52583a] {
+  display: flex;
+  flex-wrap: wrap;
+}
+.detail-list-key[data-v-4a52583a],
+.detail-list-value[data-v-4a52583a] {
+  margin: 2px 2px;
+  flex: 1 1 164px;
+}
+.option-list-key[data-v-4a52583a] {
+  margin: 2px 2px;
+  flex: 1 1 228px;
+}
+.option-list-price[data-v-4a52583a] {
+  margin: 2px 2px;
+  flex: 1 1 100px;
+}
+.remove-icon[data-v-4a52583a] {
+  margin-right: -16px;
+}
+.qtext-editor[data-v-4a52583a] {
+  border: 2px solid white;
+}
+.has-error[data-v-4a52583a] {
+  border: 2px solid #c9124f;
+}
+@media (max-width: 500px) {
+.detail-field[data-v-4a52583a] {
+    flex-direction: column;
+    align-items: flex-start;
+}
+.detail-field .field-label[data-v-4a52583a],
+  .detail-field .field-value[data-v-4a52583a] {
+    line-height: 2em;
+    width: 100%;
+}
+}
+
+.q-field__bottom {
+  display: none;
+}
+
+
+/*# sourceMappingURL=25.4623be72.css.map*/

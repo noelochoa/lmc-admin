@@ -1,0 +1,34 @@
+.round-fg[data-v-7238a4bf] {
+  height: 50vh;
+  max-width: 800px;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  grid-template-areas: "message form";
+  grid-column-gap: 1rem;
+}
+.q-form[data-v-7238a4bf] {
+  grid-area: form;
+  background: rgba(240, 240, 240, 0.35);
+  border-radius: 10px;
+}
+.message[data-v-7238a4bf] {
+  grid-area: message;
+  position: relative;
+  color: #fff;
+}
+.cms-icon[data-v-7238a4bf] {
+  font-size: 15rem;
+}
+@media (max-width: 800px) {
+.message[data-v-7238a4bf] {
+    display: none;
+}
+.round-fg[data-v-7238a4bf] {
+    grid-template-areas: "form";
+    grid-template-columns: 1fr;
+    width: 75%;
+}
+}
+
+
+/*# sourceMappingURL=30.6f880f40.css.map*/
