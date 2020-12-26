@@ -97,8 +97,8 @@ module.exports = function(ctx) {
                   }
                 : {
                       // and on build (production):
-                      API: "api.bake-free.com",
-                      STATIC_URL: "api.bake-free.com"
+                      API: "https://api.bake-free.com",
+                      STATIC_URL: "https://api.bake-free.com"
                   }
         },
 
