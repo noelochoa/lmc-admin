@@ -1156,7 +1156,7 @@ var index_min_default = /*#__PURE__*/__webpack_require__.n(index_min);
     redirect
   }) {
     const instance = axios_default.a.create({
-      baseURL: "https://api.bake-free.com"
+      baseURL: "https://admin.bake-free.com"
     });
     instance.interceptors.request.use(config => {
       if (!!ssrContext) {
@@ -1176,7 +1176,7 @@ var index_min_default = /*#__PURE__*/__webpack_require__.n(index_min);
     instance.interceptors.response.use(response => {
       return response;
     }, error => {
-      if (error.response.status === 403 || error.config.url == "https://api.bake-free.com" + "/api/users/refresh") {
+      if (error.response.status === 403 || error.config.url == "https://admin.bake-free.com" + "/api/users/refresh") {
         store.dispatch("auth/resetAuth");
         redirect("/login");
       }
@@ -2910,6 +2910,8 @@ var map = {
 	"./bm": "a7fa",
 	"./bm.js": "a7fa",
 	"./bn": "9043",
+	"./bn-bd": "9686",
+	"./bn-bd.js": "9686",
 	"./bn.js": "9043",
 	"./bo": "d26a",
 	"./bo.js": "d26a",
@@ -2958,6 +2960,8 @@ var map = {
 	"./es": "898b",
 	"./es-do": "0a3c",
 	"./es-do.js": "0a3c",
+	"./es-mx": "b5b7",
+	"./es-mx.js": "b5b7",
 	"./es-us": "55c9",
 	"./es-us.js": "55c9",
 	"./es.js": "898b",
@@ -3176,4 +3180,4 @@ webpackContext.id = "4678";
 /***/ })
 
 /******/ });
-//# sourceMappingURL=app.5b63a996.js.map
+//# sourceMappingURL=app.f5429e8e.js.map
