@@ -83,6 +83,7 @@ export default class Order {
             });
             return ret;
         } catch (err) {
+            console.error(err);
             throw err.response.data.error || "Error has occurred.";
         }
     }

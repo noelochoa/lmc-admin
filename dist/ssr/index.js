@@ -17885,7 +17885,7 @@ const settings = {
     "max": 1000,
     "maxAge": 900000
   },
-  "debug": true,
+  "debug": false,
   "publicPath": "/"
 }
 
