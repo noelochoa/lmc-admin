@@ -96,14 +96,14 @@
     "js/7.e91cc806.js",
     "js/8.acf755ed.js",
     "js/9.c622ce03.js",
-    "js/app.6f7f8f9a.js",
+    "js/app.1aa63b54.js",
     "js/vendor.1e7a8df7.js"
   ],
   "initial": [
     "css/vendor.d2c9e92f.css",
     "js/vendor.1e7a8df7.js",
     "css/app.997bb60d.css",
-    "js/app.6f7f8f9a.js"
+    "js/app.1aa63b54.js"
   ],
   "async": [
     "css/1.9a0273c7.css",
