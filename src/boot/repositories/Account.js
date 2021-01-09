@@ -24,7 +24,7 @@ export default class Account {
                 ret.push({
                     id: item.id,
                     name: item.name,
-                    joined: moment(item.created).format("MMM DD, YYYY"),
+                    joined: moment(item.joined).format("MMM DD, YYYY"),
                     login: item.login
                         ? moment(item.login).format("MMM DD, YYYY")
                         : "-",
