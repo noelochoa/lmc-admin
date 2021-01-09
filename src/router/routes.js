@@ -120,6 +120,10 @@ const routes = [
                 component: () => import("pages/orders/Process.vue")
             },
             {
+                path: "invoice/:id",
+                component: () => import("pages/orders/Invoice.vue")
+            },
+            {
                 path: "add",
                 component: () => import("pages/orders/Add.vue")
             }

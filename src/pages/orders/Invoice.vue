@@ -1,91 +1,28 @@
 <template>
     <q-page class="q-px-md q-pt-lg">
-        <q-drawer
-            content-class="similar-orders"
-            v-model="right"
-            side="right"
-            overlay
-            elevated
-        >
-            <div class="flex q-mx-md q-mt-sm">
-                <q-btn
-                    flat
-                    dense
-                    class="q-ml-auto"
-                    label="Hide"
-                    no-ripple
-                    @click="right = !right"
-                ></q-btn>
-            </div>
-            <div
-                class="q-my-sm text-h6 text-grey-5 flex flex-center"
-                v-if="findingSimilar"
-            >
-                <q-spinner color="white" size="2em" />
-            </div>
-            <div
-                class="q-my-sm text-h6 text-grey-5 flex flex-center"
-                v-else-if="similarOrderList && similarOrderList.length > 0"
-            >
-                Similar Orders
-            </div>
-            <div class="q-my-sm text-h6 text-grey-5 flex flex-center" v-else>
-                No similar orders found.
-            </div>
-            <q-card
-                class="q-ma-md bg-grey-8"
-                v-for="(item, idx) in similarOrderList"
-                :key="'similar-' + idx"
-            >
-                <q-card-section>
-                    <div class="text-subtitle2">{{ item.ordernum }}</div>
-                    <div
-                        square
-                        class="text-subtitle2 capitalize"
-                        :class="'ctext-' + item.class"
-                    >
-                        {{ item.status }}
-                    </div>
-                    <div class="text-subtitle2">{{ item.customer }}</div>
-                    <div class="text-subtitle2">{{ item.target }}</div>
-                    <div class="text-subtitle2">{{ item.price }}</div>
-                    <div class="text-grey-5">{{ item.similarity }}</div>
-                </q-card-section>
-                <q-separator />
-                <q-card-actions dense vertical>
-                    <q-btn dense flat :to="'/orders/process/' + item.id">
-                        Configure
-                    </q-btn>
-                </q-card-actions>
-            </q-card>
-        </q-drawer>
-
         <div class="page-heading text-white q-pa-md">
             <div class="heading-caption">
-                <h6>Process Order</h6>
+                <h6>Order Invoice</h6>
                 <br />
-                <p>
-                    You may view, edit, and change the order status and
-                    details.<br />
-                    CAUTION: Editing Customer and/or Products fields will place
-                    a NEW order with the updated price.
-                </p>
+                <q-btn
+                    dense
+                    no-caps
+                    color="primary"
+                    class="print-btn q-py-xs q-px-sm"
+                    icon="print"
+                    label="Print Invoice"
+                    @click="printWindow()"
+                />
             </div>
         </div>
         <div class="page-contents text-white q-pa-md">
             <div class="content-1">
                 <div class="text-subtitle2 flex flex-center">
-                    <q-icon name="info" class="caption-icon q-mx-md" />Order
-                    Info ({{ order.data.ordernum }})
-
-                    <q-btn
-                        no-ripple
-                        class="q-ml-auto q-mr-sm"
-                        flat
-                        align="right"
-                        :label="(right ? 'Hide' : 'Find') + ' Similar'"
-                        @click="findSimilar"
-                    />
+                    <q-icon name="info" class="caption-icon q-mx-md" />Order#
+                    {{ order.data.ordernum }} placed
+                    <span v-if="!!order.data.created">{{
+                        toHumanReadableDt(order.data.created)
+                    }}</span>
                 </div>
                 <div>
                     <q-form
@@ -104,15 +41,14 @@
                                     class="field-value"
                                     v-model="order.data.status"
                                     :options="orderStatusList"
+                                    readonly
                                     dark
                                     dense
                                     outlined
                                     hide-bottom-space
-                                    options-dense
+                                    hide-dropdown-icon
                                     emit-value
                                     map-options
-                                    lazy-rules
-                                    :rules="[_isValidStatus]"
                                 />
                             </q-item>
                             <q-item
@@ -129,61 +65,10 @@
                                     outlined
                                     hide-bottom-space
                                     dark
+                                    readonly
                                     class="field-value"
                                     v-model="order.data.target"
-                                    :rules="[
-                                        val =>
-                                            val !== null && val.trim() !== '',
-                                        _isValidDatetime
-                                    ]"
                                 >
-                                    <template v-slot:prepend>
-                                        <q-icon
-                                            name="event"
-                                            class="cursor-pointer"
-                                        >
-                                            <q-popup-proxy
-                                                ref="qDateProxyS"
-                                                transition-show="scale"
-                                                transition-hide="scale"
-                                            >
-                                                <q-date
-                                                    dark
-                                                    no-unset
-                                                    v-model="order.data.target"
-                                                    mask="YYYY-MM-DD HH:mm"
-                                                    @input="
-                                                        () =>
-                                                            $refs.qDateProxyS.hide()
-                                                    "
-                                                />
-                                            </q-popup-proxy>
-                                        </q-icon>
-                                    </template>
-
-                                    <template v-slot:append>
-                                        <q-icon
-                                            name="access_time"
-                                            class="cursor-pointer"
-                                        >
-                                            <q-popup-proxy
-                                                ref="qTimeProxyS"
-                                                transition-show="scale"
-                                                transition-hide="scale"
-                                            >
-                                                <q-time
-                                                    dark
-                                                    v-model="order.data.target"
-                                                    mask="YYYY-MM-DD HH:mm"
-                                                    format24h
-                                                    @input="
-                                                        () =>
-                                                            $refs.qTimeProxyS.hide()
-                                                    "
-                                                />
-                                            </q-popup-proxy>
-                                        </q-icon>
-                                    </template>
                                 </q-input>
                             </q-item>
                             <q-item class="detail-field">
@@ -195,12 +80,11 @@
                                     dark
                                     dense
                                     outlined
+                                    readonly
                                     hide-bottom-space
-                                    options-dense
+                                    hide-dropdown-icon
                                     emit-value
                                     map-options
-                                    lazy-rules
-                                    :rules="[_isValidType]"
                                 />
                             </q-item>
                             <transition name="fade">
@@ -213,17 +97,13 @@
                                         dense
                                         type="textarea"
                                         :rows="3"
+                                        textarea
                                         outlined
                                         dark
+                                        readonly
                                         hide-bottom-space
                                         class="field-value"
                                         v-model="order.data.address"
-                                        lazy-rules
-                                        :rules="[
-                                            val =>
-                                                val !== null &&
-                                                val.trim() !== ''
-                                        ]"
                                     />
                                 </q-item>
                             </transition>
@@ -236,25 +116,12 @@
                                     :rows="3"
                                     textarea
                                     dense
+                                    readonly
                                     outlined
                                     dark
                                     hide-bottom-space
                                     class="field-value"
                                     v-model="order.data.memo"
-                                />
-                            </q-item>
-                            <q-item
-                                class="detail-field"
-                                v-if="!isReplacedStatus"
-                            >
-                                <span class="field-label">Replace Items</span>
-                                <q-toggle
-                                    v-model="confirmEditProduct"
-                                    checked-icon="check"
-                                    color="green-4"
-                                    unchecked-icon="clear"
-                                    :label="confirmEditProduct ? 'Yes' : 'No'"
-                                    @input="onToggleReplace"
                                 />
                             </q-item>
                             <q-item
@@ -276,23 +143,12 @@
                                     hide-bottom-space
                                     dark
                                     dense
+                                    readonly
                                     options-dense
                                     outlined
-                                    use-input
-                                    @filter="filterFn"
                                     emit-value
                                     map-options
-                                    lazy-rules
-                                    :rules="[val => val !== null]"
-                                    @input="onSelCustomer"
                                 >
-                                    <template v-slot:append>
-                                        <q-icon
-                                            name="close"
-                                            @click.stop="clearSelCustomer"
-                                            class="cursor-pointer"
-                                        />
-                                    </template>
                                     <template v-slot:no-option>
                                         <q-item>
                                             <q-item-section
@@ -382,38 +238,7 @@
                                                 >{{ product.price }} PHP
                                             </span>
                                         </q-item-section>
-                                        <q-item-section
-                                            side
-                                            class="action-buttons text-white"
-                                        >
-                                            <q-btn
-                                                flat
-                                                dense
-                                                rounded
-                                                icon="clear"
-                                                @click="removeProduct(idx)"
-                                                :disabled="
-                                                    !confirmEditProduct ||
-                                                        showPicker
-                                                "
-                                            >
-                                                <q-tooltip>
-                                                    Remove
-                                                </q-tooltip>
-                                            </q-btn>
-                                        </q-item-section>
                                     </q-item>
-                                    <q-btn
-                                        dense
-                                        flat
-                                        no-caps
-                                        icon="add"
-                                        label="Add Product"
-                                        :disabled="
-                                            !confirmEditProduct || showPicker
-                                        "
-                                        @click="openProductPicker()"
-                                    />
                                 </div>
                             </q-item>
 
@@ -423,176 +248,11 @@
                             </q-item>
                         </q-list>
                         <q-separator />
-                        <div class="q-pa-md">
-                            <q-btn
-                                label="Save"
-                                type="submit"
-                                color="primary"
-                                :loading="loading"
-                                :disable="loading"
-                            >
-                                <template v-slot:loading>
-                                    <q-spinner-gears />
-                                </template>
-                            </q-btn>
-                        </div>
+                        <div class="q-pa-md"></div>
                     </q-form>
                 </div>
             </div>
             <div class="content-2"></div>
-
-            <!-- Product Picker Dialog -->
-            <ProductPicker
-                :showDlg.sync="showPicker"
-                @hide="onCloseDialog(val)"
-            >
-                <template v-slot:product>
-                    <q-form ref="selProductForm">
-                        <q-item class="productdlg-item">
-                            <q-select
-                                class="search-field"
-                                popup-content-class="options-light"
-                                v-model="searchProduct"
-                                :options="productOptions"
-                                label="Search Product"
-                                hide-dropdown-icon
-                                hide-bottom-space
-                                dark
-                                options-dark
-                                outlined
-                                use-input
-                                emit-value
-                                map-options
-                                debounce="250"
-                                :loading="pfilterLoading"
-                                @filter="pfilterFn"
-                                @input="onSelectProduct"
-                            >
-                                <template v-slot:prepend>
-                                    <q-icon name="search" color="white" />
-                                </template>
-                                <template v-slot:append>
-                                    <q-icon
-                                        name="close"
-                                        v-if="!pfilterLoading"
-                                        @click.stop="
-                                            [
-                                                (searchProduct = null),
-                                                (selectProduct = null)
-                                            ]
-                                        "
-                                        class="cursor-pointer"
-                                    />
-                                </template>
-                                <template v-slot:no-option>
-                                    <q-item class="options-light">
-                                        <q-item-section
-                                            class="text-italic text-grey"
-                                        >
-                                            No products found.
-                                        </q-item-section>
-                                    </q-item>
-                                </template>
-                            </q-select>
-                        </q-item>
-                        <q-list class="productdlg-list" v-if="selectProduct">
-                            <q-item class="productdlg-item">
-                                <div class="attr-label text-grey-6">
-                                    Name
-                                </div>
-                                <div class="attr-value">
-                                    {{ selectProduct.name }}
-                                </div>
-                            </q-item>
-                            <q-item class="productdlg-item">
-                                <div class="attr-label text-grey-6">
-                                    Qty. (MIN:
-                                    {{ selectProduct.minOrderQuantity }})
-                                </div>
-                                <q-input
-                                    dense
-                                    outlined
-                                    hide-bottom-space
-                                    dark
-                                    type="number"
-                                    class="attr-value"
-                                    @input="onChgQty"
-                                    :min="selectProduct.minOrderQuantity"
-                                    v-model="customizedProduct.quantity"
-                                />
-                            </q-item>
-                            <q-item class="productdlg-item">
-                                <div class="attr-label text-grey-6">
-                                    Options
-                                </div>
-                                <div
-                                    class="attr-value q-my-sm"
-                                    v-for="(item, key) in selectProduct.options"
-                                    :key="'optKey-' + key"
-                                >
-                                    <span class="capitalize option-label">
-                                        {{ item.attribute }}
-                                    </span>
-                                    <q-select
-                                        popup-content-class="options-light"
-                                        dense
-                                        dark
-                                        outlined
-                                        :options="
-                                            toSelOptions(
-                                                item.attribute,
-                                                item.choices
-                                            )
-                                        "
-                                        v-model="customizedProduct.options[key]"
-                                        @input="onSelOption(key)"
-                                        lazy-rules
-                                        :rules="[val => !!val]"
-                                    />
-                                    <q-input
-                                        v-if="
-                                            isOtherSelected(
-                                                customizedProduct.options[key]
-                                            )
-                                        "
-                                        dense
-                                        dark
-                                        outlined
-                                        placeholder="Please specify"
-                                        v-model="
-                                            customizedProduct.otherVal[key]
-                                        "
-                                        lazy-rules
-                                        :rules="[val => !!val]"
-                                    />
-                                </div>
-                            </q-item>
-                            <q-item class="productdlg-item">
-                                <div class="attr-label text-grey-6">
-                                    Price (PHP)
-                                </div>
-                                <div class="attr-value">
-                                    {{ customizedProduct.price }}
-                                </div>
-                            </q-item>
-                        </q-list>
-                    </q-form>
-                </template>
-                <template v-slot:actions>
-                    <q-btn
-                        flat
-                        label="Cancel"
-                        @click="onCloseDialog"
-                        v-close-popup
-                    />
-                    <q-btn
-                        flat
-                        label="Add"
-                        color="primary"
-                        @click="onSetProduct"
-                    />
-                </template>
-            </ProductPicker>
         </div>
     </q-page>
 </template>
@@ -746,17 +406,41 @@ div[class*="attr-"] {
         background: #1a1d1a !important;
     }
 }
+
+@media print {
+    .q-footer,
+    .q-header,
+    .q-drawer-container,
+    .print-btn {
+        display: none !important;
+        height: 0px !important;
+    }
+    .q-page-container,
+    .page-heading,
+    .page-contents {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .page-contents * {
+        color: #000 !important;
+        font-size: 10pt !important;
+    }
+
+    html,
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
 </style>
 <script>
-import ProductPicker from "../../components/ProductPicker";
 import HelperMixin from "../../mixins/helpers";
 let Account = null,
     Product = null,
     Order = null;
 
 export default {
-    name: "OrderProcess",
-    components: { ProductPicker },
+    name: "OrderInvoice",
     mixins: [HelperMixin],
     watch: {
         $route(to, from) {
@@ -767,7 +451,7 @@ export default {
     },
     meta() {
         return {
-            title: "Process Order"
+            title: "Order Invoice"
         };
     },
     beforeCreate() {
@@ -1079,42 +763,6 @@ export default {
             });
         },
 
-        onSetProduct(evt) {
-            // On "Add" from Dialog
-            this.$refs.selProductForm.validate().then(success => {
-                if (!success) {
-                    return;
-                }
-                if (!this.selectProduct) return;
-                this.order.data.products.push({
-                    product: this.customizedProduct.id,
-                    name: this.customizedProduct.name,
-                    image: this.customizedProduct.image,
-                    price: this.customizedProduct.price,
-                    quantity: this.customizedProduct.quantity,
-                    discount: 0, // temporary
-                    finalPrice: this.customizedProduct.price, //temporary
-                    discounts: this.customizedProduct.discounts,
-                    options: this.customizedProduct.options.map((item, key) => {
-                        return {
-                            _option: item.key,
-                            _selected: item.value.value,
-                            otherValue:
-                                item.value.value == "Other"
-                                    ? this.customizedProduct.otherVal[key]
-                                    : null
-                        };
-                    })
-                });
-                // Update all prices
-                this.finalizePrice();
-
-                // Reset Dialog
-                this.showPicker = false;
-                this.clearSelection();
-            });
-        },
-
         onChgQty(val) {
             this.calcCustomizationPrice();
         },
@@ -1149,27 +797,6 @@ export default {
                 });
             }
             return obj;
-        },
-
-        isOtherSelected(obj) {
-            if (obj) {
-                return obj.value.value == "Other";
-            }
-            return false;
-        },
-
-        onToggleReplace(val, evt) {
-            if (!val) {
-                // Revert to original
-                this.options = this.customerList.slice();
-                this.order.data.customer = this.orderBackup.customer;
-                this.order.data.products = this.orderBackup.products.slice();
-            } else {
-                this.showNotif(
-                    true,
-                    "CAUTION: Saving changes will place a NEW Order."
-                );
-            }
         },
 
         async getOrderDetails() {
@@ -1208,53 +835,8 @@ export default {
                 });
         },
 
-        async findSimilar() {
-            this.right = !this.right; //toggle
-            if (this.right) {
-                // to show
-                this.findingSimilar = true;
-                Order.findSimilarOrders(this.$route.params.id, {
-                    ...this.order.data
-                })
-                    .then(dat => {
-                        this.similarOrders = dat.slice();
-                        this.findingSimilar = false;
-                    })
-                    .catch(err => {
-                        this.findingSimilar = false;
-                    });
-            }
-        },
-
-        onSubmit: async function(evt) {
-            this.loading = true;
-            try {
-                if (this.order.data.products.length < 1) {
-                    throw "No products selected";
-                }
-                if (this.confirmEditProduct) {
-                    // Place new Order and update status of this order to 'Replaced'
-                    await Order.replaceOrder(this.$route.params.id, {
-                        ...this.order.data
-                    });
-                    this.showNotif(true, "Successfully placed a new order.");
-                } else {
-                    await Order.updateOrder(this.$route.params.id, {
-                        ...this.order.data
-                    });
-                    this.showNotif(true, "Updated Order details.");
-                }
-                this.returnToPageIndex("/orders");
-            } catch (err) {
-                this.showNotif(false, "Could not process the order. ");
-            } finally {
-                this.loading = false;
-            }
-        },
-
-        goTo(link) {
-            this.$router.replace(link).catch(err => {});
-            this.getOrderDetails();
+        printWindow() {
+            window.print();
         }
     }
 };
