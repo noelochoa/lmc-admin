@@ -1,6 +1,6 @@
-# Administrator Portal for LMC (CMS)
+# Administrator Portal for Bake Free (CMS)
 
-Content Management System for LMC
+Content Management System for Bake Free
 
 ## Install the dependencies
 
